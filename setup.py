@@ -6,6 +6,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "pygame",
+        "requests"
     ],
     author="PizzaPost",
     description="Create GUIs for pygame.",
