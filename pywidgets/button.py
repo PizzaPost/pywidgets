@@ -30,7 +30,7 @@ class Button:
                  active_hover_animation: bool = None, disabled_hover_animation: bool = None,
                  click_animation: bool = None, destroy_animation: bool = None,
 
-                 click_sound: str = None,
+                 click_sound: str | pygame.mixer.Sound = None,
                  active_unpressed_cursor: pygame.cursors = None,
                  disabled_unpressed_cursor: pygame.cursors = None,
                  active_hover_cursor: pygame.cursors = None,
@@ -59,6 +59,8 @@ class Button:
         self.disabled_hover_border_color = disabled_hover_border_color
         self.active_pressed_border_color = active_pressed_border_color
         if click_sound:
+            if isinstance(click_sound, pygame.mixer.Sound):
+                self.click_sound = click_sound
             self.click_sound = pygame.mixer.Sound(click_sound)
         else:
             self.click_sound = None
