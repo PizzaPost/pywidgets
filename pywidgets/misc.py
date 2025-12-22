@@ -20,7 +20,7 @@ def check_update():
 
 
 def check_linked():
-    if not type(pg) == pygame.Surface:
+    if not isinstance(pg, pygame.Surface):
         print("Please link a pygame window first:\n    pywidgets.link_pygame_window(window)")
         exit(0)
 
