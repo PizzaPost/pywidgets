@@ -1,3 +1,5 @@
+import math
+
 import pygame
 
 pygame.init()
@@ -128,6 +130,8 @@ class Slider:
         self.pressed = False
         self.rect = pygame.Rect(self.x, self.y, self.width, 60)
         self.original_cursor = None
+        self.extra_dot_radius = 0
+        self.max_extra_dot_radius = dot_radius + 1
 
         all_sliders.append(self)
 
@@ -167,7 +171,7 @@ def draw(slider, surface: pygame.Surface):
     mouse_pos = pygame.mouse.get_pos()
     is_hovering = is_point_in_rounded_rect(slider, mouse_pos)
     if slider.state == "enabled":
-        if slider.pressed and is_hovering:
+        if slider.pressed:
             text_color = slider.active_pressed_text_color
             bg_color_used = slider.active_pressed_used_background_color
             bg_color_unused = slider.active_pressed_unused_background_color
@@ -258,7 +262,8 @@ def draw(slider, surface: pygame.Surface):
                          border_bottom_right_radius=br)
     dot_x = track_rect.x + used_width
     dot_x = max(track_rect.left + slider.dot_radius, min(dot_x, track_rect.right - slider.dot_radius))
-    pygame.draw.circle(surface, dot_color, (int(dot_x), int(track_rect.centery)), slider.dot_radius)
+    pygame.draw.circle(surface, dot_color, (int(dot_x), int(track_rect.centery)),
+                       slider.dot_radius + slider.extra_dot_radius)
     if slider.show_value_when_pressed and slider.pressed or slider.show_value_when_hovered and is_hovering and not slider.pressed or slider.show_value_when_unpressed:
         if slider.show_full_rounding_of_whole_numbers:
             text_surf = slider.font.render(str(round(slider.value, slider.round_display_value)), True, display_color)
@@ -268,12 +273,12 @@ def draw(slider, surface: pygame.Surface):
         elif not slider.show_full_rounding_of_whole_numbers:
             text_surf = slider.font.render(str(round(slider.value)), True, display_color)
         text_rect = text_surf.get_rect()
-        text_rect.center = (dot_x, track_rect.bottom + slider.dot_radius + 10)
+        text_rect.center = (dot_x, track_rect.bottom + slider.dot_radius + 17)
         surface.blit(text_surf, text_rect)
 
     text_surf = slider.font.render(slider.text, True, text_color)
     text_rect = text_surf.get_rect()
-    text_y_center = track_rect.top - 15 - slider.dot_radius
+    text_y_center = track_rect.top - 17 - slider.dot_radius
 
     if slider.alignment == "stretched" and len(slider.text) > 1 and not slider.auto_size:
         total_char_width = sum(slider.font.render(char, True, text_color).get_width() for char in slider.text)
@@ -349,3 +354,9 @@ def react(slider, event=None):
         elif event.type == pygame.MOUSEMOTION:
             if slider.pressed:
                 update_value()
+    t = pygame.time.get_ticks() * 0.01
+    pulse = math.sin(t) * 0.5 + 0.5
+    if slider.pressed:
+        slider.extra_dot_radius = min(slider.max_extra_dot_radius, slider.extra_dot_radius + pulse)
+    else:
+        slider.extra_dot_radius = max(0, slider.extra_dot_radius - pulse)
