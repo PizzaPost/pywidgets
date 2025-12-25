@@ -6,7 +6,8 @@ all_buttons = []
 
 
 class Button:
-    def __init__(self, auto_size: bool = True, width: int = 180, height: int = 80, text: str = "pywidgets Button",
+    def __init__(self, auto_size: bool = True, width: int = 180, height: int = 80,
+                 text: str = "easypygamewidgets Button",
                  state: str = "enabled",
                  active_unpressed_text_color: tuple = (255, 255, 255),
                  disabled_unpressed_text_color: tuple = (150, 150, 150),
@@ -24,15 +25,7 @@ class Button:
                  disabled_hover_border_color: tuple = (60, 60, 60),
                  active_pressed_border_color: tuple = (50, 50, 50),
                  border_thickness: int = 2,
-
-                 spawn_animation: bool = None, idle_animation: bool = None, active_idle_animation: bool = None,
-                 disabled_idle_animation: bool = None, hover_animation: bool = None,
-                 active_hover_animation: bool = None, disabled_hover_animation: bool = None,
-                 click_animation: bool = None, destroy_animation: bool = None,
-
                  click_sound: str | pygame.mixer.Sound = None,
-                 active_unpressed_cursor: pygame.cursors = None,
-                 disabled_unpressed_cursor: pygame.cursors = None,
                  active_hover_cursor: pygame.cursors = None,
                  disabled_hover_cursor: pygame.cursors = None,
                  active_pressed_cursor: pygame.cursors = None,
@@ -66,8 +59,6 @@ class Button:
             self.click_sound = None
         self.border_thickness = border_thickness
         cursor_input = {
-            "active_unpressed": active_unpressed_cursor,
-            "disabled_unpressed": disabled_unpressed_cursor,
             "active_hover": active_hover_cursor,
             "disabled_hover": disabled_hover_cursor,
             "active_pressed": active_pressed_cursor
@@ -78,7 +69,6 @@ class Button:
                 self.cursors[name] = cursor
             else:
                 if cursor is not None:
-                    print(f"Warnung: '{name}' für Button '{self.text}' ist kein pygame.cursors.Cursor Objekt.")
                     print(
                         f"No custom cursor is used for the button {self.text} because it's not a pygame.cursors.Cursor object. ({cursor})")
                 self.cursors[name] = None
@@ -88,21 +78,10 @@ class Button:
         self.command = command
         self.holdable = holdable
         self.corner_radius = corner_radius
-
-        self.spawn_animation = spawn_animation
-        self.idle_animation = idle_animation
-        self.active_idle_animation = active_idle_animation
-        self.disabled_idle_animation = disabled_idle_animation
-        self.hover_animation = hover_animation
-        self.active_hover_animation = active_hover_animation
-        self.disabled_hover_animation = disabled_hover_animation
-        self.click_animation = click_animation
-        self.destroy_animation = destroy_animation
-
         self.x = 0
         self.y = 0
         self.alive = True
-        self.pressed = True
+        self.pressed = False
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
         self.original_cursor = None
 
@@ -126,6 +105,10 @@ class Button:
         self.x = x
         self.y = y
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+    def execute(self):
+        if self.command:
+            self.command()
 
 
 def draw(button, surface: pygame.Surface):

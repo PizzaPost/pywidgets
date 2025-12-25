@@ -12,16 +12,16 @@ def check_update():
         data = response.json()
         latest_version = data["version"]
         if latest_version == "0.1.0":
-            print("pywidgets is on the latest version")
+            print("easypygamewidgets is on the latest version")
         else:
-            print("An update is available. Download it now with 'pip install --upgrade pywidgets'")
+            print("An update is available. Download it now with 'pip install --upgrade easypygamewidgets'")
     except Exception as e:
-        print(f"pywidgets: Failed to check for updates: {e}")
+        print(f"easypygamewidgets: Failed to check for updates: {e}")
 
 
 def check_linked():
     if not isinstance(pg, pygame.Surface):
-        print("Please link a pygame window first:\n    pywidgets.link_pygame_window(window)")
+        print("Please link a pygame window first:\n    easypygamewidgets.link_pygame_window(window)")
         exit(0)
 
 
