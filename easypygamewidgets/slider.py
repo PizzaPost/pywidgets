@@ -125,7 +125,7 @@ class Slider:
         self.round_display_value = round_display_value
         self.show_full_rounding_of_whole_numbers = show_full_rounding_of_whole_numbers
         self.x = 0
-        self.y = 0
+        self.y = 29
         self.alive = True
         self.pressed = False
         self.rect = pygame.Rect(self.x, self.y, self.width, 60)
