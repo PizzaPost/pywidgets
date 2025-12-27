@@ -6,7 +6,8 @@ all_buttons = []
 
 
 class Button:
-    def __init__(self, auto_size: bool = True, width: int = 180, height: int = 80,
+    def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
+                 height: int = 80,
                  text: str = "easypygamewidgets Button",
                  state: str = "enabled",
                  active_unpressed_text_color: tuple = (255, 255, 255),
@@ -31,6 +32,8 @@ class Button:
                  active_pressed_cursor: pygame.cursors = None,
                  font: pygame.font.Font = pygame.font.Font(None, 38), alignment: str = "center",
                  alignment_spacing: int = 20, command=None, holdable: bool = False, corner_radius: int = 25):
+        if screen:
+            screen.add_widget(self)
         self.auto_size = auto_size
         self.width = width
         self.height = height
@@ -84,6 +87,7 @@ class Button:
         self.pressed = False
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
         self.original_cursor = None
+        self.visible = True
 
         all_buttons.append(self)
 
@@ -105,14 +109,16 @@ class Button:
         self.x = x
         self.y = y
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        return self
 
     def execute(self):
         if self.command:
             self.command()
+        return self
 
 
 def draw(button, surface: pygame.Surface):
-    if not button.alive:
+    if not button.alive or not button.visible:
         return
     mouse_pos = pygame.mouse.get_pos()
     is_hovering = is_point_in_rounded_rect(button, mouse_pos)
@@ -210,7 +216,7 @@ def is_point_in_rounded_rect(button, point):
 
 
 def react(button, event=None):
-    if button.state != "enabled":
+    if button.state != "enabled" or not button.visible:
         button.pressed = False
         return
     mouse_pos = pygame.mouse.get_pos()

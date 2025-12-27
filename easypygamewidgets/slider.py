@@ -8,7 +8,8 @@ all_sliders = []
 
 
 class Slider:
-    def __init__(self, auto_size: bool = True, width: int = 180, height: int = 16,
+    def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
+                 height: int = 16,
                  text: str = "easypygamewidgets Slider", start: int | float = 0,
                  end: int | float = 100, initial_value: int = None, state: str = "enabled",
                  top_left_corner_radius: int = 25,
@@ -44,6 +45,8 @@ class Slider:
                  active_pressed_display_color: tuple = (190, 190, 190),
                  active_hover_display_color: tuple = (190, 190, 190),
                  active_unpressed_display_color: tuple = (190, 190, 190),
+                 disabled_hover_display_color: tuple = (150, 150, 150),
+                 disabled_unpressed_display_color: tuple = (150, 150, 150),
                  click_sound: str | pygame.mixer.Sound = None,
                  active_hover_cursor: pygame.cursors = None,
                  disabled_hover_cursor: pygame.cursors = None,
@@ -51,7 +54,10 @@ class Slider:
                  font: pygame.font.Font = pygame.font.Font(None, 38), alignment: str = "center",
                  alignment_spacing: int = 20, command=None, show_value_when_pressed: bool = True,
                  show_value_when_hovered: bool = True, show_value_when_unpressed: bool = False,
+                 show_value_when_disabled: bool = False,
                  round_display_value: int = 0, show_full_rounding_of_whole_numbers: bool = False):
+        if screen:
+            screen.add_widget(self)
         self.auto_size = auto_size
         self.width = width
         self.height = height
@@ -95,6 +101,8 @@ class Slider:
         self.active_pressed_display_color = active_pressed_display_color
         self.active_hover_display_color = active_hover_display_color
         self.active_unpressed_display_color = active_unpressed_display_color
+        self.disabled_hover_display_color = disabled_hover_display_color
+        self.disabled_unpressed_display_color = disabled_unpressed_display_color
         if click_sound:
             if isinstance(click_sound, pygame.mixer.Sound):
                 self.click_sound = click_sound
@@ -122,6 +130,7 @@ class Slider:
         self.show_value_when_pressed = show_value_when_pressed
         self.show_value_when_hovered = show_value_when_hovered
         self.show_value_when_unpressed = show_value_when_unpressed
+        self.show_value_when_disabled = show_value_when_disabled
         self.round_display_value = round_display_value
         self.show_full_rounding_of_whole_numbers = show_full_rounding_of_whole_numbers
         self.x = 0
@@ -132,6 +141,7 @@ class Slider:
         self.original_cursor = None
         self.extra_dot_radius = 0
         self.max_extra_dot_radius = dot_radius + 1
+        self.visible = True
 
         all_sliders.append(self)
 
@@ -153,10 +163,12 @@ class Slider:
         self.x = x
         self.y = y
         self.rect = pygame.Rect(self.x, self.y, self.width, 60)
+        return self
 
     def execute(self):
         if self.command:
             self.command()
+        return self
 
     def get(self):
         return self.value
@@ -166,7 +178,7 @@ class Slider:
 
 
 def draw(slider, surface: pygame.Surface):
-    if not slider.alive:
+    if not slider.alive or not slider.visible:
         return
     mouse_pos = pygame.mouse.get_pos()
     is_hovering = is_point_in_rounded_rect(slider, mouse_pos)
@@ -199,12 +211,14 @@ def draw(slider, surface: pygame.Surface):
             bg_color_unused = slider.disabled_hover_unused_background_color
             brd_color = slider.disabled_hover_border_color
             dot_color = slider.disabled_hover_dot_color
+            display_color = slider.disabled_hover_display_color
         else:
             text_color = slider.disabled_unpressed_text_color
             bg_color_used = slider.disabled_unpressed_used_background_color
             bg_color_unused = slider.disabled_unpressed_unused_background_color
             brd_color = slider.disabled_unpressed_border_color
             dot_color = slider.disabled_unpressed_dot_color
+            display_color = slider.disabled_unpressed_display_color
 
     if is_hovering:
         if slider.state == "enabled":
@@ -264,7 +278,8 @@ def draw(slider, surface: pygame.Surface):
     dot_x = max(track_rect.left + slider.dot_radius, min(dot_x, track_rect.right - slider.dot_radius))
     pygame.draw.circle(surface, dot_color, (int(dot_x), int(track_rect.centery)),
                        slider.dot_radius + slider.extra_dot_radius)
-    if slider.show_value_when_pressed and slider.pressed or slider.show_value_when_hovered and is_hovering and not slider.pressed or slider.show_value_when_unpressed:
+    if (slider.state == "enabled" or slider.show_value_when_disabled) and (
+            slider.show_value_when_pressed and slider.pressed or slider.show_value_when_hovered and is_hovering and not slider.pressed or slider.show_value_when_unpressed):
         if slider.show_full_rounding_of_whole_numbers:
             text_surf = slider.font.render(str(round(slider.value, slider.round_display_value)), True, display_color)
         elif not slider.show_full_rounding_of_whole_numbers and slider.value % 1 == 0:
@@ -320,7 +335,7 @@ def is_point_in_rounded_rect(slider, point):
 
 
 def react(slider, event=None):
-    if slider.state != "enabled":
+    if slider.state != "enabled" or not slider.visible:
         slider.pressed = False
         return
     mouse_pos = pygame.mouse.get_pos()

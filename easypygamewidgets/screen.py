@@ -1,0 +1,65 @@
+import pygame
+
+import easypygamewidgets
+
+pygame.init()
+
+all_screens = []
+
+
+class Screen:
+    def __init__(self, id: str,
+                 widgets: list[easypygamewidgets.Button | easypygamewidgets.Entry | easypygamewidgets.Slider] | None = None,
+                 darken_background_with_alpha: int = 150):
+        if not id in all_screens:
+            self.id = id
+            self.widgets = widgets if widgets is not None else []
+            self.darken_background_with_alpha=max(min(darken_background_with_alpha, 255), 0)
+            self.visible = False
+            self.enabled = True
+
+            all_screens.append(self)
+        else:
+            print(f"{id} is already defined")
+
+    def add_widget(self, widget):
+        if not widget in self.widgets:
+            self.widgets.append(widget)
+
+    def remove_widget(self, widget):
+        if widget in self.widgets:
+            self.widgets.remove(widget)
+
+    def show(self):
+        self.visible = True
+        self.update_widget_state()
+
+    def hide(self):
+        self.visible = False
+        self.update_widget_state()
+
+    def enable(self):
+        self.enabled = True
+        self.update_widget_state()
+
+    def disable(self):
+        self.enabled = False
+        self.update_widget_state()
+
+    def update_widget_state(self):
+        for widget in self.widgets:
+            if self.enabled:
+                widget.state = "enabled"
+            else:
+                widget.state = "disabled"
+            if self.visible:
+                widget.visible = True
+            else:
+                widget.visible = False
+
+def draw(screen, surface: pygame.Surface):
+    if screen.darken_background_with_alpha:
+        background_surf=pygame.Surface(surface.get_size())
+        background_surf.fill((0,0,0))
+        background_surf.set_alpha(screen.darken_background_with_alpha)
+        surface.blit(background_surf, (0,0))

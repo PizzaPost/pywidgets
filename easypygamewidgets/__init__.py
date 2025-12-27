@@ -2,11 +2,14 @@ from .misc import check_update, link_pygame_window
 from .button import Button
 from .slider import Slider
 from .entry import Entry
+from .screen import Screen
 
 
 def flip():
     if not misc.pg:
         misc.check_linked()
+    for s in screen.all_screens:
+        screen.draw(s, misc.pg)
     for b in button.all_buttons:
         button.draw(b, misc.pg)
     for s in slider.all_sliders:

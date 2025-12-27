@@ -6,7 +6,8 @@ all_entrys = []
 
 
 class Entry:
-    def __init__(self, auto_size: bool = True, width: int = 180, height: int = 80,
+    def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
+                 height: int = 80,
                  text: str = "easypygamewidgets Entry", char_limit: int | None = None,
                  show: str | None = None, state: str = "enabled",
                  active_unpressed_text_color: tuple = (255, 255, 255),
@@ -35,6 +36,8 @@ class Entry:
                  font: pygame.font.Font = pygame.font.Font(None, 38), alignment: str = "left",
                  alignment_spacing: int = 20, focus_in_command=None, typing_command=None, corner_radius: int = 25,
                  repeat_delay: int = 500, repeat_interval: int = 50):
+        if screen:
+            screen.add_widget(self)
         self.auto_size = auto_size
         self.width = width
         self.height = height
@@ -106,6 +109,7 @@ class Entry:
         self.next_repeat_time = 0
         self.cursor_visible = True
         self.last_blink_time = pygame.time.get_ticks()
+        self.visible = True
 
         all_entrys.append(self)
 
@@ -127,18 +131,22 @@ class Entry:
         self.x = x
         self.y = y
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        return self
 
     def play_sound(self):
         if self.click_sound:
             self.click_sound.play()
+        return self
 
     def execute_focus_in_command(self):
         if self.focus_in_command:
             self.focus_in_command()
+        return self
 
     def execute_typing_command(self):
         if self.typing_command:
             self.typing_command()
+        return self
 
     def get(self):
         return self.text
@@ -264,7 +272,7 @@ def process_key_action(entry, key, unicode_char):
 
 
 def draw(entry, surface: pygame.Surface):
-    if not entry.alive:
+    if not entry.alive or not entry.visible:
         return
     if entry.focused and entry.held_key_info:
         current_time = pygame.time.get_ticks()
@@ -414,7 +422,7 @@ def is_point_in_rounded_rect(entry, point):
 
 
 def react(entry, event=None):
-    if entry.state != "enabled":
+    if entry.state != "enabled" or not entry.visible:
         return
     display_text = entry.get_display_text()
 
