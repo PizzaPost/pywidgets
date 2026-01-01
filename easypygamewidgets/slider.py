@@ -18,7 +18,7 @@ class Slider:
                  bottom_right_corner_radius: int = 25,
                  dot_radius: int = None,
                  max_extra_dot_radius: int = None,
-                 move_text_with_dot_radius: bool = True,
+                 move_text_with_dot_radius: bool = False,
                  active_unpressed_text_color: tuple = (255, 255, 255),
                  disabled_unpressed_text_color: tuple = (150, 150, 150),
                  active_hover_text_color: tuple = (255, 255, 255),
