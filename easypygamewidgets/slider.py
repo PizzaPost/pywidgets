@@ -16,7 +16,9 @@ class Slider:
                  top_right_corner_radius: int = 25,
                  bottom_left_corner_radius: int = 25,
                  bottom_right_corner_radius: int = 25,
-                 dot_radius: int = 5,
+                 dot_radius: int = None,
+                 max_extra_dot_radius: int = None,
+                 move_text_with_dot_radius: bool = True,
                  active_unpressed_text_color: tuple = (255, 255, 255),
                  disabled_unpressed_text_color: tuple = (150, 150, 150),
                  active_hover_text_color: tuple = (255, 255, 255),
@@ -47,15 +49,20 @@ class Slider:
                  active_unpressed_display_color: tuple = (190, 190, 190),
                  disabled_hover_display_color: tuple = (150, 150, 150),
                  disabled_unpressed_display_color: tuple = (150, 150, 150),
+                 border_width: int = 2,
                  click_sound: str | pygame.mixer.Sound = None,
+                 hold_sound: str | pygame.mixer.Sound = None,
+                 drag_sound: str | pygame.mixer.Sound = None,
+                 release_sound: str | pygame.mixer.Sound = None,
                  active_hover_cursor: pygame.cursors = None,
                  disabled_hover_cursor: pygame.cursors = None,
                  active_pressed_cursor: pygame.cursors = None,
                  font: pygame.font.Font = pygame.font.Font(None, 38), alignment: str = "center",
-                 alignment_spacing: int = 20, command=None, show_value_when_pressed: bool = True,
+                 alignment_spacing: int = 20, click_command=None, hold_command=None, drag_command=None,
+                 release_command=None, show_value_when_pressed: bool = True,
                  show_value_when_hovered: bool = True, show_value_when_unpressed: bool = False,
-                 show_value_when_disabled: bool = False,
-                 round_display_value: int = 0, show_full_rounding_of_whole_numbers: bool = False):
+                 show_value_when_disabled: bool = False, round_display_value: int = 0,
+                 show_full_rounding_of_whole_numbers: bool = False, trigger_hold_delay: int = 150):
         if screen:
             screen.add_widget(self)
         self.auto_size = auto_size
@@ -72,7 +79,15 @@ class Slider:
         self.top_right_corner_radius = top_right_corner_radius
         self.bottom_left_corner_radius = bottom_left_corner_radius
         self.bottom_right_corner_radius = bottom_right_corner_radius
-        self.dot_radius = dot_radius
+        if not dot_radius:
+            self.dot_radius = height // 2
+        else:
+            self.dot_radius = dot_radius
+        if not max_extra_dot_radius:
+            self.max_extra_dot_radius = self.dot_radius // 5 + 1
+        else:
+            self.max_extra_dot_radius = max_extra_dot_radius
+        self.move_text_with_dot_radius = move_text_with_dot_radius
         self.active_unpressed_text_color = active_unpressed_text_color
         self.disabled_unpressed_text_color = disabled_unpressed_text_color
         self.active_hover_text_color = active_hover_text_color
@@ -103,12 +118,31 @@ class Slider:
         self.active_unpressed_display_color = active_unpressed_display_color
         self.disabled_hover_display_color = disabled_hover_display_color
         self.disabled_unpressed_display_color = disabled_unpressed_display_color
+        self.border_width = border_width
         if click_sound:
             if isinstance(click_sound, pygame.mixer.Sound):
                 self.click_sound = click_sound
             self.click_sound = pygame.mixer.Sound(click_sound)
         else:
             self.click_sound = None
+        if hold_sound:
+            if isinstance(hold_sound, pygame.mixer.Sound):
+                self.hold_sound = hold_sound
+            self.hold_sound = pygame.mixer.Sound(hold_sound)
+        else:
+            self.hold_sound = None
+        if drag_sound:
+            if isinstance(drag_sound, pygame.mixer.Sound):
+                self.drag_sound = drag_sound
+            self.drag_sound = pygame.mixer.Sound(drag_sound)
+        else:
+            self.drag_sound = None
+        if release_sound:
+            if isinstance(release_sound, pygame.mixer.Sound):
+                self.release_sound = release_sound
+            self.release_sound = pygame.mixer.Sound(release_sound)
+        else:
+            self.release_sound = None
         cursor_input = {
             "active_hover": active_hover_cursor,
             "disabled_hover": disabled_hover_cursor,
@@ -126,13 +160,17 @@ class Slider:
         self.font = font
         self.alignment = alignment
         self.alignment_spacing = alignment_spacing
-        self.command = command
+        self.click_command = click_command
+        self.hold_command = hold_command
+        self.drag_command = drag_command
+        self.release_command = release_command
         self.show_value_when_pressed = show_value_when_pressed
         self.show_value_when_hovered = show_value_when_hovered
         self.show_value_when_unpressed = show_value_when_unpressed
         self.show_value_when_disabled = show_value_when_disabled
         self.round_display_value = round_display_value
         self.show_full_rounding_of_whole_numbers = show_full_rounding_of_whole_numbers
+        self.trigger_hold_delay = trigger_hold_delay
         self.x = 0
         self.y = font.render(text, True, (255, 255, 255)).get_height()
         self.alive = True
@@ -140,8 +178,9 @@ class Slider:
         self.rect = pygame.Rect(self.x, self.y, self.width, 60)
         self.original_cursor = None
         self.extra_dot_radius = 0
-        self.max_extra_dot_radius = dot_radius + 1
         self.visible = True
+        self.pressed_before = False
+        self.last_value_update_time = 0
 
         all_sliders.append(self)
 
@@ -165,9 +204,44 @@ class Slider:
         self.rect = pygame.Rect(self.x, self.y, self.width, 60)
         return self
 
-    def execute(self):
-        if self.command:
-            self.command()
+    def execute_click_command(self):
+        if self.click_command:
+            self.click_command()
+        return self
+
+    def execute_hold_command(self):
+        if self.hold_command:
+            self.hold_command()
+        return self
+
+    def execute_drag_command(self):
+        if self.drag_command:
+            self.drag_command()
+        return self
+
+    def execute_release_command(self):
+        if self.release_command:
+            self.release_command()
+        return self
+
+    def play_click_sound(self):
+        if self.click_sound:
+            self.click_sound.play()
+        return self
+
+    def play_hold_sound(self):
+        if self.hold_sound:
+            self.hold_sound.play()
+        return self
+
+    def play_drag_sound(self):
+        if self.drag_sound:
+            self.drag_sound.play()
+        return self
+
+    def play_release_sound(self):
+        if self.release_sound:
+            self.release_sound.play()
         return self
 
     def get(self):
@@ -261,17 +335,18 @@ def draw(slider, surface: pygame.Surface):
     pct = max(0, min(1, pct))
     used_width = int(track_rect.width * pct)
     if used_width > 0:
-        used_rect = pygame.Rect(track_rect.x, track_rect.y, used_width, track_rect.height)
-        fill_max_radius = min(used_rect.width, used_rect.height) // 2
-        fill_tl = min(tl, fill_max_radius)
-        fill_bl = min(bl, fill_max_radius)
-        fill_tr = min(tr, fill_max_radius) if pct >= 0.99 else 0
-        fill_br = min(br, fill_max_radius) if pct >= 0.99 else 0
-        pygame.draw.rect(surface, bg_color_used, used_rect, border_top_left_radius=fill_tl,
-                         border_bottom_left_radius=fill_bl, border_top_right_radius=fill_tr,
-                         border_bottom_right_radius=fill_br)
+        clip_surf = pygame.Surface(track_rect.size, pygame.SRCALPHA)
+        mask_rect = pygame.Rect(0, 0, track_rect.width, track_rect.height)
+        pygame.draw.rect(clip_surf, (255, 255, 255), mask_rect, border_top_left_radius=tl,
+                         border_bottom_left_radius=bl, border_top_right_radius=tr,
+                         border_bottom_right_radius=br)
+        used_fill_rect = pygame.Rect(0, 0, used_width, track_rect.height)
+        fill_surf = pygame.Surface(track_rect.size, pygame.SRCALPHA)
+        pygame.draw.rect(fill_surf, bg_color_used, used_fill_rect)
+        clip_surf.blit(fill_surf, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        surface.blit(clip_surf, track_rect.topleft)
     if brd_color:
-        pygame.draw.rect(surface, brd_color, track_rect, width=2, border_top_left_radius=tl,
+        pygame.draw.rect(surface, brd_color, track_rect, width=slider.border_width, border_top_left_radius=tl,
                          border_top_right_radius=tr, border_bottom_left_radius=bl,
                          border_bottom_right_radius=br)
     dot_x = track_rect.x + used_width
@@ -288,12 +363,18 @@ def draw(slider, surface: pygame.Surface):
         elif not slider.show_full_rounding_of_whole_numbers:
             text_surf = slider.font.render(str(round(slider.value)), True, display_color)
         text_rect = text_surf.get_rect()
-        text_rect.center = (dot_x, track_rect.bottom + slider.dot_radius + 17)
+        if slider.move_text_with_dot_radius:
+            text_rect.center = (dot_x, track_rect.centery + 25 + slider.dot_radius + slider.extra_dot_radius)
+        else:
+            text_rect.center = (dot_x, track_rect.centery + 25 + slider.dot_radius)
         surface.blit(text_surf, text_rect)
 
     text_surf = slider.font.render(slider.text, True, text_color)
     text_rect = text_surf.get_rect()
-    text_y_center = track_rect.top - 17 - slider.dot_radius
+    if slider.move_text_with_dot_radius:
+        text_y_center = track_rect.centery - 25 - slider.dot_radius - slider.extra_dot_radius
+    else:
+        text_y_center = track_rect.centery - 25 - slider.dot_radius
 
     if slider.alignment == "stretched" and len(slider.text) > 1 and not slider.auto_size:
         total_char_width = sum(slider.font.render(char, True, text_color).get_width() for char in slider.text)
@@ -336,7 +417,6 @@ def is_point_in_rounded_rect(slider, point):
 
 def react(slider, event=None):
     if slider.state != "enabled" or not slider.visible:
-        slider.pressed = False
         return
     mouse_pos = pygame.mouse.get_pos()
     is_inside = is_point_in_rounded_rect(slider, mouse_pos)
@@ -345,9 +425,23 @@ def react(slider, event=None):
         relative_x = mouse_pos[0] - slider.rect.x
         pct = relative_x / slider.rect.width
         pct = max(0, min(1, pct))
-        slider.value = slider.start + (pct * (slider.end - slider.start))
-        if slider.command:
-            slider.command()
+        new_slider_value = slider.start + (pct * (slider.end - slider.start))
+        moved = slider.value != new_slider_value
+        slider.value = new_slider_value
+        current_time = pygame.time.get_ticks()
+        if not slider.pressed_before:
+            if slider.click_command: slider.click_command()
+            if slider.click_sound: slider.click_sound.play()
+            slider.pressed_before = True
+        else:
+            if moved:
+                if slider.drag_command: slider.drag_command()
+                if slider.drag_sound: slider.drag_sound.play()
+                slider.last_value_update_time = current_time
+            else:
+                if current_time - slider.last_value_update_time > slider.trigger_hold_delay:
+                    if slider.hold_command: slider.hold_command()
+                    if slider.hold_sound: slider.hold_sound.play()
 
     if not event:
         if pygame.mouse.get_pressed()[0] and is_inside:
@@ -357,6 +451,9 @@ def react(slider, event=None):
                 update_value()
             else:
                 slider.pressed = False
+                slider.pressed_before = False
+                if slider.release_sound: slider.release_sound.play()
+                if slider.release_command: slider.release_command()
     else:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1 and is_inside:
@@ -366,11 +463,14 @@ def react(slider, event=None):
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:
                 slider.pressed = False
+                slider.pressed_before = False
+                if slider.release_sound: slider.release_sound.play()
+                if slider.release_command: slider.release_command()
         elif event.type == pygame.MOUSEMOTION:
             if slider.pressed:
                 update_value()
     t = pygame.time.get_ticks() * 0.01
-    pulse = math.sin(t) * 0.5 + 0.5
+    pulse = (1 - math.cos(t * math.pi)) * 0.5
     if slider.pressed:
         slider.extra_dot_radius = min(slider.max_extra_dot_radius, slider.extra_dot_radius + pulse)
     else:
