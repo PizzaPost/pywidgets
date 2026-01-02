@@ -7,8 +7,8 @@ all_entrys = []
 
 class Entry:
     def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
-                 height: int = 80,
-                 text: str = "easypygamewidgets Entry", char_limit: int | None = None,
+                 height: int = 80, placeholder_text: str = "easypygamewidgets Entry",
+                 text: str = "", char_limit: int | None = None,
                  show: str | None = None, state: str = "enabled",
                  active_unpressed_text_color: tuple = (255, 255, 255),
                  disabled_unpressed_text_color: tuple = (150, 150, 150),
@@ -43,6 +43,7 @@ class Entry:
         self.auto_size = auto_size
         self.width = width
         self.height = height
+        self.placeholder_text = placeholder_text
         self.text = text
         self.char_limit = char_limit
         self.show = show
@@ -115,7 +116,10 @@ class Entry:
         self.original_cursor = None
         self.selected_text = None
         self.focused = False
-        self.cursor_position = len(text)
+        if text:
+            self.cursor_position = len(text)
+        else:
+            self.cursor_position = 0
         self.scroll_offset = 0
         self.drag_start = None
         self.selection_anchor = None
@@ -240,9 +244,13 @@ class Entry:
         self.last_blink_time = pygame.time.get_ticks()
 
     def get_display_text(self):
-        if self.show:
-            return self.show * len(self.text)
-        return self.text
+        if self.text:
+            if self.show:
+                return self.show * len(self.text)
+            return self.text
+        elif self.placeholder_text and not self.focused:
+            return self.placeholder_text
+        return ""
 
 
 def process_key_action(entry, key, unicode_char):

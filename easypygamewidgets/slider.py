@@ -361,7 +361,7 @@ def draw(slider, surface: pygame.Surface):
             text_surf = slider.font.render(str(round(slider.value, slider.round_display_value)).replace(".0", ""), True,
                                            display_color)
         elif not slider.show_full_rounding_of_whole_numbers:
-            text_surf = slider.font.render(str(round(slider.value)), True, display_color)
+            text_surf = slider.font.render(str(round(slider.value, slider.round_display_value)), True, display_color)
         text_rect = text_surf.get_rect()
         if slider.move_text_with_dot_radius:
             text_rect.center = (dot_x, track_rect.centery + 25 + slider.dot_radius + slider.extra_dot_radius)
