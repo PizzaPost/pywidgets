@@ -11,16 +11,14 @@ management.
 
 ## Installation
 
+### Windows
 ```bash
 pip install easypygamewidgets
 ```
 
-or install from source:
-
+### Linux/macOS
 ```bash
-git clone https://github.com/PizzaPost/pywidgets.git
-cd pywidgets
-pip install .
+python3 -m pip install easypygamewidgets
 ```
 
 ## Quick Start
