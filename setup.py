@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="easypygamewidgets",
-    version="0.5.1",
+    version="1.0.0",
     packages=find_packages(),
     install_requires=[
         "pygame",

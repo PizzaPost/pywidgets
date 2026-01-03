@@ -1,4 +1,5 @@
 import math
+import time
 
 import pygame
 
@@ -184,6 +185,10 @@ class Slider:
         self.visible = True
         self.pressed_before = False
         self.last_value_update_time = 0
+        self.hold_sound_started = None
+        self.hold_sound_length = None
+        self.drag_sound_started = None
+        self.drag_sound_length = None
 
         all_sliders.append(self)
 
@@ -263,6 +268,7 @@ def get_screen_offset(widget):
     if widget.screen:
         return widget.screen.x, widget.screen.y
     return 0, 0
+
 
 def draw(slider, surface: pygame.Surface):
     if not slider.alive or not slider.visible:
@@ -455,13 +461,25 @@ def react(slider, event=None):
             slider.pressed_before = True
         else:
             if moved:
-                if slider.drag_command: slider.drag_command()
-                if slider.drag_sound: slider.drag_sound.play()
                 slider.last_value_update_time = current_time
+                if slider.drag_command: slider.drag_command()
+                if slider.drag_sound:
+                    if slider.drag_sound_started:
+                        if slider.drag_sound_started + slider.drag_sound_length > time.time():
+                            return
+                    slider.drag_sound.play()
+                    slider.drag_sound_length = slider.drag_sound.get_length()
+                    slider.drag_sound_started = time.time()
             else:
                 if current_time - slider.last_value_update_time > slider.trigger_hold_delay:
                     if slider.hold_command: slider.hold_command()
-                    if slider.hold_sound: slider.hold_sound.play()
+                    if slider.hold_sound:
+                        if slider.hold_sound_started:
+                            if slider.hold_sound_started + slider.hold_sound_length > time.time():
+                                return
+                        slider.hold_sound.play()
+                        slider.hold_sound_length = slider.hold_sound.get_length()
+                        slider.hold_sound_started = time.time()
 
     if not event:
         if pygame.mouse.get_pressed()[0] and is_inside:
