@@ -10,6 +10,9 @@ epw.link_pygame_window(window)
 entry = epw.Entry(placeholder_text="This is a placeholder :)")
 entry.place(50, 50)
 
+password_entry = epw.Entry(placeholder_text="Password", show="*")
+password_entry.place(50, 150)
+
 running = True
 while running:
     window.fill((30, 30, 30))

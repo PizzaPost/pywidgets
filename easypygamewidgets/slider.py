@@ -65,6 +65,9 @@ class Slider:
                  show_full_rounding_of_whole_numbers: bool = False, trigger_hold_delay: int = 150):
         if screen:
             screen.add_widget(self)
+            self.screen = screen
+        else:
+            self.screen = None
         self.auto_size = auto_size
         self.width = width
         self.height = height
@@ -250,6 +253,16 @@ class Slider:
     def set(self, value):
         self.value = min(max(value, self.start), self.end)
 
+    def add_screen(self, screen):
+        self.screen = screen
+        if not self in screen.widgets:
+            screen.widgets.append(self)
+
+
+def get_screen_offset(widget):
+    if widget.screen:
+        return widget.screen.x, widget.screen.y
+    return 0, 0
 
 def draw(slider, surface: pygame.Surface):
     if not slider.alive or not slider.visible:
@@ -319,8 +332,11 @@ def draw(slider, surface: pygame.Surface):
         slider.width = temp_surf.get_width() + 40 + (slider.alignment_spacing - 20)
         slider.rect = pygame.Rect(slider.x, slider.y, slider.width, slider.height)
 
-    track_y = slider.rect.centery + 5
-    track_rect = pygame.Rect(slider.rect.x, track_y - (slider.height // 2), slider.rect.width, slider.height)
+    offset_x, offset_y = get_screen_offset(slider)
+    draw_rect = slider.rect.move(offset_x, offset_y)
+
+    track_y = draw_rect.centery + 5
+    track_rect = pygame.Rect(draw_rect.x, track_y - (slider.height // 2), draw_rect.width, slider.height)
     max_radius = min(track_rect.width, track_rect.height) // 2
     tl = min(slider.top_left_corner_radius, max_radius)
     tr = min(slider.top_right_corner_radius, max_radius)
@@ -378,29 +394,30 @@ def draw(slider, surface: pygame.Surface):
 
     if slider.alignment == "stretched" and len(slider.text) > 1 and not slider.auto_size:
         total_char_width = sum(slider.font.render(char, True, text_color).get_width() for char in slider.text)
-        available_width = slider.rect.width - (slider.alignment_spacing * 2)
+        available_width = draw_rect.width - (slider.alignment_spacing * 2)
         if available_width > total_char_width:
             spacing = (available_width - total_char_width) / (len(slider.text) - 1)
-            current_x = slider.rect.left + slider.alignment_spacing
+            current_x = draw_rect.left + slider.alignment_spacing
             for char in slider.text:
                 char_surf = slider.font.render(char, True, text_color)
                 surface.blit(char_surf, char_surf.get_rect(midleft=(current_x, text_y_center)))
                 current_x += char_surf.get_width() + spacing
         else:
-            surface.blit(text_surf, text_surf.get_rect(center=(slider.rect.centerx, text_y_center)))
+            surface.blit(text_surf, text_surf.get_rect(center=(draw_rect.centerx, text_y_center)))
     else:
         if slider.alignment == "left":
-            text_rect.midleft = (slider.rect.left + slider.alignment_spacing, text_y_center)
+            text_rect.midleft = (draw_rect.left + slider.alignment_spacing, text_y_center)
         elif slider.alignment == "right":
-            text_rect.midright = (slider.rect.right - slider.alignment_spacing, text_y_center)
+            text_rect.midright = (draw_rect.right - slider.alignment_spacing, text_y_center)
         else:
-            text_rect.center = (slider.rect.centerx, text_y_center)
+            text_rect.center = (draw_rect.centerx, text_y_center)
         surface.blit(text_surf, text_rect)
 
 
 def is_point_in_rounded_rect(slider, point):
-    if not slider.rect.collidepoint(point): return False
-    rect = slider.rect
+    offset_x, offset_y = get_screen_offset(slider)
+    rect = slider.rect.move(offset_x, offset_y)
+    if not rect.collidepoint(point): return False
     r = max(slider.top_left_corner_radius, slider.top_right_corner_radius,
             slider.bottom_left_corner_radius, slider.bottom_right_corner_radius)
     r = min(r, rect.width // 2, rect.height // 2)
@@ -422,8 +439,11 @@ def react(slider, event=None):
     is_inside = is_point_in_rounded_rect(slider, mouse_pos)
 
     def update_value():
-        relative_x = mouse_pos[0] - slider.rect.x
-        pct = relative_x / slider.rect.width
+        offset_x, offset_y = get_screen_offset(slider)
+        draw_rect = slider.rect.move(offset_x, offset_y)
+
+        relative_x = mouse_pos[0] - draw_rect.x
+        pct = relative_x / draw_rect.width
         pct = max(0, min(1, pct))
         new_slider_value = slider.start + (pct * (slider.end - slider.start))
         moved = slider.value != new_slider_value

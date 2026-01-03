@@ -9,14 +9,17 @@ all_screens = []
 
 class Screen:
     def __init__(self, id: str,
-                 widgets: list[easypygamewidgets.Button | easypygamewidgets.Entry | easypygamewidgets.Slider] | None = None,
-                 darken_background_with_alpha: int = 150):
+                 widgets: list[
+                              easypygamewidgets.Button | easypygamewidgets.Entry | easypygamewidgets.Slider] | None = None,
+                 darken_background_with_alpha: int = 150, x: int = 0, y: int = 0):
         if not id in all_screens:
             self.id = id
             self.widgets = widgets if widgets is not None else []
-            self.darken_background_with_alpha=max(min(darken_background_with_alpha, 255), 0)
+            self.darken_background_with_alpha = max(min(darken_background_with_alpha, 255), 0)
             self.visible = False
             self.enabled = True
+            self.x = x
+            self.y = y
 
             all_screens.append(self)
         else:
@@ -25,6 +28,7 @@ class Screen:
     def add_widget(self, widget):
         if not widget in self.widgets:
             self.widgets.append(widget)
+            widget.add_screen(self)
 
     def remove_widget(self, widget):
         if widget in self.widgets:
@@ -33,18 +37,22 @@ class Screen:
     def show(self):
         self.visible = True
         self.update_widget_state()
+        return self
 
     def hide(self):
         self.visible = False
         self.update_widget_state()
+        return self
 
     def enable(self):
         self.enabled = True
         self.update_widget_state()
+        return self
 
     def disable(self):
         self.enabled = False
         self.update_widget_state()
+        return self
 
     def update_widget_state(self):
         for widget in self.widgets:
@@ -57,9 +65,15 @@ class Screen:
             else:
                 widget.visible = False
 
+    def place(self, x, y):
+        self.x = x
+        self.y = y
+        return self
+
+
 def draw(screen, surface: pygame.Surface):
     if screen.darken_background_with_alpha:
-        background_surf=pygame.Surface(surface.get_size())
-        background_surf.fill((0,0,0))
+        background_surf = pygame.Surface(surface.get_size())
+        background_surf.fill((0, 0, 0))
         background_surf.set_alpha(screen.darken_background_with_alpha)
-        surface.blit(background_surf, (0,0))
+        surface.blit(background_surf, (0, 0))

@@ -7,7 +7,7 @@ window = pygame.display.set_mode((800, 600))
 clock = pygame.time.Clock()
 epw.link_pygame_window(window)
 bg = (30, 30, 30)
-screen = epw.Screen(id="main")
+screen = epw.Screen(id="main", x=76, y=100)
 
 
 def change_color():
@@ -15,8 +15,10 @@ def change_color():
     bg = (120, 20, 20)
 
 
-button = epw.Button(screen=screen, text="Click Me!", click_command=change_color)
-slider = epw.Slider(text="Slide Me!")
+button = epw.Button(screen=screen, text="Click Me!", click_command=change_color, auto_size=False, width=250)
+slider = epw.Slider(text="Slide Me!", auto_size=False, width=250)
+entry = epw.Entry(placeholder_text="Enter something!", auto_size=False, width=250)
+entry.add_screen(screen)
 screen.add_widget(slider)
 
 hide_button = epw.Button(text="Hide", click_command=screen.hide)
@@ -26,6 +28,7 @@ enable_button = epw.Button(text="Enable", click_command=screen.enable)
 
 button.place(50, 50)
 slider.place(50, 180)
+entry.place(350, 50)
 hide_button.place(50, 440)
 show_button.place(50, 520)
 disable_button.place(200, 440)

@@ -39,6 +39,9 @@ class Button:
                  holdable: bool = False, corner_radius: int = 25):
         if screen:
             screen.add_widget(self)
+            self.screen = screen
+        else:
+            self.screen = None
         self.auto_size = auto_size
         self.width = width
         self.height = height
@@ -162,6 +165,16 @@ class Button:
             self.release_sound.play()
         return self
 
+    def add_screen(self, screen):
+        self.screen = screen
+        if not self in screen.widgets:
+            screen.widgets.append(self)
+
+
+def get_screen_offset(widget):
+    if widget.screen:
+        return widget.screen.x, widget.screen.y
+    return 0, 0
 
 def draw(button, surface: pygame.Surface):
     if not button.alive or not button.visible:
@@ -217,38 +230,43 @@ def draw(button, surface: pygame.Surface):
         button.height = temp_surf.get_height() + 20
         button.rect = pygame.Rect(button.x, button.y, button.width, button.height)
 
-    pygame.draw.rect(surface, bg_color, button.rect, border_radius=button.corner_radius)
+    offset_x, offset_y = get_screen_offset(button)
+    draw_rect = button.rect.move(offset_x, offset_y)
+
+    pygame.draw.rect(surface, bg_color, draw_rect, border_radius=button.corner_radius)
     if brd_color:
-        pygame.draw.rect(surface, brd_color, button.rect, width=button.border_thickness,
+        pygame.draw.rect(surface, brd_color, draw_rect, width=button.border_thickness,
                          border_radius=button.corner_radius)
     if button.alignment == "stretched" and len(button.text) > 1 and not button.auto_size:
         total_char_width = sum(button.font.render(char, True, text_color).get_width() for char in button.text)
-        available_width = button.rect.width - (button.alignment_spacing * 2)
+        available_width = draw_rect.width - (button.alignment_spacing * 2)
         if available_width > total_char_width:
             spacing = (available_width - total_char_width) / (len(button.text) - 1)
-            current_x = button.rect.left + button.alignment_spacing
+            current_x = draw_rect.left + button.alignment_spacing
             for char in button.text:
                 char_surf = button.font.render(char, True, text_color)
-                surface.blit(char_surf, char_surf.get_rect(midleft=(current_x, button.rect.centery)))
+                surface.blit(char_surf, char_surf.get_rect(midleft=(current_x, draw_rect.centery)))
                 current_x += char_surf.get_width() + spacing
         else:
             text_surf = button.font.render(button.text, True, text_color)
-            surface.blit(text_surf, text_surf.get_rect(center=button.rect.center))
+            surface.blit(text_surf, text_surf.get_rect(center=draw_rect.center))
     else:
         text_surf = button.font.render(button.text, True, text_color)
         text_rect = text_surf.get_rect()
         if button.alignment == "left":
-            text_rect.midleft = (button.rect.left + button.alignment_spacing, button.rect.centery)
+            text_rect.midleft = (draw_rect.left + button.alignment_spacing, draw_rect.centery)
         elif button.alignment == "right":
-            text_rect.midright = (button.rect.right - button.alignment_spacing, button.rect.centery)
+            text_rect.midright = (draw_rect.right - button.alignment_spacing, draw_rect.centery)
         else:
-            text_rect.center = button.rect.center
+            text_rect.center = draw_rect.center
         surface.blit(text_surf, text_rect)
 
 
 def is_point_in_rounded_rect(button, point):
-    if not button.rect.collidepoint(point): return False
-    rect, r = button.rect, button.corner_radius
+    offset_x, offset_y = get_screen_offset(button)
+    rect = button.rect.move(offset_x, offset_y)
+    if not rect.collidepoint(point): return False
+    r = button.corner_radius
     r = min(r, rect.width // 2, rect.height // 2)
     if r <= 0: return True
     x, y = point

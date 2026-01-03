@@ -40,6 +40,9 @@ class Entry:
                  corner_radius: int = 25, repeat_delay: int = 500, repeat_interval: int = 50):
         if screen:
             screen.add_widget(self)
+            self.screen = screen
+        else:
+            self.screen = None
         self.auto_size = auto_size
         self.width = width
         self.height = height
@@ -252,6 +255,11 @@ class Entry:
             return self.placeholder_text
         return ""
 
+    def add_screen(self, screen):
+        self.screen = screen
+        if not self in screen.widgets:
+            screen.widgets.append(self)
+
 
 def process_key_action(entry, key, unicode_char):
     mods = pygame.key.get_mods()
@@ -328,9 +336,16 @@ def process_key_action(entry, key, unicode_char):
         entry.play_typing_sound()
 
 
+def get_screen_offset(widget):
+    if widget.screen:
+        return widget.screen.x, widget.screen.y
+    return 0, 0
+
+
 def draw(entry, surface: pygame.Surface):
     if not entry.alive or not entry.visible:
         return
+    offset_x, offset_y = get_screen_offset(entry)
     if entry.focused and entry.held_key_info:
         current_time = pygame.time.get_ticks()
         if current_time >= entry.next_repeat_time:
@@ -393,22 +408,23 @@ def draw(entry, surface: pygame.Surface):
         required_width = max(entry.width, text_w + (entry.alignment_spacing * 2) + 10)
         if entry.rect.width != required_width:
             entry.rect.width = required_width
-    pygame.draw.rect(surface, bg_color, entry.rect, border_radius=entry.corner_radius)
+    draw_rect = entry.rect.move(offset_x, offset_y)
+    pygame.draw.rect(surface, bg_color, draw_rect, border_radius=entry.corner_radius)
     if entry.border_thickness > 0:
-        pygame.draw.rect(surface, brd_color, entry.rect, width=entry.border_thickness,
+        pygame.draw.rect(surface, brd_color, draw_rect, width=entry.border_thickness,
                          border_radius=entry.corner_radius)
     old_clip = surface.get_clip()
-    clip_rect = entry.rect.inflate(-4, -4)
+    clip_rect = draw_rect.inflate(-4, -4)
     surface.set_clip(clip_rect)
-    y_pos = entry.rect.centery
+    y_pos = draw_rect.centery
     drawn_stretched = False
     if entry.alignment == "stretched" and len(display_text) > 1 and not entry.auto_size:
         total_char_width = sum(entry.font.render(char, True, text_color).get_width() for char in display_text)
-        available_width = entry.rect.width - (entry.alignment_spacing * 2)
+        available_width = draw_rect.width - (entry.alignment_spacing * 2)
         if available_width > total_char_width:
             drawn_stretched = True
             spacing = (available_width - total_char_width) / (len(display_text) - 1)
-            current_x = entry.rect.left + entry.alignment_spacing
+            current_x = draw_rect.left + entry.alignment_spacing
             for char in display_text:
                 char_surf = entry.font.render(char, True, text_color)
                 surface.blit(char_surf, char_surf.get_rect(midleft=(current_x, y_pos)))
@@ -417,17 +433,17 @@ def draw(entry, surface: pygame.Surface):
         text_surf = entry.font.render(display_text, True, text_color)
         text_rect = text_surf.get_rect()
         if entry.alignment == "left":
-            text_rect.midleft = (entry.rect.left + entry.alignment_spacing, y_pos)
+            text_rect.midleft = (draw_rect.left + entry.alignment_spacing, y_pos)
         elif entry.alignment == "right":
-            text_rect.midright = (entry.rect.right - entry.alignment_spacing, y_pos)
+            text_rect.midright = (draw_rect.right - entry.alignment_spacing, y_pos)
         else:
-            text_rect.center = entry.rect.center
+            text_rect.center = draw_rect.center
         cursor_x_rel = entry.font.size(display_text[:entry.cursor_position])[0]
-        visible_left = entry.rect.left + entry.alignment_spacing
-        visible_right = entry.rect.right - entry.alignment_spacing
+        visible_left = draw_rect.left + entry.alignment_spacing
+        visible_right = draw_rect.right - entry.alignment_spacing
         visible_width = visible_right - visible_left
         if text_rect.width > visible_width and not entry.auto_size:
-            text_rect.midleft = (entry.rect.left + entry.alignment_spacing, y_pos)
+            text_rect.midleft = (draw_rect.left + entry.alignment_spacing, y_pos)
             text_rect.x += entry.scroll_offset
             cursor_screen_x = text_rect.x + cursor_x_rel
             if cursor_screen_x > visible_right:
@@ -464,8 +480,10 @@ def draw(entry, surface: pygame.Surface):
 
 
 def is_point_in_rounded_rect(entry, point):
-    if not entry.rect.collidepoint(point): return False
-    rect, r = entry.rect, entry.corner_radius
+    offset_x, offset_y = get_screen_offset(entry)
+    rect = entry.rect.move(offset_x, offset_y)
+    if not rect.collidepoint(point): return False
+    r = entry.corner_radius
     r = min(r, rect.width // 2, rect.height // 2)
     if r <= 0: return True
     x, y = point

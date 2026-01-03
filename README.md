@@ -123,7 +123,8 @@ epw.flip()
 
 ## Examples (COMING SOON)
 
-Check the `examples` directory for complete working examples:
+Check the [examples directory](https://github.com/PizzaPost/pywidgets/tree/master/examples) for complete working
+examples:
 
 1. **[all widgets example](https://github.com/PizzaPost/pywidgets/blob/master/examples/basic.py)** - simple demo of all
    widgets
