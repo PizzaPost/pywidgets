@@ -1,7 +1,5 @@
 import pygame
 
-import easypygamewidgets
-
 pygame.init()
 
 all_screens = []
@@ -9,8 +7,7 @@ all_screens = []
 
 class Screen:
     def __init__(self, id: str,
-                 widgets: list[
-                              easypygamewidgets.Button | easypygamewidgets.Entry | easypygamewidgets.Slider] | None = None,
+                 widgets: "list[easypygamewidgets.Button | easypygamewidgets.Entry | easypygamewidgets.Slider | easypygamewidgets.Label] | None" = None,
                  darken_background_with_alpha: int = 150, x: int = 0, y: int = 0):
         if not id in all_screens:
             self.id = id

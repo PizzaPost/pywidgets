@@ -101,6 +101,12 @@ A text entry with selection and clipboard support.
 
 [example code](https://github.com/PizzaPost/pywidgets/blob/master/examples/entry.py)
 
+### Label
+
+A text display that can be used to drag it into places.
+
+[example code](https://github.com/PizzaPost/pywidgets/blob/master/examples/label.py)
+
 ## Module Functions
 
 ### Core Functions

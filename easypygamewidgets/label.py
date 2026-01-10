@@ -569,7 +569,7 @@ def react(label, event=None):
     screen_off_x, screen_off_y = get_screen_offset(label)
     if event:
         if event.type == pygame.MOUSEMOTION:
-            if label.pressed:
+            if label.pressed and label.dragable:
                 label.is_dragging = True
                 label.last_checked_dragging = current_time
                 if label.drag_offset:
