@@ -71,19 +71,22 @@ class Entry:
         if focus_sound:
             if isinstance(focus_sound, pygame.mixer.Sound):
                 self.focus_sound = focus_sound
-            self.focus_sound = pygame.mixer.Sound(focus_sound)
+            else:
+                self.focus_sound = pygame.mixer.Sound(focus_sound)
         else:
             self.focus_sound = None
         if typing_sound:
             if isinstance(typing_sound, pygame.mixer.Sound):
                 self.typing_sound = typing_sound
-            self.typing_sound = pygame.mixer.Sound(typing_sound)
+            else:
+                self.typing_sound = pygame.mixer.Sound(typing_sound)
         else:
             self.typing_sound = None
         if unfocus_sound:
             if isinstance(unfocus_sound, pygame.mixer.Sound):
                 self.unfocus_sound = unfocus_sound
-            self.unfocus_sound = pygame.mixer.Sound(unfocus_sound)
+            else:
+                self.unfocus_sound = pygame.mixer.Sound(unfocus_sound)
         else:
             self.unfocus_sound = None
         self.border_thickness = border_thickness

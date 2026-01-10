@@ -126,25 +126,29 @@ class Slider:
         if click_sound:
             if isinstance(click_sound, pygame.mixer.Sound):
                 self.click_sound = click_sound
-            self.click_sound = pygame.mixer.Sound(click_sound)
+            else:
+                self.click_sound = pygame.mixer.Sound(click_sound)
         else:
             self.click_sound = None
         if hold_sound:
             if isinstance(hold_sound, pygame.mixer.Sound):
                 self.hold_sound = hold_sound
-            self.hold_sound = pygame.mixer.Sound(hold_sound)
+            else:
+                self.hold_sound = pygame.mixer.Sound(hold_sound)
         else:
             self.hold_sound = None
         if drag_sound:
             if isinstance(drag_sound, pygame.mixer.Sound):
                 self.drag_sound = drag_sound
-            self.drag_sound = pygame.mixer.Sound(drag_sound)
+            else:
+                self.drag_sound = pygame.mixer.Sound(drag_sound)
         else:
             self.drag_sound = None
         if release_sound:
             if isinstance(release_sound, pygame.mixer.Sound):
                 self.release_sound = release_sound
-            self.release_sound = pygame.mixer.Sound(release_sound)
+            else:
+                self.release_sound = pygame.mixer.Sound(release_sound)
         else:
             self.release_sound = None
         cursor_input = {
@@ -379,7 +383,8 @@ def draw(slider, surface: pygame.Surface):
             slider.show_value_when_pressed and slider.pressed or slider.show_value_when_hovered and is_hovering and not slider.pressed or slider.show_value_when_unpressed):
         if slider.show_full_rounding_of_whole_numbers:
             text_surf = slider.font.render(str(round(slider.value, slider.round_display_value)), True, display_color)
-        elif not slider.show_full_rounding_of_whole_numbers and slider.value % 1 == 0:
+        elif not slider.show_full_rounding_of_whole_numbers and round(slider.value,
+                                                                      slider.round_display_value) % 1 == 0:
             text_surf = slider.font.render(str(round(slider.value, slider.round_display_value)).replace(".0", ""), True,
                                            display_color)
         elif not slider.show_full_rounding_of_whole_numbers:
@@ -422,20 +427,34 @@ def draw(slider, surface: pygame.Surface):
 
 def is_point_in_rounded_rect(slider, point):
     offset_x, offset_y = get_screen_offset(slider)
-    rect = slider.rect.move(offset_x, offset_y)
-    if not rect.collidepoint(point): return False
-    r = max(slider.top_left_corner_radius, slider.top_right_corner_radius,
-            slider.bottom_left_corner_radius, slider.bottom_right_corner_radius)
-    r = min(r, rect.width // 2, rect.height // 2)
-    if r <= 0: return True
+    draw_rect = slider.rect.move(offset_x, offset_y)
+    track_y = draw_rect.centery + 5
+    track_rect = pygame.Rect(draw_rect.x, track_y - (slider.height // 2), draw_rect.width, slider.height)
     x, y = point
-    if (rect.left + r <= x <= rect.right - r) or (rect.top + r <= y <= rect.bottom - r):
-        return True
-    centers = [(rect.left + r, rect.top + r), (rect.right - r, rect.top + r),
-               (rect.left + r, rect.bottom - r), (rect.right - r, rect.bottom - r)]
-    for cx, cy in centers:
-        if ((x - cx) ** 2 + (y - cy) ** 2) <= r ** 2: return True
-    return False
+    if not track_rect.collidepoint(point):
+        return False
+    max_radius = min(track_rect.width, track_rect.height) // 2
+    tl = min(slider.top_left_corner_radius, max_radius)
+    tr = min(slider.top_right_corner_radius, max_radius)
+    bl = min(slider.bottom_left_corner_radius, max_radius)
+    br = min(slider.bottom_right_corner_radius, max_radius)
+    if x < track_rect.left + tl and y < track_rect.top + tl:
+        cx, cy = track_rect.left + tl, track_rect.top + tl
+        if (x - cx) ** 2 + (y - cy) ** 2 > tl ** 2:
+            return False
+    elif x > track_rect.right - tr and y < track_rect.top + tr:
+        cx, cy = track_rect.right - tr, track_rect.top + tr
+        if (x - cx) ** 2 + (y - cy) ** 2 > tr ** 2:
+            return False
+    elif x < track_rect.left + bl and y > track_rect.bottom - bl:
+        cx, cy = track_rect.left + bl, track_rect.bottom - bl
+        if (x - cx) ** 2 + (y - cy) ** 2 > bl ** 2:
+            return False
+    elif x > track_rect.right - br and y > track_rect.bottom - br:
+        cx, cy = track_rect.right - br, track_rect.bottom - br
+        if (x - cx) ** 2 + (y - cy) ** 2 > br ** 2:
+            return False
+    return True
 
 
 def react(slider, event=None):

@@ -65,19 +65,22 @@ class Button:
         if click_sound:
             if isinstance(click_sound, pygame.mixer.Sound):
                 self.click_sound = click_sound
-            self.click_sound = pygame.mixer.Sound(click_sound)
+            else:
+                self.click_sound = pygame.mixer.Sound(click_sound)
         else:
             self.click_sound = None
         if hold_sound:
             if isinstance(hold_sound, pygame.mixer.Sound):
                 self.hold_sound = hold_sound
-            self.hold_sound = pygame.mixer.Sound(hold_sound)
+            else:
+                self.hold_sound = pygame.mixer.Sound(hold_sound)
         else:
             self.hold_sound = None
         if release_sound:
             if isinstance(release_sound, pygame.mixer.Sound):
                 self.release_sound = release_sound
-            self.release_sound = pygame.mixer.Sound(release_sound)
+            else:
+                self.release_sound = pygame.mixer.Sound(release_sound)
         else:
             self.release_sound = None
         self.border_thickness = border_thickness
@@ -175,6 +178,7 @@ def get_screen_offset(widget):
     if widget.screen:
         return widget.screen.x, widget.screen.y
     return 0, 0
+
 
 def draw(button, surface: pygame.Surface):
     if not button.alive or not button.visible:
