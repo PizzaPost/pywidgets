@@ -4,9 +4,9 @@
 
 import os
 import pathlib
+from typing import Any
 
 import pygame
-from typing_extensions import Any
 
 from easypygamewidgets import font, misc
 

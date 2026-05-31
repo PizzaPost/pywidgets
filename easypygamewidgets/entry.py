@@ -3,26 +3,15 @@
 # https://github.com/PizzaPost/easypygamewidgets
 
 import sys
+from typing import Unpack, Any
 
 import pygame
-from typing_extensions import Unpack, Any
 
 from easypygamewidgets import font, misc
 from .assets import TypeHints
 
 pygame.init()
 
-
-# PERFECTION
-# everything private/properties ✅
-# basic animations ✅
-# free spacing ✅
-# cache system ✅
-# config suggestions ✅
-# optimized set_screen function ✅
-# scroll with text ✅
-# rgba color ✅
-# four different corner radii ✅
 
 class Entry:
     def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
@@ -538,6 +527,8 @@ class Entry:
     @layer.setter
     def layer(self, value):
         self._layer = value
+        if self._tooltip:
+            self._tooltip.configure(layer=self._layer + 1)
         misc.resort_layers()
 
     @property

@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="easypygamewidgets",
-    version="26.22",
+    version="26.23",
     author="PizzaPost",
     author_email="pizzapost.mail@gmail.com",
     description="Create GUIs for pygame.",
@@ -50,7 +50,8 @@ setup(
     ],
     install_requires=[
         "pygame-ce",
-        "requests"
+        "requests",
+        "typing"
     ],
     packages=find_packages(),
     include_package_data=True,

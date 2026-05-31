@@ -8,7 +8,7 @@ import pygame
 
 from .button import Button
 from .entry import Entry
-from .font import Font, SysFont
+from .font import Font, SysFont, default_font, tooltip_font, emoji_font
 from .label import Label
 from .misc import disable_update_check, link_pygame_window, create_pygame_layer, set_appearance_mode
 from .screen import Screen

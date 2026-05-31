@@ -2,10 +2,9 @@
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
 
-from typing import Callable
+from typing import Callable, Unpack, Any
 
 import pygame
-from typing_extensions import Unpack, Any
 
 from easypygamewidgets import font, misc
 from .assets import TypeHints
@@ -434,7 +433,7 @@ class Button:
     def layer(self, value):
         self._layer = value
         if self._tooltip:
-            self._tooltip.configure(_layer=self._layer + 1)
+            self._tooltip.configure(layer=self._layer + 1)
         misc.resort_layers()
 
     @property

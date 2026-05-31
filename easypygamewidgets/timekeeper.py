@@ -4,9 +4,9 @@
 
 import math
 import time
+from typing import Any
 
 import pygame
-from typing_extensions import Any
 
 import easypygamewidgets
 from easypygamewidgets import font, misc

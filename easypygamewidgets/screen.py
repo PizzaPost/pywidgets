@@ -2,8 +2,9 @@
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
 
+from typing import Any
+
 import pygame
-from typing_extensions import Any
 
 from easypygamewidgets import misc
 

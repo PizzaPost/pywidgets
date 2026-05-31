@@ -3,9 +3,9 @@
 # https://github.com/PizzaPost/easypygamewidgets
 
 import time
+from typing import Any
 
 import pygame
-from typing_extensions import Any
 
 from easypygamewidgets import misc
 
