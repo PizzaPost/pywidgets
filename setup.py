@@ -26,15 +26,9 @@ setup(
         "Repository": "https://github.com/PizzaPost/pywidgets",
         "Issues": "https://github.com/PizzaPost/pywidgets/issues"
     },
-    python_requires=">=3.8",  # vermin easypygamewidgets/
+    python_requires=">=3.11",  # vermin easypygamewidgets/
     classifiers=[
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
