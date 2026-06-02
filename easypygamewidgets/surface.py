@@ -25,7 +25,8 @@ class Surface:
                  active_hover_cursor: pygame.Cursor | None = None,
                  disabled_hover_cursor: pygame.Cursor | None = None,
                  active_pressed_cursor: pygame.Cursor | None = None, dragable: bool = False, layer=1000,
-                 tooltip: "easypygamewidgets.Tooltip | None" = None, data: Any = None):
+                 tooltip: "easypygamewidgets.Tooltip | None" = None, anchor_x: str = "left", anchor_y: str = "top",
+                 data: Any = None):
         self.surface = surface
         if screen:
             screen.add_widget(self)
@@ -62,6 +63,8 @@ class Surface:
                 tooltip.configure(active_unpressed_text_color=(255, 255, 255, 255),
                                   active_unpressed_background_color=(50, 50, 50, 255),
                                   active_unpressed_border_color=(100, 100, 100, 255))
+        self.anchor_x = anchor_x
+        self.anchor_y = anchor_y
         self.data = data
         self._width = surface.get_width()
         self._height = surface.get_height()
@@ -134,6 +137,19 @@ class Surface:
             misc.all_widgets.remove(self)
 
     def place(self, x: int, y: int, mode: str = "px"):
+        anchor_offset = [0, 0]
+        if self.anchor_x == "left":
+            anchor_offset[0] = 0
+        elif self.anchor_x == "center":
+            anchor_offset[0] = self.width // 2
+        elif self.anchor_x == "right":
+            anchor_offset[0] = self.width
+        if self.anchor_y == "top":
+            anchor_offset[1] = 0
+        elif self.anchor_y == "center":
+            anchor_offset[1] = self.height // 2
+        elif self.anchor_y == "bottom":
+            anchor_offset[1] = self.height
         if mode == "px":
             self.x = x
             self.y = y
@@ -146,7 +162,16 @@ class Surface:
             self.x = x
             self.y = y
             print(f"Invalid Mode: {mode}\nFallback: px")
+        self.x -= anchor_offset[0]
+        self.y -= anchor_offset[1]
         self.rect = self.surface.get_rect(topleft=(self.x, self.y))
+        self.needs_transform = True
+        return self
+
+    def anchor(self, anchor_x: str = "left", anchor_y: str = "top"):
+        self.anchor_x = anchor_x
+        self.anchor_y = anchor_y
+        self.place(self.x, self.y)
         return self
 
     def bind(self, event: str, command, require_hover: bool = True):
@@ -249,26 +274,26 @@ class Surface:
 
 
 def update_animation(surface):
-    changed_transform = False
+    needs_transform = False
     if surface.current_scale != surface.target_scale:
         if abs(surface.current_scale - surface.target_scale) <= abs(surface.scale_step):
             surface.current_scale = surface.target_scale
         else:
             surface.current_scale += surface.scale_step
-        changed_transform = True
+        needs_transform = True
     if surface.current_rotation != surface.target_rotation:
         if abs(surface.current_rotation - surface.target_rotation) <= abs(surface.rotation_step):
             surface.current_rotation = surface.target_rotation
         else:
             surface.current_rotation += surface.rotation_step
-        changed_transform = True
+        needs_transform = True
     for x in range(2):
         if surface.current_offset[x] != surface.target_offset[x]:
             if abs(surface.current_offset[x] - surface.target_offset[x]) <= abs(surface.offset_step[x]):
                 surface.current_offset[x] = float(surface.target_offset[x])
             else:
                 surface.current_offset[x] += surface.offset_step[x]
-    if changed_transform:
+    if needs_transform:
         if surface.current_scale != 1 or surface.current_rotation != 0:
             new_width = int(surface.original_surface.get_width() * surface.current_scale)
             new_height = int(surface.original_surface.get_height() * surface.current_scale)

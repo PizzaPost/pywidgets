@@ -73,7 +73,7 @@ class Slider:
                  show_full_rounding_of_whole_numbers: bool = False, trigger_hold_delay: int = 150, layer=1000,
                  tooltip: "easypygamewidgets.Tooltip | None" = None, line_spacing: int = 30,
                  min_width: int | None = None, max_width: int | None = None, min_height: int | None = None,
-                 max_height: int | None = None, data: Any = None):
+                 max_height: int | None = None, anchor_x: str = "left", anchor_y: str = "top", data: Any = None):
         if screen:
             screen.add_widget(self)
             self.screen = screen
@@ -185,6 +185,8 @@ class Slider:
         self.max_width = max_width
         self.min_height = min_height
         self.max_height = max_height
+        self.anchor_x = anchor_x
+        self.anchor_y = anchor_y
         self.data = data
         self.x = 0
         self.y = font.render(text, True, (255, 255, 255)).get_height()
@@ -234,6 +236,19 @@ class Slider:
             misc.all_widgets.remove(self)
 
     def place(self, x: int, y: int, mode: str = "px"):
+        anchor_offset = [0, 0]
+        if self.anchor_x == "left":
+            anchor_offset[0] = 0
+        elif self.anchor_x == "center":
+            anchor_offset[0] = self.width // 2
+        elif self.anchor_x == "right":
+            anchor_offset[0] = self.width
+        if self.anchor_y == "top":
+            anchor_offset[1] = 0
+        elif self.anchor_y == "center":
+            anchor_offset[1] = self.height // 2
+        elif self.anchor_y == "bottom":
+            anchor_offset[1] = self.height
         if mode == "px":
             self.x = x
             self.y = y
@@ -246,7 +261,15 @@ class Slider:
             self.x = x
             self.y = y
             print(f"Invalid Mode: {mode}\nFallback: px")
+        self.x -= anchor_offset[0]
+        self.y -= anchor_offset[1]
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        return self
+
+    def anchor(self, anchor_x: str = "left", anchor_y: str = "top"):
+        self.anchor_x = anchor_x
+        self.anchor_y = anchor_y
+        self.place(self.x, self.y)
         return self
 
     def bind(self, event: str, command, require_hover: bool = True):

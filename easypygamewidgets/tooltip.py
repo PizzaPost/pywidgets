@@ -37,8 +37,8 @@ class Tooltip:
                  alignment_spacing: int = 20, corner_radius: int = 25, layer=1000, style: str | None = None,
                  suppress_icon=False, icon: "pygame.Surface | easypygamewidgets.Surface | None" = None,
                  line_spacing: int = 30, min_width: int | None = None, max_width: int | None = None,
-                 min_height: int | None = None, max_height: int | None = None,
-                 data: Any = None):
+                 min_height: int | None = None, max_height: int | None = None, anchor_x: str = "left",
+                 anchor_y: str = "top", data: Any = None):
         self.bindings = {}
         self.style = style
         self.icon = None
@@ -53,6 +53,10 @@ class Tooltip:
         self.width = width
         self.height = height
         if auto_size:
+            text_w, text_h = font.size(text)
+            self.height = text_h + 20
+            icon_offset = height if icon and not suppress_icon else 0
+            self.width = text_w + (alignment_spacing * 2) + icon_offset
             if min_width:
                 self.width = max(width, min_width)
             if max_width:
@@ -118,6 +122,8 @@ class Tooltip:
         self.max_width = max_width
         self.min_height = min_height
         self.max_height = max_height
+        self.anchor_x = anchor_x
+        self.anchor_y = anchor_y
         self.data = data
         self.x = 0
         self.y = 0
@@ -155,8 +161,13 @@ class Tooltip:
             setattr(self, key, value)
         self.needs_redraw = True
         if any(k in kwargs for k in
-               ('auto_size', 'x', 'y', 'width', 'height', 'min_width', 'max_width', 'min_height', 'max_height')):
+               ('auto_size', 'x', 'y', 'width', 'height', 'min_width', 'max_width', 'min_height', 'max_height', 'text',
+                'icon', 'suppress_icon', 'alignment_spacing', 'font')):
             if self.auto_size:
+                text_w, text_h = self.font.size(self.text)
+                self.height = text_h + 20
+                icon_offset = self.height if self.icon and not self.suppress_icon else 0
+                self.width = text_w + (self.alignment_spacing * 2) + icon_offset
                 if self.min_width:
                     self.width = max(self.width, self.min_width)
                 if self.max_width:
@@ -180,6 +191,19 @@ class Tooltip:
             misc.all_widgets.remove(self)
 
     def place(self, x: int, y: int, mode: str = "px"):
+        anchor_offset = [0, 0]
+        if self.anchor_x == "left":
+            anchor_offset[0] = 0
+        elif self.anchor_x == "center":
+            anchor_offset[0] = self.width // 2
+        elif self.anchor_x == "right":
+            anchor_offset[0] = self.width
+        if self.anchor_y == "top":
+            anchor_offset[1] = 0
+        elif self.anchor_y == "center":
+            anchor_offset[1] = self.height // 2
+        elif self.anchor_y == "bottom":
+            anchor_offset[1] = self.height
         if mode == "px":
             self.x = x
             self.y = y
@@ -192,7 +216,15 @@ class Tooltip:
             self.x = x
             self.y = y
             print(f"Invalid Mode: {mode}\nFallback: px")
+        self.x -= anchor_offset[0]
+        self.y -= anchor_offset[1]
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        return self
+
+    def anchor(self, anchor_x: str = "left", anchor_y: str = "top"):
+        self.anchor_x = anchor_x
+        self.anchor_y = anchor_y
+        self.place(self.x, self.y)
         return self
 
     def bind(self, event: str, command, require_hover: bool = True):
@@ -318,8 +350,6 @@ def draw(tooltip, surface: pygame.Surface):
         render_tooltip_surface(tooltip)
     if is_hovering:
         cursor_key = "active_hover"
-        if tooltip.state == "enabled":
-            cursor_key = "active_hover"
         target_cursor = tooltip.cursors.get(cursor_key)
         if target_cursor:
             current_cursor = pygame.mouse.get_cursor()

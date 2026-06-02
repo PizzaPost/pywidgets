@@ -46,7 +46,7 @@ class Entry:
                  repeat_interval: int = 50, layer=1000, line_spacing: int = 30,
                  tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
                  max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
-                 data: Any = None):
+                 anchor_x: str = "left", anchor_y: str = "top", data: Any = None):
         if screen:
             screen.add_widget(self)
             self._screen = screen
@@ -131,6 +131,8 @@ class Entry:
         self._max_width = max_width
         self._min_height = min_height
         self._max_height = max_height
+        self._anchor_x = anchor_x
+        self._anchor_y = anchor_y
         self._data = data
         self._x = 0
         self._y = 0
@@ -581,6 +583,22 @@ class Entry:
         self._max_height = value
 
     @property
+    def anchor_x(self):
+        return self._anchor_x
+
+    @anchor_x.setter
+    def anchor_x(self, value):
+        self._anchor_x = value
+
+    @property
+    def anchor_y(self):
+        return self._anchor_y
+
+    @anchor_y.setter
+    def anchor_y(self, value):
+        self._anchor_y = value
+
+    @property
     def data(self):
         return self._data
 
@@ -893,6 +911,19 @@ class Entry:
             misc.all_widgets.remove(self)
 
     def _place(self, x: int, y: int, mode: str = "px"):
+        anchor_offset = [0, 0]
+        if self._anchor_x == "left":
+            anchor_offset[0] = 0
+        elif self._anchor_x == "center":
+            anchor_offset[0] = self._width // 2
+        elif self._anchor_x == "right":
+            anchor_offset[0] = self._width
+        if self._anchor_y == "top":
+            anchor_offset[1] = 0
+        elif self._anchor_y == "center":
+            anchor_offset[1] = self._height // 2
+        elif self._anchor_y == "bottom":
+            anchor_offset[1] = self._height
         if mode == "px":
             self._x = x
             self._y = y
@@ -905,8 +936,16 @@ class Entry:
             self._x = x
             self._y = y
             print(f"Invalid Mode: {mode}\nFallback: px")
+        self.x -= anchor_offset[0]
+        self.y -= anchor_offset[1]
         self._rect = pygame.Rect(self._x, self._y, self._width, self._height)
-        self._needs_redraw = True
+        self._needs_transform = True
+        return self
+
+    def _anchor(self, anchor_x: str = "left", anchor_y: str = "top"):
+        self._anchor_x = anchor_x
+        self._anchor_y = anchor_y
+        self._place(self._x, self._y)
         return self
 
     def _bind(self, event: str, command, require_hover: bool = True):
@@ -1079,6 +1118,10 @@ class Entry:
     @property
     def place(self):
         return self._place
+
+    @property
+    def anchor(self):
+        return self._anchor
 
     @property
     def bind(self):
