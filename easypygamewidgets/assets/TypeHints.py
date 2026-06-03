@@ -33,6 +33,9 @@ class ButtonConfig(TypedDict, total=False):
     disabled_hover_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
     active_pressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
     border_thickness: int
+    hide_text: bool
+    hide_background: bool
+    hide_border: bool
     active_hover_cursor: pygame.Cursor
     disabled_hover_cursor: pygame.Cursor
     active_pressed_cursor: pygame.Cursor
@@ -104,6 +107,10 @@ class EntryConfig(TypedDict, total=False):
     selection_color: tuple[int, int, int] | tuple[int, int, int, int] | None
     disabled_selection_color: tuple[int, int, int] | tuple[int, int, int, int] | None
     border_thickness: int
+    hide_text: bool
+    hide_background: bool
+    hide_border: bool
+    hide_selection: bool
     active_hover_cursor: pygame.Cursor
     disabled_hover_cursor: pygame.Cursor
     active_pressed_cursor: pygame.Cursor
@@ -165,7 +172,7 @@ class EntryConfig(TypedDict, total=False):
     use_rotozoom: bool
 
 
-class EntryConfig(TypedDict, total=False):
+class LabelConfig(TypedDict, total=False):
     screen: "easypygamewidgets.Screen"
     state: str
     visible: bool
@@ -206,6 +213,12 @@ class EntryConfig(TypedDict, total=False):
     disabled_hover_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
     active_pressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
     border_thickness: int
+    hide_text: bool
+    hide_shadow: bool
+    hide_background: bool
+    hide_underline: bool
+    hide_strikethrough: bool
+    hide_border: bool
     active_hover_cursor: pygame.Cursor
     disabled_hover_cursor: pygame.Cursor
     active_pressed_cursor: pygame.Cursor

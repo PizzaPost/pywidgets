@@ -63,6 +63,12 @@ class Slider:
                  disabled_hover_display_color: tuple = (150, 150, 150),
                  disabled_unpressed_display_color: tuple = (150, 150, 150),
                  border_width: int = 2,
+                 hide_text: bool = False,
+                 hide_used_background: bool = False,
+                 hide_unused_background: bool = False,
+                 hide_dot: bool = False,
+                 hide_border: bool = False,
+                 hide_display: bool = False,
                  active_hover_cursor: pygame.Cursor | None = None,
                  disabled_hover_cursor: pygame.Cursor | None = None,
                  active_pressed_cursor: pygame.Cursor | None = None,
@@ -148,6 +154,12 @@ class Slider:
         self.disabled_hover_display_color = disabled_hover_display_color
         self.disabled_unpressed_display_color = disabled_unpressed_display_color
         self.border_width = border_width
+        self.hide_text = hide_text
+        self.hide_used_background = hide_used_background
+        self.hide_unused_background = hide_unused_background
+        self.hide_dot = hide_dot
+        self.hide_border = hide_border
+        self.hide_display = hide_display
         cursor_input = {
             "active_hover": active_hover_cursor,
             "disabled_hover": disabled_hover_cursor,
@@ -440,77 +452,81 @@ def draw(slider, surface: pygame.Surface):
     tr = min(slider.top_right_corner_radius, max_radius)
     bl = min(slider.bottom_left_corner_radius, max_radius)
     br = min(slider.bottom_right_corner_radius, max_radius)
-    pygame.draw.rect(surface, bg_color_unused, track_rect, border_top_left_radius=tl, border_top_right_radius=tr,
-                     border_bottom_left_radius=bl, border_bottom_right_radius=br)
+    if not slider.hide_unused_background:
+        pygame.draw.rect(surface, bg_color_unused, track_rect, border_top_left_radius=tl, border_top_right_radius=tr,
+                         border_bottom_left_radius=bl, border_bottom_right_radius=br)
     if slider.end - slider.start != 0:
         pct = (slider.value - slider.start) / (slider.end - slider.start)
     else:
         pct = 0
     pct = max(0, min(1, pct))
     used_width = int(track_rect.width * pct)
-    if used_width > 0:
+    if used_width > 0 and not slider.hide_used_background:
         clip_surf = pygame.Surface(track_rect.size, pygame.SRCALPHA)
         mask_rect = pygame.Rect(0, 0, track_rect.width, track_rect.height)
         pygame.draw.rect(clip_surf, (255, 255, 255), mask_rect, border_top_left_radius=tl,
-                         border_bottom_left_radius=bl, border_top_right_radius=tr,
-                         border_bottom_right_radius=br)
+                         border_bottom_left_radius=bl, border_top_right_radius=tr, border_bottom_right_radius=br)
         used_fill_rect = pygame.Rect(0, 0, used_width, track_rect.height)
         fill_surf = pygame.Surface(track_rect.size, pygame.SRCALPHA)
         pygame.draw.rect(fill_surf, bg_color_used, used_fill_rect)
         clip_surf.blit(fill_surf, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
         surface.blit(clip_surf, track_rect.topleft)
-    if brd_color:
+    if brd_color and not slider.hide_border:
         pygame.draw.rect(surface, brd_color, track_rect, width=slider.border_width, border_top_left_radius=tl,
-                         border_top_right_radius=tr, border_bottom_left_radius=bl,
-                         border_bottom_right_radius=br)
+                         border_top_right_radius=tr, border_bottom_left_radius=bl, border_bottom_right_radius=br)
     dot_x = track_rect.x + used_width
     dot_x = max(track_rect.left + slider.dot_radius, min(dot_x, track_rect.right - slider.dot_radius))
-    pygame.draw.aacircle(surface, dot_color, (int(dot_x), int(track_rect.centery)),
-                         slider.dot_radius + slider.extra_dot_radius)
-    if (slider.state == "enabled" or slider.show_value_when_disabled) and (
-            slider.show_value_when_pressed and slider.pressed or slider.show_value_when_hovered and is_hovering and not slider.pressed or slider.show_value_when_unpressed):
-        if slider.show_full_rounding_of_whole_numbers:
-            text_surf = slider.font.render(str(round(slider.value, slider.round_display_value)), True, display_color)
-        elif not slider.show_full_rounding_of_whole_numbers and round(slider.value,
-                                                                      slider.round_display_value) % 1 == 0:
-            text_surf = slider.font.render(str(round(slider.value, slider.round_display_value)).replace(".0", ""), True,
-                                           display_color)
-        elif not slider.show_full_rounding_of_whole_numbers:
-            text_surf = slider.font.render(str(round(slider.value, slider.round_display_value)), True, display_color)
+    if not slider.hide_dot:
+        pygame.draw.aacircle(surface, dot_color, (int(dot_x), int(track_rect.centery)),
+                             slider.dot_radius + slider.extra_dot_radius)
+    if not slider.hide_display:
+        if (slider.state == "enabled" or slider.show_value_when_disabled) and (
+                slider.show_value_when_pressed and slider.pressed or slider.show_value_when_hovered and is_hovering and not slider.pressed or slider.show_value_when_unpressed):
+            if slider.show_full_rounding_of_whole_numbers:
+                text_surf = slider.font.render(str(round(slider.value, slider.round_display_value)), True,
+                                               display_color)
+            elif not slider.show_full_rounding_of_whole_numbers and round(slider.value,
+                                                                          slider.round_display_value) % 1 == 0:
+                text_surf = slider.font.render(str(round(slider.value, slider.round_display_value)).replace(".0", ""),
+                                               True, display_color)
+            elif not slider.show_full_rounding_of_whole_numbers:
+                text_surf = slider.font.render(str(round(slider.value, slider.round_display_value)), True,
+                                               display_color)
+            text_rect = text_surf.get_rect()
+            if slider.move_text_with_dot_radius:
+                text_rect.center = (dot_x, track_rect.centery + 25 + slider.dot_radius + slider.extra_dot_radius)
+            else:
+                text_rect.center = (dot_x, track_rect.centery + 25 + slider.dot_radius)
+            surface.blit(text_surf, text_rect)
+
+    if not slider.hide_text:
+        text_surf = slider.font.render(slider.text, True, text_color)
         text_rect = text_surf.get_rect()
         if slider.move_text_with_dot_radius:
-            text_rect.center = (dot_x, track_rect.centery + 25 + slider.dot_radius + slider.extra_dot_radius)
+            text_y_center = track_rect.centery - 25 - slider.dot_radius - slider.extra_dot_radius
         else:
-            text_rect.center = (dot_x, track_rect.centery + 25 + slider.dot_radius)
-        surface.blit(text_surf, text_rect)
+            text_y_center = track_rect.centery - 25 - slider.dot_radius
 
-    text_surf = slider.font.render(slider.text, True, text_color)
-    text_rect = text_surf.get_rect()
-    if slider.move_text_with_dot_radius:
-        text_y_center = track_rect.centery - 25 - slider.dot_radius - slider.extra_dot_radius
-    else:
-        text_y_center = track_rect.centery - 25 - slider.dot_radius
-
-    if slider.alignment == "stretched" and len(slider.text) > 1 and not slider.auto_size:
-        total_char_width = sum(slider.font.render(char, True, text_color).get_width() for char in slider.text)
-        available_width = draw_rect.width - (slider.alignment_spacing * 2)
-        if available_width > total_char_width:
-            spacing = (available_width - total_char_width) / (len(slider.text) - 1)
-            current_x = draw_rect.left + slider.alignment_spacing
-            for char in slider.text:
-                char_surf = slider.font.render(char, True, text_color)
-                surface.blit(char_surf, char_surf.get_rect(midleft=(current_x, text_y_center)))
-                current_x += char_surf.get_width() + spacing
+        if slider.alignment == "stretched" and len(slider.text) > 1 and not slider.auto_size:
+            total_char_width = sum(slider.font.render(char, True, text_color).get_width() for char in slider.text)
+            available_width = draw_rect.width - (slider.alignment_spacing * 2)
+            if available_width > total_char_width:
+                spacing = (available_width - total_char_width) / (len(slider.text) - 1)
+                current_x = draw_rect.left + slider.alignment_spacing
+                for char in slider.text:
+                    char_surf = slider.font.render(char, True, text_color)
+                    surface.blit(char_surf, char_surf.get_rect(midleft=(current_x, text_y_center)))
+                    current_x += char_surf.get_width() + spacing
+            else:
+                surface.blit(text_surf, text_surf.get_rect(center=(draw_rect.centerx, text_y_center)))
         else:
-            surface.blit(text_surf, text_surf.get_rect(center=(draw_rect.centerx, text_y_center)))
-    else:
-        if slider.alignment == "left":
-            text_rect.midleft = (draw_rect.left + slider.alignment_spacing, text_y_center)
-        elif slider.alignment == "right":
-            text_rect.midright = (draw_rect.right - slider.alignment_spacing, text_y_center)
-        else:
-            text_rect.center = (draw_rect.centerx, text_y_center)
-        surface.blit(text_surf, text_rect)
+            if slider.alignment == "left":
+                text_rect.midleft = (draw_rect.left + slider.alignment_spacing, text_y_center)
+            elif slider.alignment == "right":
+                text_rect.midright = (draw_rect.right - slider.alignment_spacing, text_y_center)
+            else:
+                text_rect.center = (draw_rect.centerx, text_y_center)
+            surface.blit(text_surf, text_rect)
 
 
 def is_point_in_rounded_rect(slider, point):

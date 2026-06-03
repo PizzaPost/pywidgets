@@ -58,6 +58,12 @@ class Label:
                  disabled_unpressed_strikethrough_color: tuple | None = None,
                  disabled_unpressed_border_color: tuple | None = None,
                  border_thickness: int = 2,
+                 hide_text: bool = False,
+                 hide_shadow: bool = False,
+                 hide_underline: bool = False,
+                 hide_strikethrough: bool = False,
+                 hide_background: bool = False,
+                 hide_border: bool = False,
                  active_hover_cursor: pygame.Cursor | None = None,
                  disabled_hover_cursor: pygame.Cursor | None = None,
                  active_pressed_cursor: pygame.Cursor | None = None,
@@ -176,6 +182,12 @@ class Label:
         self._disabled_unpressed_border_color = normalize_color(disabled_unpressed_border_color)
 
         self._border_thickness = border_thickness
+        self._hide_text = hide_text
+        self._hide_shadow = hide_shadow
+        self._hide_underline = hide_underline
+        self._hide_strikethrough = hide_strikethrough
+        self._hide_background = hide_background
+        self._hide_border = hide_border
         cursor_input = {
             "active_hover": active_hover_cursor,
             "disabled_hover": disabled_hover_cursor,
@@ -567,6 +579,54 @@ class Label:
     @border_thickness.setter
     def border_thickness(self, value):
         self._border_thickness = value
+
+    @property
+    def hide_text(self):
+        return self._hide_text
+
+    @hide_text.setter
+    def hide_text(self, value):
+        self._hide_text = value
+
+    @property
+    def hide_shadow(self):
+        return self._hide_shadow
+
+    @hide_shadow.setter
+    def hide_shadow(self, value):
+        self._hide_shadow = value
+
+    @property
+    def hide_background(self):
+        return self._hide_background
+
+    @hide_background.setter
+    def hide_background(self, value):
+        self._hide_background = value
+
+    @property
+    def hide_underline(self):
+        return self._hide_underline
+
+    @hide_underline.setter
+    def hide_underline(self, value):
+        self._hide_underline = value
+
+    @property
+    def hide_strikethrough(self):
+        return self._hide_strikethrough
+
+    @hide_strikethrough.setter
+    def hide_strikethrough(self, value):
+        self._hide_strikethrough = value
+
+    @property
+    def hide_border(self):
+        return self._hide_border
+
+    @hide_border.setter
+    def hide_border(self, value):
+        self._hide_border = value
 
     @property
     def active_hover_cursor(self):
@@ -963,7 +1023,7 @@ class Label:
     def is_hovered(self, value):
         self._is_hovered = value
 
-    def _configure(self, **kwargs: Unpack[TypeHints.ButtonConfig]):
+    def _configure(self, **kwargs: Unpack[TypeHints.LabelConfig]):
         for key, value in kwargs.items():
             setattr(self, key, value)
         self._needs_redraw = True
@@ -1330,7 +1390,7 @@ def render_base_surface(label, is_hovering):
         label.rect = pygame.Rect(label.x, label.y, label._width, label._height)
     label.original_surface = pygame.Surface((label._width, label._height), pygame.SRCALPHA)
     draw_req_rect = pygame.Rect(0, 0, label._width, label._height)
-    if bg_color:
+    if not label.hide_background and bg_color:
         shape_surf = pygame.Surface((label._width, label._height), pygame.SRCALPHA)
         pygame.draw.rect(shape_surf, bg_color, draw_req_rect,
                          border_top_left_radius=label.top_left_corner_radius,
@@ -1339,7 +1399,7 @@ def render_base_surface(label, is_hovering):
                          border_bottom_right_radius=label.bottom_right_corner_radius)
         shape_surf.set_alpha(bg_color[3])
         label.original_surface.blit(shape_surf, (0, 0))
-    if brd_color:
+    if not label.hide_border and brd_color:
         shape_surf = pygame.Surface((label._width, label._height), pygame.SRCALPHA)
         pygame.draw.rect(shape_surf, brd_color, draw_req_rect, width=label.border_thickness,
                          border_top_left_radius=label.top_left_corner_radius,
@@ -1399,11 +1459,14 @@ def render_base_surface(label, is_hovering):
         return union_rect
 
     surface_rect = label.original_surface.get_rect()
-    if shadow_color and shadow_color[3] > 0:
+    if not label.hide_shadow and shadow_color and shadow_color[3] > 0:
         render_text_line(label.text, shadow_color, surface_rect, offset=(2, 2))
-    final_text_rect = render_text_line(label.text, text_color, surface_rect)
+    if not label.hide_text:
+        final_text_rect = render_text_line(label.text, text_color, surface_rect)
+    else:
+        final_text_rect = None
     if final_text_rect:
-        if underline_color and label.underline:
+        if not label.hide_underline and underline_color and label.underline:
             shape_surf = pygame.Surface(final_text_rect.size, pygame.SRCALPHA)
             shape_surf_rect = shape_surf.get_rect()
             start_pos = (shape_surf_rect.left, shape_surf_rect.bottom - 2)
@@ -1411,7 +1474,7 @@ def render_base_surface(label, is_hovering):
             shape_surf.set_alpha(underline_color[3])
             pygame.draw.line(shape_surf, underline_color, start_pos, end_pos, 2)
             label.original_surface.blit(shape_surf, final_text_rect)
-        if strikethrough_color and label.strikethrough:
+        if not label.hide_strikethrough and strikethrough_color and label.strikethrough:
             shape_surf = pygame.Surface(final_text_rect.size, pygame.SRCALPHA)
             shape_surf_rect = shape_surf.get_rect()
             start_pos = (shape_surf_rect.left, shape_surf_rect.centery)

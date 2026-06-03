@@ -36,6 +36,10 @@ class Entry:
                  selection_color: tuple | None = (0, 120, 215, 255),
                  disabled_selection_color: tuple | None = (32, 106, 163, 255),
                  border_thickness: int = 2,
+                 hide_text: bool = False,
+                 hide_background: bool = False,
+                 hide_border: bool = False,
+                 hide_selection: bool = False,
                  active_hover_cursor: pygame.Cursor | None = None,
                  disabled_hover_cursor: pygame.Cursor | None = None,
                  active_pressed_cursor: pygame.Cursor | None = None,
@@ -93,6 +97,10 @@ class Entry:
         self._selection_color = normalize_color(selection_color)
         self._disabled_selection_color = normalize_color(disabled_selection_color)
         self._border_thickness = border_thickness
+        self._hide_text = hide_text
+        self._hide_background = hide_background
+        self._hide_border = hide_border
+        self._hide_selection = hide_selection
         cursor_input = {
             "active_hover": active_hover_cursor,
             "disabled_hover": disabled_hover_cursor,
@@ -400,6 +408,38 @@ class Entry:
     @border_thickness.setter
     def border_thickness(self, value):
         self._border_thickness = value
+
+    @property
+    def hide_text(self):
+        return self._hide_text
+
+    @hide_text.setter
+    def hide_text(self, value):
+        self._hide_text = value
+
+    @property
+    def hide_background(self):
+        return self._hide_background
+
+    @hide_background.setter
+    def hide_background(self, value):
+        self._hide_background = value
+
+    @property
+    def hide_border(self):
+        return self._hide_border
+
+    @hide_border.setter
+    def hide_border(self, value):
+        self._hide_border = value
+
+    @property
+    def hide_selection(self):
+        return self._hide_selection
+
+    @hide_selection.setter
+    def hide_selection(self, value):
+        self._hide_selection = value
 
     @property
     def active_hover_cursor(self):
@@ -1338,11 +1378,12 @@ def render_entry_surface(entry, is_hovering):
     base_height = entry.height
     cached = pygame.Surface((base_width, base_height), pygame.SRCALPHA)
     local_rect = pygame.Rect(0, 0, base_width, base_height)
-    pygame.draw.rect(cached, bg_color, local_rect, border_top_left_radius=entry.top_left_corner_radius,
-                     border_top_right_radius=entry.top_right_corner_radius,
-                     border_bottom_left_radius=entry.bottom_left_corner_radius,
-                     border_bottom_right_radius=entry.bottom_right_corner_radius)
-    if entry.border_thickness > 0:
+    if not entry.hide_background:
+        pygame.draw.rect(cached, bg_color, local_rect, border_top_left_radius=entry.top_left_corner_radius,
+                         border_top_right_radius=entry.top_right_corner_radius,
+                         border_bottom_left_radius=entry.bottom_left_corner_radius,
+                         border_bottom_right_radius=entry.bottom_right_corner_radius)
+    if not entry.hide_border and entry.border_thickness > 0:
         pygame.draw.rect(cached, brd_color, local_rect, width=entry.border_thickness,
                          border_top_left_radius=entry.top_left_corner_radius,
                          border_top_right_radius=entry.top_right_corner_radius,
@@ -1353,7 +1394,7 @@ def render_entry_surface(entry, is_hovering):
     y_pos = local_rect.centery
     display_text = entry.get_display_text()
     drawn_stretched = False
-    if entry.alignment == "stretched" and len(display_text) > 1 and not entry.auto_size:
+    if not entry.hide_text and entry.alignment == "stretched" and len(display_text) > 1 and not entry.auto_size:
         total_char_width = sum(entry.font.render(char, True, text_color).get_width() for char in display_text)
         available_width = local_rect.width - (entry.alignment_spacing * 2)
         if available_width > total_char_width:
@@ -1400,11 +1441,13 @@ def render_entry_surface(entry, is_hovering):
             sel_end_x = entry.font.size(display_text[:end_idx])[0]
             highlight_rect = pygame.Rect(text_rect.x + sel_start_x, text_rect.top, sel_end_x - sel_start_x,
                                          text_rect.height)
-            sel_surf = pygame.Surface((highlight_rect.width, highlight_rect.height), pygame.SRCALPHA)
-            sel_surf.fill(selection_color)
-            cached.blit(sel_surf, highlight_rect)
-            pygame.draw.rect(cached, selection_color, highlight_rect)
-        cached.blit(text_surf, text_rect)
+            if not entry.hide_selection:
+                sel_surf = pygame.Surface((highlight_rect.width, highlight_rect.height), pygame.SRCALPHA)
+                sel_surf.fill(selection_color)
+                cached.blit(sel_surf, highlight_rect)
+                pygame.draw.rect(cached, selection_color, highlight_rect)
+        if not entry.hide_text:
+            cached.blit(text_surf, text_rect)
         has_selection = entry.selected_text and entry.selected_text[0] != entry.selected_text[1]
         if entry.focused and entry.state == "enabled" and not has_selection:
             if entry.cursor_visible:

@@ -36,6 +36,9 @@ class Button:
                  disabled_hover_border_color: tuple | None = (60, 60, 60, 255),
                  active_pressed_border_color: tuple | None = (50, 50, 50, 255),
                  border_thickness: int = 2,
+                 hide_text: bool = False,
+                 hide_background: bool = False,
+                 hide_border: bool = False,
                  active_hover_cursor: pygame.Cursor | None = None,
                  disabled_hover_cursor: pygame.Cursor | None = None,
                  active_pressed_cursor: pygame.Cursor | None = None,
@@ -99,6 +102,9 @@ class Button:
         self._disabled_hover_border_color = normalize_color(disabled_hover_border_color)
         self._active_pressed_border_color = normalize_color(active_pressed_border_color)
         self._border_thickness = border_thickness
+        self._hide_text = hide_text
+        self._hide_background = hide_background
+        self._hide_border = hide_border
         cursor_input = {
             "active_hover": active_hover_cursor,
             "disabled_hover": disabled_hover_cursor,
@@ -354,6 +360,30 @@ class Button:
     @border_thickness.setter
     def border_thickness(self, value):
         self._border_thickness = value
+
+    @property
+    def hide_text(self):
+        return self._hide_text
+
+    @hide_text.setter
+    def hide_text(self, value):
+        self._hide_text = value
+
+    @property
+    def hide_background(self):
+        return self._hide_background
+
+    @hide_background.setter
+    def hide_background(self, value):
+        self._hide_background = value
+
+    @property
+    def hide_border(self):
+        return self._hide_border
+
+    @hide_border.setter
+    def hide_border(self, value):
+        self._hide_border = value
 
     @property
     def active_hover_cursor(self):
@@ -990,42 +1020,44 @@ def render_button_surface(button, is_hovering):
     base_height = button._height
     cached = pygame.Surface((base_width, base_height), pygame.SRCALPHA)
     local_rect = pygame.Rect(0, 0, base_width, base_height)
-    pygame.draw.rect(cached, bg_color, local_rect, border_radius=button.corner_radius)
-    if brd_color:
+    if not button.hide_background:
+        pygame.draw.rect(cached, bg_color, local_rect, border_radius=button.corner_radius)
+    if not button.hide_border and brd_color:
         pygame.draw.rect(cached, brd_color, local_rect, width=button.border_thickness,
                          border_radius=button.corner_radius)
 
-    if button.alignment == "stretched" and len(button.text) > 1 and not button.auto_size:
-        total_char_width = sum(button.font.render(char, True, text_color).get_width() for char in button.text)
-        available_width = local_rect.width - button.alignment_spacing
-        if available_width > total_char_width:
-            spacing = (available_width - total_char_width) / (len(button.text) - 1)
-            current_x = local_rect.left + button.alignment_spacing // 2
-            for char in button.text:
-                char_surf = button.font.render(char, True, text_color)
-                char_surf.set_alpha(text_color[3])
-                cached.blit(char_surf, char_surf.get_rect(midleft=(current_x, local_rect.centery)))
-                current_x += char_surf.get_width() + spacing
-        else:
-            text_surf = button.font.render(button.text, True, text_color)
-            text_surf.set_alpha(text_color[3])
-            cached.blit(text_surf, text_surf.get_rect(center=local_rect.center))
-    else:
-        lines = button.text.split("\n")
-        total_text_height = len(lines) * button.line_spacing
-        start_y = local_rect.centery - (total_text_height // 2)
-        for i, line in enumerate(lines):
-            text_surf = button.font.render(line, True, text_color)
-            text_surf.set_alpha(text_color[3])
-            text_rect = text_surf.get_rect()
-            line_centery = start_y + (i * button.line_spacing) + (button.line_spacing // 2)
-            if button.alignment == "left":
-                text_rect.midleft = (local_rect.left + button.alignment_spacing, line_centery)
-            elif button.alignment == "right":
-                text_rect.midright = (local_rect.right - button.alignment_spacing, line_centery)
+    if not button.hide_text:
+        if button.alignment == "stretched" and len(button.text) > 1 and not button.auto_size:
+            total_char_width = sum(button.font.render(char, True, text_color).get_width() for char in button.text)
+            available_width = local_rect.width - button.alignment_spacing
+            if available_width > total_char_width:
+                spacing = (available_width - total_char_width) / (len(button.text) - 1)
+                current_x = local_rect.left + button.alignment_spacing // 2
+                for char in button.text:
+                    char_surf = button.font.render(char, True, text_color)
+                    char_surf.set_alpha(text_color[3])
+                    cached.blit(char_surf, char_surf.get_rect(midleft=(current_x, local_rect.centery)))
+                    current_x += char_surf.get_width() + spacing
             else:
-                text_rect.center = (local_rect.centerx, line_centery)
-            cached.blit(text_surf, text_rect)
+                text_surf = button.font.render(button.text, True, text_color)
+                text_surf.set_alpha(text_color[3])
+                cached.blit(text_surf, text_surf.get_rect(center=local_rect.center))
+        else:
+            lines = button.text.split("\n")
+            total_text_height = len(lines) * button.line_spacing
+            start_y = local_rect.centery - (total_text_height // 2)
+            for i, line in enumerate(lines):
+                text_surf = button.font.render(line, True, text_color)
+                text_surf.set_alpha(text_color[3])
+                text_rect = text_surf.get_rect()
+                line_centery = start_y + (i * button.line_spacing) + (button.line_spacing // 2)
+                if button.alignment == "left":
+                    text_rect.midleft = (local_rect.left + button.alignment_spacing, line_centery)
+                elif button.alignment == "right":
+                    text_rect.midright = (local_rect.right - button.alignment_spacing, line_centery)
+                else:
+                    text_rect.center = (local_rect.centerx, line_centery)
+                cached.blit(text_surf, text_rect)
     button.original_surface = cached
     button.cached_surface = cached
 

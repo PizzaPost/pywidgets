@@ -47,6 +47,9 @@ class Timekeeper:
                  disabled_hover_border_color: tuple = (60, 60, 60),
                  active_pressed_border_color: tuple = (50, 50, 50),
                  border_thickness: int = 2,
+                 hide_text: bool = False,
+                 hide_background: bool = False,
+                 hide_border: bool = False,
                  active_hover_cursor: pygame.Cursor | None = None,
                  disabled_hover_cursor: pygame.Cursor | None = None,
                  active_pressed_cursor: pygame.Cursor | None = None,
@@ -104,6 +107,9 @@ class Timekeeper:
         self.disabled_hover_border_color = disabled_hover_border_color
         self.active_pressed_border_color = active_pressed_border_color
         self.border_thickness = border_thickness
+        self.hide_text = hide_text
+        self.hide_background = hide_background
+        self.hide_border = hide_border
         cursor_input = {
             "active_hover": active_hover_cursor,
             "disabled_hover": disabled_hover_cursor,
@@ -439,8 +445,9 @@ def draw(timekeeper, surface: pygame.Surface):
 
     display_text = timekeeper.get_display_text()
     draw_rect = timekeeper.rect.move(offset_x, offset_y)
-    pygame.draw.rect(surface, bg_color, draw_rect, border_radius=timekeeper.corner_radius)
-    if timekeeper.border_thickness > 0:
+    if not timekeeper.hide_background:
+        pygame.draw.rect(surface, bg_color, draw_rect, border_radius=timekeeper.corner_radius)
+    if timekeeper.border_thickness > 0 and not timekeeper.hide_border:
         pygame.draw.rect(surface, brd_color, draw_rect, width=timekeeper.border_thickness,
                          border_radius=timekeeper.corner_radius)
     old_clip = surface.get_clip()
@@ -448,29 +455,30 @@ def draw(timekeeper, surface: pygame.Surface):
     surface.set_clip(clip_rect)
     y_pos = draw_rect.centery
     drawn_stretched = False
-    if timekeeper.alignment == "stretched" and len(display_text) > 1 and not timekeeper.auto_size:
-        total_char_width = sum(timekeeper.font.render(char, True, text_color).get_width() for char in display_text)
-        available_width = draw_rect.width - (timekeeper.alignment_spacing * 2)
-        if available_width > total_char_width:
-            drawn_stretched = True
-            spacing = (available_width - total_char_width) / (len(display_text) - 1)
-            current_x = draw_rect.left + timekeeper.alignment_spacing
-            for char in display_text:
-                char_surf = timekeeper.font.render(char, True, text_color)
-                surface.blit(char_surf, char_surf.get_rect(midleft=(current_x, y_pos)))
-                current_x += char_surf.get_width() + spacing
-    if not drawn_stretched:
-        text_surf = timekeeper.font.render(display_text, True, text_color)
-        text_rect = text_surf.get_rect()
-        if timekeeper.alignment == "left":
-            text_rect.midleft = (draw_rect.left + timekeeper.alignment_spacing, y_pos)
-        elif timekeeper.alignment == "right":
-            text_rect.midright = (draw_rect.right - timekeeper.alignment_spacing, y_pos)
-        else:
-            text_rect.center = draw_rect.center
-        surface.blit(text_surf, text_rect)
-        timekeeper.last_text_x = text_rect.x
-        surface.set_clip(old_clip)
+    if not timekeeper.hide_text:
+        if timekeeper.alignment == "stretched" and len(display_text) > 1 and not timekeeper.auto_size:
+            total_char_width = sum(timekeeper.font.render(char, True, text_color).get_width() for char in display_text)
+            available_width = draw_rect.width - (timekeeper.alignment_spacing * 2)
+            if available_width > total_char_width:
+                drawn_stretched = True
+                spacing = (available_width - total_char_width) / (len(display_text) - 1)
+                current_x = draw_rect.left + timekeeper.alignment_spacing
+                for char in display_text:
+                    char_surf = timekeeper.font.render(char, True, text_color)
+                    surface.blit(char_surf, char_surf.get_rect(midleft=(current_x, y_pos)))
+                    current_x += char_surf.get_width() + spacing
+        if not drawn_stretched:
+            text_surf = timekeeper.font.render(display_text, True, text_color)
+            text_rect = text_surf.get_rect()
+            if timekeeper.alignment == "left":
+                text_rect.midleft = (draw_rect.left + timekeeper.alignment_spacing, y_pos)
+            elif timekeeper.alignment == "right":
+                text_rect.midright = (draw_rect.right - timekeeper.alignment_spacing, y_pos)
+            else:
+                text_rect.center = draw_rect.center
+            surface.blit(text_surf, text_rect)
+            timekeeper.last_text_x = text_rect.x
+            surface.set_clip(old_clip)
 
 
 def is_point_in_rounded_rect(timekeeper, point):

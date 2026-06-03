@@ -32,6 +32,9 @@ class Tooltip:
                  active_unpressed_background_color: tuple | None = None,
                  active_unpressed_border_color: tuple | None = None,
                  border_thickness: int = 2,
+                 hide_text: bool = False,
+                 hide_background: bool = False,
+                 hide_border: bool = False,
                  active_hover_cursor: pygame.Cursor | None = None,
                  font: pygame.font.Font = font.tooltip_font, alignment: str = "center",
                  alignment_spacing: int = 20, corner_radius: int = 25, layer=1000, style: str | None = None,
@@ -67,6 +70,9 @@ class Tooltip:
                 self.height = min(height, max_height)
         self.text = text
         self.border_thickness = border_thickness
+        self.hide_text = hide_text
+        self.hide_background = hide_background
+        self.hide_border = hide_border
         if style == "info":
             if not icon:
                 self.icon = pygame.image.load(os.path.join(pathlib.Path(__file__).resolve().parent,
@@ -292,9 +298,10 @@ def render_tooltip_surface(tooltip):
         tooltip.rect = pygame.Rect(tooltip.x, tooltip.y, tooltip.width, tooltip.height)
     cached = pygame.Surface((tooltip.width, tooltip.height), pygame.SRCALPHA)
     local_rect = pygame.Rect(0, 0, tooltip.width, tooltip.height)
-    tmp = pygame.Surface(pygame.Rect(local_rect).size, pygame.SRCALPHA)
-    pygame.draw.rect(tmp, bg_color, tmp.get_rect(), border_radius=tooltip.corner_radius)
-    cached.blit(tmp, local_rect)
+    if not tooltip.hide_background:
+        tmp = pygame.Surface(pygame.Rect(local_rect).size, pygame.SRCALPHA)
+        pygame.draw.rect(tmp, bg_color, tmp.get_rect(), border_radius=tooltip.corner_radius)
+        cached.blit(tmp, local_rect)
     icon_offset = local_rect.height if tooltip.icon and not tooltip.suppress_icon else 0
     text_area_left = icon_offset
     text_area_width = local_rect.width - icon_offset
@@ -303,39 +310,40 @@ def render_tooltip_surface(tooltip):
                                                    else tooltip.icon.surface, (local_rect.height,
                                                                                local_rect.height))
         cached.blit(scaled_icon, (0, 0))
-    if brd_color:
+    if not tooltip.hide_border and brd_color:
         tmp = pygame.Surface(pygame.Rect(local_rect).size, pygame.SRCALPHA)
         pygame.draw.rect(tmp, brd_color, tmp.get_rect(), width=tooltip.border_thickness,
                          border_radius=tooltip.corner_radius)
         cached.blit(tmp, local_rect)
-    if tooltip.alignment == "stretched" and len(tooltip.text) > 1 and not tooltip.auto_size:
-        total_char_width = sum(tooltip.font.render(char, True, text_color).get_width() for char in tooltip.text)
-        available_width = text_area_width - (tooltip.alignment_spacing * 2)
-        if available_width > total_char_width:
-            spacing = (available_width - total_char_width) / (len(tooltip.text) - 1)
-            current_x = text_area_left + tooltip.alignment_spacing
-            for char in tooltip.text:
-                char_surf = tooltip.font.render(char, True, text_color)
-                char_surf.set_alpha(text_color[3])
-                cached.blit(char_surf, char_surf.get_rect(midleft=(current_x, local_rect.centery)))
-                current_x += char_surf.get_width() + spacing
+    if not tooltip.hide_text:
+        if tooltip.alignment == "stretched" and len(tooltip.text) > 1 and not tooltip.auto_size:
+            total_char_width = sum(tooltip.font.render(char, True, text_color).get_width() for char in tooltip.text)
+            available_width = text_area_width - (tooltip.alignment_spacing * 2)
+            if available_width > total_char_width:
+                spacing = (available_width - total_char_width) / (len(tooltip.text) - 1)
+                current_x = text_area_left + tooltip.alignment_spacing
+                for char in tooltip.text:
+                    char_surf = tooltip.font.render(char, True, text_color)
+                    char_surf.set_alpha(text_color[3])
+                    cached.blit(char_surf, char_surf.get_rect(midleft=(current_x, local_rect.centery)))
+                    current_x += char_surf.get_width() + spacing
+            else:
+                text_surf = tooltip.font.render(tooltip.text, True, text_color)
+                text_surf.set_alpha(text_color[3])
+                cached.blit(text_surf,
+                            text_surf.get_rect(center=(text_area_left + text_area_width // 2, local_rect.centery)))
         else:
             text_surf = tooltip.font.render(tooltip.text, True, text_color)
             text_surf.set_alpha(text_color[3])
-            cached.blit(text_surf,
-                        text_surf.get_rect(center=(text_area_left + text_area_width // 2, local_rect.centery)))
-    else:
-        text_surf = tooltip.font.render(tooltip.text, True, text_color)
-        text_surf.set_alpha(text_color[3])
-        text_rect = text_surf.get_rect()
-        text_rect.centery = local_rect.centery
-        if tooltip.alignment == "left":
-            text_rect.left = text_area_left + tooltip.alignment_spacing
-        elif tooltip.alignment == "right":
-            text_rect.right = local_rect.right - tooltip.alignment_spacing
-        else:
-            text_rect.centerx = text_area_left + (text_area_width // 2)
-        cached.blit(text_surf, text_rect)
+            text_rect = text_surf.get_rect()
+            text_rect.centery = local_rect.centery
+            if tooltip.alignment == "left":
+                text_rect.left = text_area_left + tooltip.alignment_spacing
+            elif tooltip.alignment == "right":
+                text_rect.right = local_rect.right - tooltip.alignment_spacing
+            else:
+                text_rect.centerx = text_area_left + (text_area_width // 2)
+            cached.blit(text_surf, text_rect)
     tooltip.cached_surface = cached
     tooltip.needs_redraw = False
 
