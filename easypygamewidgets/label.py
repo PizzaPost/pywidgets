@@ -70,6 +70,8 @@ class Label:
                  anchor_x: str = "left", anchor_y: str = "top", data: Any = None):
         safe_set_linesize(font, line_spacing)
         lines = str(text).split("\n")
+        if lines == [""]:
+            lines = [" "]
         max_w = max((font.render(line, True, (255, 255, 255)).get_width() for line in lines), default=0)
         total_h = sum(font.render(line, True, (255, 255, 255)).get_height() for line in lines)
         if screen:
@@ -94,7 +96,7 @@ class Label:
             if max_height:
                 self._height = min(total_h + 20, max_height)
         else:
-            self._width = width + alignment_spacing
+            self._width = width
             self._height = height
         self._text = text
 
@@ -1311,6 +1313,8 @@ def render_base_surface(label, is_hovering):
     if label.auto_size:
         safe_set_linesize(label.font, label.line_spacing)
         lines = str(label.text).split("\n")
+        if lines == [""]:
+            lines = [" "]
         max_w = max((label.font.render(line, True, text_color).get_width() for line in lines), default=0)
         total_h = sum(label.font.render(line, True, text_color).get_height() for line in lines)
         label._width = max_w + label.alignment_spacing * 2
