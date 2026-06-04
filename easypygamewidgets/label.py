@@ -1413,7 +1413,8 @@ def render_base_surface(label, is_hovering):
         lines = str(txt).split("\n")
         if not lines: return None
         total_height = sum(label.font.render(line, True, color).get_height() for line in lines)
-        current_y = rect_ref.centery - total_height // 2 + offset[1]
+        descent_offset = abs(label.font.get_descent()) // 2
+        current_y = rect_ref.centery - total_height // 2 + offset[1] + descent_offset
         union_rect = None
         for line in lines:
             line_surf = label.font.render(line, True, color)
