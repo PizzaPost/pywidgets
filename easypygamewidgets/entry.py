@@ -15,7 +15,7 @@ pygame.init()
 
 class Entry:
     def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
-                 height: int = 80, placeholder_text: str = "easypygamewidgets Entry",
+                 height: int = 80, placeholder_text: str = "",
                  text: str = "", char_limit: int | None = None,
                  show: str | None = None, state: str | None = None,
                  active_unpressed_text_color: tuple | None = (255, 255, 255, 255),
