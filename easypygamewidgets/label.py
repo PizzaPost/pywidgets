@@ -67,13 +67,13 @@ class Label:
                  active_hover_cursor: pygame.Cursor | None = None,
                  disabled_hover_cursor: pygame.Cursor | None = None,
                  active_pressed_cursor: pygame.Cursor | None = None,
-                 font: pygame.font.Font = font.default_font, alignment: str = "center",
+                 font: pygame.font.Font | pygame.font.SysFont = font.default_font, alignment: str = "center",
                  alignment_spacing: int = 40, dragable: bool = False, top_left_corner_radius: int = 25,
                  top_right_corner_radius: int = 25, bottom_left_corner_radius: int = 25,
                  bottom_right_corner_radius: int = 25, layer=1000, line_spacing=30,
                  tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
                  max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
-                 anchor_x: str = "left", anchor_y: str = "top", data: Any = None):
+                 anchor_x: str = "left", anchor_y: str = "top", visible: bool = True, data: Any = None):
         safe_set_linesize(font, line_spacing)
         lines = str(text).split("\n")
         if lines == [""]:
@@ -85,7 +85,7 @@ class Label:
             self._screen = screen
         else:
             self._screen = None
-            self._visible = True
+            self._visible = visible
             self._state = state
         self._strikethrough = False
         self._underline = False
@@ -255,7 +255,6 @@ class Label:
         self._current_offset = [0, 0]
         self._offset_step = [0, 0]
         self._use_rotozoom = False
-        self._scheduled_functions = []
         self._is_hovered = False
 
         misc.add_widget(self)
@@ -1008,14 +1007,6 @@ class Label:
         self._use_rotozoom = value
 
     @property
-    def scheduled_functions(self):
-        return self._scheduled_functions
-
-    @scheduled_functions.setter
-    def scheduled_functions(self, value):
-        self._scheduled_functions = value
-
-    @property
     def is_hovered(self):
         return self._is_hovered
 
@@ -1200,12 +1191,6 @@ class Label:
         update_animation(self)
         return self
 
-    def _schedule(self, function, frames_to_execute):
-        if frames_to_execute < 1:
-            frames_to_execute = 1
-        self._scheduled_functions.append([function, frames_to_execute])
-        return self
-
     @property
     def configure(self):
         return self._configure
@@ -1277,10 +1262,6 @@ class Label:
     @property
     def offset(self):
         return self._offset
-
-    @property
-    def schedule(self):
-        return self._schedule
 
 
 def update_animation(label):
@@ -1603,11 +1584,6 @@ def is_point_in_rounded_rect(label, point):
 
 
 def react(label, event=None):
-    for func in label.scheduled_functions[:]:
-        func[1] -= 1
-        if func[1] <= 0:
-            func[0]()
-            label.scheduled_functions.remove(func)
     if label.state != "enabled" or not label.visible:
         label.pressed = False
         return

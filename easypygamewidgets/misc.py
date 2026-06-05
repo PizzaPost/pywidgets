@@ -10,6 +10,7 @@ import requests
 pg = None
 check_disabled = False
 all_widgets = []
+scheduled_functions = []
 
 
 def check_update():
@@ -21,7 +22,7 @@ def check_update():
         response.raise_for_status()
         data = response.json()
         latest_version = data["version"]
-        current_version = "26.25.2"
+        current_version = "26.26"
         if latest_version != current_version:
             print(f"An update is available. Download it now with 'pip install --upgrade easypygamewidgets'\n"
                   f"You are currently on: {current_version}\n"
@@ -84,3 +85,9 @@ def set_appearance_mode(mode):
     hwnd = pygame.display.get_wm_info()["window"]
     tmp = ctypes.c_int(mode)
     ctypes.windll.dwmapi.DwmSetWindowAttribute(hwnd, 20, ctypes.byref(tmp), ctypes.sizeof(tmp))
+
+
+def schedule(function, frames_to_execute):
+    if frames_to_execute < 1:
+        frames_to_execute = 1
+    scheduled_functions.append([function, frames_to_execute])

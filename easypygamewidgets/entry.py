@@ -44,13 +44,13 @@ class Entry:
                  disabled_hover_cursor: pygame.Cursor | None = None,
                  active_pressed_cursor: pygame.Cursor | None = None,
                  blinking_cursor: str = "|", blinking_speed: int = 500,
-                 font: pygame.font.Font = font.default_font, alignment: str = "left",
+                 font: pygame.font.Font | pygame.font.SysFont = font.default_font, alignment: str = "left",
                  alignment_spacing: int = 20, top_left_corner_radius: int = 25, top_right_corner_radius: int = 25,
                  bottom_left_corner_radius: int = 25, bottom_right_corner_radius: int = 25, repeat_delay: int = 500,
                  repeat_interval: int = 50, layer=1000, line_spacing: int = 30,
                  tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
                  max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
-                 anchor_x: str = "left", anchor_y: str = "top", data: Any = None):
+                 anchor_x: str = "left", anchor_y: str = "top", visible: bool = True, data: Any = None):
         if screen:
             screen.add_widget(self)
             self._screen = screen
@@ -58,7 +58,7 @@ class Entry:
                 self._state = state
         else:
             self._screen = None
-            self._visible = True
+            self._visible = visible
             if state:
                 self._state = state
             else:
@@ -160,10 +160,9 @@ class Entry:
         self._last_text_x = self._rect.left
         self._held_key_info = None
         self._next_repeat_time = 0
-        self._cursor_visible = True
+        self._cursor_visible = visible
         self._last_blink_time = pygame.time.get_ticks()
         self._bindings = {}
-        self._scheduled_functions = []
         self._last_visual_state = None
         self._needs_redraw = True
         self._cached_surface = None
@@ -791,14 +790,6 @@ class Entry:
         self._bindings = value
 
     @property
-    def scheduled_functions(self):
-        return self._scheduled_functions
-
-    @scheduled_functions.setter
-    def scheduled_functions(self, value):
-        self._scheduled_functions = value
-
-    @property
     def last_visual_state(self):
         return self._last_visual_state
 
@@ -1101,12 +1092,6 @@ class Entry:
             self._tooltip = None
         return self
 
-    def _schedule(self, function, frames_to_execute):
-        if frames_to_execute < 1:
-            frames_to_execute = 1
-        self._scheduled_functions.append([function, frames_to_execute])
-        return self
-
     def _scale(self, value=None, frames_to_finish=1):
         if frames_to_finish <= 0:
             frames_to_finish = 1
@@ -1226,10 +1211,6 @@ class Entry:
     @property
     def remove_tooltip(self):
         return self._remove_tooltip
-
-    @property
-    def schedule(self):
-        return self._schedule
 
     @property
     def scale(self):
@@ -1627,11 +1608,6 @@ def is_point_in_rounded_rect(entry, point):
 
 
 def react(entry, event=None):
-    for func in entry.scheduled_functions[:]:
-        func[1] -= 1
-        if func[1] <= 0:
-            func[0]()
-            entry.scheduled_functions.remove(func)
     if entry.state != "enabled" or not entry.visible:
         entry.pressed = False
         entry.focused = False

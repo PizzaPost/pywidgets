@@ -40,7 +40,7 @@ class ButtonConfig(TypedDict, total=False):
     disabled_hover_cursor: pygame.Cursor
     active_pressed_cursor: pygame.Cursor
     cursors: dict[str, pygame.Cursor]
-    font: pygame.font.Font
+    font: pygame.font.Font | pygame.font.SysFont
     alignment: str
     command: Callable[[], None]
     alignment_spacing: int
@@ -52,6 +52,7 @@ class ButtonConfig(TypedDict, total=False):
     max_width: int
     min_height: int
     max_height: int
+    visible: bool
     data: Any
     x: int
     y: int
@@ -117,7 +118,7 @@ class EntryConfig(TypedDict, total=False):
     cursors: dict[str, pygame.Cursor]
     blinking_cursor: str
     blinking_speed: int
-    font: pygame.font.Font
+    font: pygame.font.Font | pygame.font.SysFont
     alignment: str
     alignment_spacing: int
     top_left_corner_radius: int
@@ -133,6 +134,7 @@ class EntryConfig(TypedDict, total=False):
     max_width: int
     min_height: int
     max_height: int
+    visible: bool
     data: Any
     x: int
     y: int
@@ -223,7 +225,7 @@ class LabelConfig(TypedDict, total=False):
     disabled_hover_cursor: pygame.Cursor
     active_pressed_cursor: pygame.Cursor
     cursors: dict[str, pygame.Cursor]
-    font: pygame.font.Font
+    font: pygame.font.Font | pygame.font.SysFont
     alignment: str
     alignment_spacing: int
     dragable: bool
@@ -238,6 +240,7 @@ class LabelConfig(TypedDict, total=False):
     max_width: int
     min_height: int
     max_height: int
+    visible: bool
     data: Any
     x: int
     y: int

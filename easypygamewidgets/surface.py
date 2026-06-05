@@ -26,7 +26,7 @@ class Surface:
                  disabled_hover_cursor: pygame.Cursor | None = None,
                  active_pressed_cursor: pygame.Cursor | None = None, dragable: bool = False, layer=1000,
                  tooltip: "easypygamewidgets.Tooltip | None" = None, anchor_x: str = "left", anchor_y: str = "top",
-                 data: Any = None):
+                 visible: bool = True, data: Any = None):
         self.surface = surface
         if screen:
             screen.add_widget(self)
@@ -35,7 +35,7 @@ class Surface:
                 self.state = state
         else:
             self.screen = None
-            self.visible = True
+            self.visible = visible
             if state:
                 self.state = state
             else:
@@ -89,7 +89,6 @@ class Surface:
         self.current_offset = [0, 0]
         self.offset_step = [0, 0]
         self.use_rotozoom = False
-        self.scheduled_functions = []
 
         misc.add_widget(self)
 
@@ -266,12 +265,6 @@ class Surface:
         update_animation(self)
         return self
 
-    def schedule(self, function, frames_to_execute):
-        if frames_to_execute < 1:
-            frames_to_execute = 1
-        self.scheduled_functions.append([function, frames_to_execute])
-        return self
-
 
 def update_animation(surface):
     needs_transform = False
@@ -367,11 +360,6 @@ def draw(surface, window: pygame.Surface):
 
 
 def react(surface, event=None):
-    for func in surface.scheduled_functions[:]:
-        func[1] -= 1
-        if func[1] <= 0:
-            func[0]()
-            surface.scheduled_functions.remove(func)
     if surface.state != "enabled" or not surface.visible:
         surface.pressed = False
         return

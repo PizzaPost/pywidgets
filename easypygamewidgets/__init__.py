@@ -10,7 +10,7 @@ from .button import Button
 from .entry import Entry
 from .font import Font, SysFont, default_font, tooltip_font, emoji_font
 from .label import Label
-from .misc import disable_update_check, link_pygame_window, create_pygame_layer, set_appearance_mode
+from .misc import disable_update_check, link_pygame_window, create_pygame_layer, set_appearance_mode, schedule
 from .screen import Screen
 from .slider import Slider
 from .surface import Surface
@@ -73,6 +73,11 @@ def handle_event(event):
 
 
 def handle_special_events():
+    for func in misc.scheduled_functions[:]:
+        func[1] -= 1
+        if func[1] <= 0:
+            func[0]()
+            misc.scheduled_functions.remove(func)
     for widget in misc.all_widgets:
         if isinstance(widget, Screen):
             screen.react(widget)

@@ -72,14 +72,15 @@ class Slider:
                  active_hover_cursor: pygame.Cursor | None = None,
                  disabled_hover_cursor: pygame.Cursor | None = None,
                  active_pressed_cursor: pygame.Cursor | None = None,
-                 font: pygame.font.Font = font.default_font, alignment: str = "center",
+                 font: pygame.font.Font | pygame.font.SysFont = font.default_font, alignment: str = "center",
                  alignment_spacing: int = 20, show_value_when_pressed: bool = True,
                  show_value_when_hovered: bool = True, show_value_when_unpressed: bool = False,
                  show_value_when_disabled: bool = False, round_display_value: int = 0,
                  show_full_rounding_of_whole_numbers: bool = False, trigger_hold_delay: int = 150, layer=1000,
                  tooltip: "easypygamewidgets.Tooltip | None" = None, line_spacing: int = 30,
                  min_width: int | None = None, max_width: int | None = None, min_height: int | None = None,
-                 max_height: int | None = None, anchor_x: str = "left", anchor_y: str = "top", data: Any = None):
+                 max_height: int | None = None, anchor_x: str = "left", anchor_y: str = "top", visible: bool = True,
+                 data: Any = None):
         if screen:
             screen.add_widget(self)
             self.screen = screen
@@ -87,7 +88,7 @@ class Slider:
                 self.state = state
         else:
             self.screen = None
-            self.visible = True
+            self.visible = visible
             if state:
                 self.state = state
             else:
@@ -210,7 +211,6 @@ class Slider:
         self.pressed_before = False
         self.last_value_update_time = 0
         self.bindings = {}
-        self.scheduled_functions = []
 
         self.font.set_linesize(line_spacing)
 
@@ -332,12 +332,6 @@ class Slider:
         if self.tooltip:
             self.tooltip.visible = False
             self.tooltip = None
-        return self
-
-    def schedule(self, function, frames_to_execute):
-        if frames_to_execute < 1:
-            frames_to_execute = 1
-        self.scheduled_functions.append([function, frames_to_execute])
         return self
 
 
@@ -563,11 +557,6 @@ def is_point_in_rounded_rect(slider, point):
 
 
 def react(slider, event=None):
-    for func in slider.scheduled_functions[:]:
-        func[1] -= 1
-        if func[1] <= 0:
-            func[0]()
-            slider.scheduled_functions.remove(func)
     if slider.state != "enabled" or not slider.visible:
         return
     mouse_pos = pygame.mouse.get_pos()

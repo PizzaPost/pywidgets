@@ -53,12 +53,12 @@ class Timekeeper:
                  active_hover_cursor: pygame.Cursor | None = None,
                  disabled_hover_cursor: pygame.Cursor | None = None,
                  active_pressed_cursor: pygame.Cursor | None = None,
-                 font: pygame.font.Font = font.default_font, alignment: str = "center",
+                 font: pygame.font.Font | pygame.font.SysFont = font.default_font, alignment: str = "center",
                  alignment_spacing: int = 20, corner_radius: int = 14, ticking: bool = False,
                  type_order: list[str] = ("h", ":", "m", ":", "s", ".", "ms"), reversed: bool = False, layer=1000,
                  tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
                  max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
-                 anchor_x: str = "left", anchor_y: str = "top", data: Any = None):
+                 anchor_x: str = "left", anchor_y: str = "top", visible: bool = True, data: Any = None):
         if screen:
             screen.add_widget(self)
             self.screen = screen
@@ -66,7 +66,7 @@ class Timekeeper:
                 self.state = state
         else:
             self.screen = None
-            self.visible = True
+            self.visible = visible
             if state:
                 self.state = state
             else:
@@ -155,7 +155,6 @@ class Timekeeper:
         self.last_updated = None
         self.is_negative = False
         self.bindings = {}
-        self.scheduled_functions = []
 
         split_to_values(self, start_at)
 
@@ -338,12 +337,6 @@ class Timekeeper:
             self.tooltip = None
         return self
 
-    def schedule(self, function, frames_to_execute):
-        if frames_to_execute < 1:
-            frames_to_execute = 1
-        self.scheduled_functions.append([function, frames_to_execute])
-        return self
-
 
 def update_size(timekeeper):
     if timekeeper.auto_size:
@@ -499,11 +492,6 @@ def is_point_in_rounded_rect(timekeeper, point):
 
 
 def react(timekeeper, event=None):
-    for func in timekeeper.scheduled_functions[:]:
-        func[1] -= 1
-        if func[1] <= 0:
-            func[0]()
-            timekeeper.scheduled_functions.remove(func)
     if timekeeper.state != "enabled" or not timekeeper.visible:
         return
     is_inside = is_point_in_rounded_rect(timekeeper, pygame.mouse.get_pos())

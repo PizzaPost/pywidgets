@@ -36,12 +36,12 @@ class Tooltip:
                  hide_background: bool = False,
                  hide_border: bool = False,
                  active_hover_cursor: pygame.Cursor | None = None,
-                 font: pygame.font.Font = font.tooltip_font, alignment: str = "center",
+                 font: pygame.font.Font | pygame.font.SysFont = font.tooltip_font, alignment: str = "center",
                  alignment_spacing: int = 20, corner_radius: int = 25, layer=1000, style: str | None = None,
                  suppress_icon=False, icon: "pygame.Surface | easypygamewidgets.Surface | None" = None,
                  line_spacing: int = 30, min_width: int | None = None, max_width: int | None = None,
                  min_height: int | None = None, max_height: int | None = None, anchor_x: str = "left",
-                 anchor_y: str = "top", data: Any = None):
+                 anchor_y: str = "top", visible: bool = False, data: Any = None):
         self.bindings = {}
         self.style = style
         self.icon = None
@@ -136,8 +136,7 @@ class Tooltip:
         self.pressed = False
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
         self.original_cursor = None
-        self._visible = False
-        self.scheduled_functions = []
+        self._visible = visible
         self.needs_redraw = True
         self.cached_surface = None
 
@@ -261,12 +260,6 @@ class Tooltip:
 
     def remove_widget(self, widget):
         widget.remove_tooltip()
-        return self
-
-    def schedule(self, function, frames_to_execute):
-        if frames_to_execute < 1:
-            frames_to_execute = 1
-        self.scheduled_functions.append([function, frames_to_execute])
         return self
 
 
@@ -400,9 +393,4 @@ def is_point_in_rounded_rect(tooltip, point):
     return False
 
 
-def react(tooltip, event=None):
-    for func in tooltip.scheduled_functions[:]:
-        func[1] -= 1
-        if func[1] <= 0:
-            func[0]()
-            tooltip.scheduled_functions.remove(func)
+def react(tooltip, event=None): pass

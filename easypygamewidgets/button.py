@@ -42,13 +42,13 @@ class Button:
                  active_hover_cursor: pygame.Cursor | None = None,
                  disabled_hover_cursor: pygame.Cursor | None = None,
                  active_pressed_cursor: pygame.Cursor | None = None,
-                 font: pygame.font.Font = font.default_font, alignment: str = "center",
+                 font: pygame.font.Font | pygame.font.SysFont = font.default_font, alignment: str = "center",
                  command: Callable[[], None] | None = None, alignment_spacing: int = 40, corner_radius: int = 20,
                  layer=1000,
                  line_spacing: int = 30,
                  tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
                  max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
-                 anchor_x: str = "left", anchor_y: str = "top", data: Any = None):
+                 anchor_x: str = "left", anchor_y: str = "top", visible: bool = True, data: Any = None):
         self._bindings = {}
         if screen:
             screen.add_widget(self)
@@ -57,7 +57,7 @@ class Button:
                 self._state = state
         else:
             self._screen = None
-            self._visible = True
+            self._visible = visible
             if state:
                 self._state = state
             else:
@@ -147,7 +147,6 @@ class Button:
         self._pressed = False
         self._rect = pygame.Rect(self._x, self._y, self._width, self._height)
         self._original_cursor = None
-        self._scheduled_functions = []
         self._is_hovered = False
         self._last_visual_state = None
         self._needs_redraw = True
@@ -589,14 +588,6 @@ class Button:
         self._original_cursor = value
 
     @property
-    def scheduled_functions(self):
-        return self._scheduled_functions
-
-    @scheduled_functions.setter
-    def scheduled_functions(self, value):
-        self._scheduled_functions = value
-
-    @property
     def is_hovered(self):
         return self._is_hovered
 
@@ -878,12 +869,6 @@ class Button:
         update_animation(self)
         return self
 
-    def _schedule(self, function, frames_to_execute):
-        if frames_to_execute < 1:
-            frames_to_execute = 1
-        self._scheduled_functions.append([function, frames_to_execute])
-        return self
-
     @property
     def configure(self):
         return self._configure
@@ -947,10 +932,6 @@ class Button:
     @property
     def offset(self):
         return self._offset
-
-    @property
-    def schedule(self):
-        return self._schedule
 
 
 def update_animation(button):
@@ -1176,11 +1157,6 @@ def is_point_in_rounded_rect(button, point):
 
 
 def react(button, event=None):
-    for func in button.scheduled_functions[:]:
-        func[1] -= 1
-        if func[1] <= 0:
-            func[0]()
-            button.scheduled_functions.remove(func)
     if button.state != "enabled" or not button.visible:
         button.pressed = False
         return
