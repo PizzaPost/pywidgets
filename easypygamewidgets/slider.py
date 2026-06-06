@@ -8,6 +8,7 @@ from typing import Any
 import pygame
 
 from easypygamewidgets import font, misc
+from easypygamewidgets.masterWidget import Widget
 
 pygame.init()
 
@@ -20,7 +21,7 @@ pygame.init()
 # optimized set_screen function ❌
 # rgba color ❌
 
-class Slider:
+class Slider(Widget):
     def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
                  height: int = 16,
                  text: str = "easypygamewidgets Slider", start: int | float = 0,
@@ -81,6 +82,7 @@ class Slider:
                  min_width: int | None = None, max_width: int | None = None, min_height: int | None = None,
                  max_height: int | None = None, anchor_x: str = "left", anchor_y: str = "top", visible: bool = True,
                  data: Any = None):
+        super().__init__()
         if screen:
             screen.add_widget(self)
             self.screen = screen
@@ -212,7 +214,7 @@ class Slider:
         self.last_value_update_time = 0
         self.bindings = {}
 
-        self.font.set_linesize(line_spacing)
+        safe_set_linesize(font, line_spacing)
 
         misc.add_widget(self)
 
@@ -235,8 +237,8 @@ class Slider:
             self.set_screen(kwargs["screen"])
         if 'layer' in kwargs:
             misc.resort_layers()
-        if 'line_spacing' in kwargs:
-            self.font.set_linesize(self.line_spacing)
+        if 'line_spacing' in kwargs or 'font' in kwargs:
+            safe_set_linesize(self.font, self.line_spacing)
         return self
 
     def config(self, **kwargs):
@@ -333,6 +335,11 @@ class Slider:
             self.tooltip.visible = False
             self.tooltip = None
         return self
+
+
+def safe_set_linesize(font, line_spacing):
+    descent = abs(font.get_descent())
+    font.set_linesize(line_spacing + descent)
 
 
 def get_screen_offset(widget):

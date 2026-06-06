@@ -7,7 +7,8 @@ from typing import Callable, Unpack, Any
 import pygame
 
 from easypygamewidgets import font, misc
-from .assets import TypeHints
+from easypygamewidgets.assets import TypeHints
+from easypygamewidgets.masterWidget import Widget
 
 pygame.init()
 
@@ -15,7 +16,7 @@ pygame.init()
 # PERFECTION
 # four different corner radii ❌
 
-class Button:
+class Button(Widget):
     def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
                  height: int = 80,
                  text: str = "easypygamewidgets Button",
@@ -49,6 +50,7 @@ class Button:
                  tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
                  max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
                  anchor_x: str = "left", anchor_y: str = "top", visible: bool = True, data: Any = None):
+        super().__init__()
         self._bindings = {}
         if screen:
             screen.add_widget(self)
@@ -64,14 +66,15 @@ class Button:
                 self._state = "enabled"
         self._auto_size = auto_size
         if self._auto_size:
-            font.set_linesize(line_spacing)
+            safe_set_linesize(font, line_spacing)
             lines = text.split("\n")
             total_w = 0
+            text_h = font.size(text)[1]
             for line in lines:
                 text_w, text_h = font.size(line)
                 if text_w > total_w:
                     total_w = text_w
-            total_h = len(lines) * line_spacing
+            total_h = len(lines) * text_h
             self._width = total_w + alignment_spacing
             if min_width:
                 self._width = max(self._width, min_width)
@@ -122,7 +125,7 @@ class Button:
         self._font = font
         self._alignment = alignment
         if command:
-            self._bind("<RELEASE>", command)
+            self.bind("<RELEASE>", command)
         self._alignment_spacing = alignment_spacing
         self._corner_radius = corner_radius
         self._layer = layer
@@ -164,7 +167,7 @@ class Button:
         self._offset_step = [0, 0]
         self._use_rotozoom = False
 
-        self._font.set_linesize(line_spacing)
+        safe_set_linesize(font, line_spacing)
 
         misc.add_widget(self)
 
@@ -198,7 +201,7 @@ class Button:
 
     @screen.setter
     def screen(self, value):
-        self._set_screen(value)
+        self.set_screen(value)
 
     @property
     def state(self):
@@ -438,7 +441,7 @@ class Button:
 
     @command.setter
     def command(self, value):
-        self._bind("<RELEASE>", value)
+        self.bind("<RELEASE>", value)
 
     @property
     def alignment_spacing(self):
@@ -473,7 +476,7 @@ class Button:
 
     @tooltip.setter
     def tooltip(self, value):
-        self._set_tooltip(value)
+        self.set_tooltip(value)
 
     @property
     def line_spacing(self):
@@ -715,7 +718,7 @@ class Button:
     def use_rotozoom(self, value):
         self._use_rotozoom = value
 
-    def _configure(self, **kwargs: Unpack[TypeHints.ButtonConfig]):
+    def configure(self, **kwargs: Unpack[TypeHints.ButtonConfig]):
         for key, value in kwargs.items():
             setattr(self, key, value)
         self._needs_redraw = True
@@ -724,7 +727,7 @@ class Button:
                ('auto_size', 'x', 'y', 'width', 'height', 'text', 'font', 'max_width', 'min_width', 'max_height',
                 'min_height', 'line_spacing', "alignment_spacing")):
             if self._auto_size:
-                self._font.set_linesize(self._line_spacing)
+                safe_set_linesize(self.font, self.line_spacing)
                 lines = self._text.split("\n")
                 total_w = 0
                 for line in lines:
@@ -744,15 +747,19 @@ class Button:
                     self._height = min(total_h + 20, self._max_height)
             self._rect = pygame.Rect(self._x, self._y, self._width, self._height)
         if 'line_spacing' in kwargs:
-            self._font.set_linesize(self._line_spacing)
+            safe_set_linesize(self.font, self.line_spacing)
         return self
 
-    def _delete(self):
+    def config(self, **kwargs: Unpack[TypeHints.ButtonConfig]):
+        self.configure(**kwargs)
+        return self
+
+    def delete(self):
         self._alive = False
         if self in misc.all_widgets:
             misc.all_widgets.remove(self)
 
-    def _place(self, x: int, y: int, mode: str = "px"):
+    def place(self, x: int, y: int, mode: str = "px"):
         anchor_offset = [0, 0]
         if self._anchor_x == "left":
             anchor_offset[0] = 0
@@ -784,17 +791,17 @@ class Button:
         self._needs_transform = True
         return self
 
-    def _anchor(self, anchor_x: str = "left", anchor_y: str = "top"):
+    def anchor(self, anchor_x: str = "left", anchor_y: str = "top"):
         self._anchor_x = anchor_x
         self._anchor_y = anchor_y
-        self._place(self._x, self._y)
+        self.place(self._x, self._y)
         return self
 
-    def _bind(self, event: str, command, require_hover: bool = True):
+    def bind(self, event: str, command, require_hover: bool = True):
         self._bindings[event] = {"command": command, "require_hover": require_hover}
         return self
 
-    def _trigger_event(self, event: str, *args, **kwargs):
+    def trigger_event(self, event: str, *args, **kwargs):
         if event in self._bindings:
             binding_data = self._bindings[event]
             command = binding_data["command"]
@@ -802,23 +809,23 @@ class Button:
             if not require_hover or is_point_in_rounded_rect(self, pygame.mouse.get_pos()):
                 command(*args, **kwargs)
 
-    def _set_screen(self, screen):
+    def set_screen(self, screen):
         if self in screen.widgets:
             return self
         self._screen = screen
         screen.add_widget(self)
         return self
 
-    def _unbind(self, event: str):
+    def unbind(self, event: str):
         if event in self._bindings:
             del self._bindings[event]
         return self
 
-    def _unbind_all(self):
+    def unbind_all(self):
         self._bindings.clear()
         return self
 
-    def _set_tooltip(self, tooltip):
+    def set_tooltip(self, tooltip):
         self._tooltip = tooltip
         tooltip.configure(_layer=self._layer + 1)
         if not tooltip.style:
@@ -827,13 +834,13 @@ class Button:
                               active_unpressed_border_color=self._active_unpressed_border_color)
         return self
 
-    def _remove_tooltip(self):
+    def remove_tooltip(self):
         if self._tooltip:
             self._tooltip.configure(visible=False)
             self._tooltip = None
         return self
 
-    def _scale(self, value=None, frames_to_finish=1):
+    def scale(self, value=None, frames_to_finish=1):
         if frames_to_finish <= 0:
             frames_to_finish = 1
         self._target_scale = 1 if value is None else value
@@ -841,7 +848,7 @@ class Button:
         update_animation(self)
         return self
 
-    def _rotate(self, value=None, frames_to_finish=1):
+    def rotate(self, value=None, frames_to_finish=1):
         if frames_to_finish <= 0:
             frames_to_finish = 1
         self._target_rotation = 0 if value is None else value
@@ -849,7 +856,7 @@ class Button:
         update_animation(self)
         return self
 
-    def _rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
+    def rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
         if frames_to_finish <= 0:
             frames_to_finish = 1
         self._target_scale = 1 if scale is None else scale
@@ -860,7 +867,7 @@ class Button:
         update_animation(self)
         return self
 
-    def _offset(self, value: tuple[int, int], frames_to_finish=1):
+    def offset(self, value: tuple[int, int], frames_to_finish=1):
         if frames_to_finish <= 0:
             frames_to_finish = 1
         self._target_offset = (0, 0) if value is None else value
@@ -869,69 +876,10 @@ class Button:
         update_animation(self)
         return self
 
-    @property
-    def configure(self):
-        return self._configure
 
-    @property
-    def config(self):
-        return self._configure
-
-    @property
-    def delete(self):
-        return self._delete
-
-    @property
-    def place(self):
-        return self._place
-
-    @property
-    def anchor(self):
-        return self._anchor
-
-    @property
-    def bind(self):
-        return self._bind
-
-    @property
-    def trigger_event(self):
-        return self._trigger_event
-
-    @property
-    def set_screen(self):
-        return self._set_screen
-
-    @property
-    def unbind(self):
-        return self._unbind
-
-    @property
-    def unbind_all(self):
-        return self._unbind_all
-
-    @property
-    def set_tooltip(self):
-        return self._set_tooltip
-
-    @property
-    def remove_tooltip(self):
-        return self._remove_tooltip
-
-    @property
-    def scale(self):
-        return self._scale
-
-    @property
-    def rotate(self):
-        return self._rotate
-
-    @property
-    def rotozoom(self):
-        return self._rotozoom
-
-    @property
-    def offset(self):
-        return self._offset
+def safe_set_linesize(font, line_spacing):
+    descent = abs(font.get_descent())
+    font.set_linesize(line_spacing + descent)
 
 
 def update_animation(button):

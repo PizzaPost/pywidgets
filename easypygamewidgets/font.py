@@ -26,6 +26,9 @@ class Font:
     def __getattr__(self, attr):
         return getattr(self.font, attr)
 
+    def __deepcopy__(self, memo):
+        return self
+
 
 class SysFont:
     def __init__(self, font: str = "Arial", font_size: int = 26, line_spacing: int | None = None, bold: bool = False,
@@ -37,6 +40,9 @@ class SysFont:
 
     def __getattr__(self, attr):
         return getattr(self.font, attr)
+
+    def __deepcopy__(self, memo):
+        return self
 
 
 default_font = Font(default_font_path, 26, None)

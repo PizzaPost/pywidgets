@@ -8,8 +8,8 @@ from typing import Any
 
 import pygame
 
-import easypygamewidgets
 from easypygamewidgets import font, misc
+from easypygamewidgets.masterWidget import Widget
 
 pygame.init()
 
@@ -24,7 +24,7 @@ pygame.init()
 # rgba color ❌
 # four different corner radii ❌
 
-class Timekeeper:
+class Timekeeper(Widget):
     def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
                  height: int = 80, start_at: float | int = 60, end_at: float | int | None = None,
                  show_milliseconds: bool = False, show_seconds: bool = True,
@@ -59,6 +59,7 @@ class Timekeeper:
                  tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
                  max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
                  anchor_x: str = "left", anchor_y: str = "top", visible: bool = True, data: Any = None):
+        super().__init__()
         if screen:
             screen.add_widget(self)
             self.screen = screen

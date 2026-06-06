@@ -9,6 +9,7 @@ from typing import Any
 import pygame
 
 from easypygamewidgets import font, misc
+from easypygamewidgets.masterWidget import Widget
 
 pygame.init()
 
@@ -22,7 +23,7 @@ pygame.init()
 # rgba color ❌
 # four different corner radii ❌
 
-class Tooltip:
+class Tooltip(Widget):
     def __init__(self,
                  widget: "easypygamewidgets.Button | easypygamewidgets.Entry | easypygamewidgets.Label | easypygamewidgets.Slider | easypygamewidgets.Surface | easypygamewidgets.Timekeeper | None" = None,
                  auto_size: bool = True, width: int = 180,
@@ -42,10 +43,13 @@ class Tooltip:
                  line_spacing: int = 30, min_width: int | None = None, max_width: int | None = None,
                  min_height: int | None = None, max_height: int | None = None, anchor_x: str = "left",
                  anchor_y: str = "top", visible: bool = False, data: Any = None):
+        super().__init__()
         self.bindings = {}
         self.style = style
         self.icon = None
         self._layer = layer
+        self.font = font
+        self.line_spacing = line_spacing
         if not style:
             self.active_unpressed_text_color = normalize_color((255, 255, 255, 255))
             self.active_unpressed_background_color = normalize_color((50, 50, 50, 255))
@@ -58,7 +62,7 @@ class Tooltip:
         if auto_size:
             text_w, text_h = font.size(text)
             self.height = text_h + 20
-            icon_offset = height if icon and not suppress_icon else 0
+            icon_offset = self.height if icon and not suppress_icon else 0
             self.width = text_w + (alignment_spacing * 2) + icon_offset
             if min_width:
                 self.width = max(width, min_width)
@@ -114,16 +118,14 @@ class Tooltip:
             else:
                 if cursor is not None:
                     print(
-                        f"No custom cursor is used for the tooltip {self.text} because it's not a pygame.Cursor object. ({cursor})")
+                        f"No custom cursor is used for the tooltip {text} because it's not a pygame.Cursor object. ({cursor})")
                 self.cursors[name] = None
-        self.font = font
         self.alignment = alignment
         self.alignment_spacing = alignment_spacing
         self.corner_radius = corner_radius
         self.suppress_icon = suppress_icon
         if icon:
             self.icon = icon
-        self.line_spacing = line_spacing
         self.min_width = min_width
         self.max_width = max_width
         self.min_height = min_height
@@ -140,7 +142,7 @@ class Tooltip:
         self.needs_redraw = True
         self.cached_surface = None
 
-        self.font.set_linesize(line_spacing)
+        safe_set_linesize(font, line_spacing)
 
         misc.add_widget(self)
 
@@ -184,8 +186,8 @@ class Tooltip:
             self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
         if 'widget' in kwargs:
             kwargs["widget"].set_tooltip(self)
-        if 'line_spacing' in kwargs:
-            self.font.set_linesize(self.line_spacing)
+        if 'line_spacing' in kwargs or 'font' in kwargs:
+            safe_set_linesize(self.font, self.line_spacing)
         return self
 
     def config(self, **kwargs):
@@ -263,6 +265,11 @@ class Tooltip:
         return self
 
 
+def safe_set_linesize(font, line_spacing):
+    descent = abs(font.get_descent())
+    font.set_linesize(line_spacing + descent)
+
+
 def normalize_color(color):
     if color is None:
         return (0, 0, 0, 0)
@@ -276,10 +283,10 @@ def render_tooltip_surface(tooltip):
     bg_color = tooltip.active_unpressed_background_color
     brd_color = tooltip.active_unpressed_border_color
     if tooltip.auto_size:
-        temp_surf = tooltip.font.render(tooltip.text, True, text_color)
-        tooltip.height = temp_surf.get_height() + 20
+        text_w, text_h = tooltip.font.size(tooltip.text)
+        tooltip.height = text_h + 20
         icon_offset = tooltip.height if tooltip.icon and not tooltip.suppress_icon else 0
-        tooltip.width = temp_surf.get_width() + (tooltip.alignment_spacing * 2) + icon_offset
+        tooltip.width = text_w + (tooltip.alignment_spacing * 2) + icon_offset
         if tooltip.min_width:
             tooltip.width = max(tooltip.width, tooltip.min_width)
         if tooltip.max_width:
@@ -309,6 +316,7 @@ def render_tooltip_surface(tooltip):
                          border_radius=tooltip.corner_radius)
         cached.blit(tmp, local_rect)
     if not tooltip.hide_text:
+        descent = abs(tooltip.font.get_descent())
         if tooltip.alignment == "stretched" and len(tooltip.text) > 1 and not tooltip.auto_size:
             total_char_width = sum(tooltip.font.render(char, True, text_color).get_width() for char in tooltip.text)
             available_width = text_area_width - (tooltip.alignment_spacing * 2)
@@ -318,18 +326,19 @@ def render_tooltip_surface(tooltip):
                 for char in tooltip.text:
                     char_surf = tooltip.font.render(char, True, text_color)
                     char_surf.set_alpha(text_color[3])
-                    cached.blit(char_surf, char_surf.get_rect(midleft=(current_x, local_rect.centery)))
+                    cached.blit(char_surf, char_surf.get_rect(midleft=(current_x, local_rect.centery + descent)))
                     current_x += char_surf.get_width() + spacing
             else:
                 text_surf = tooltip.font.render(tooltip.text, True, text_color)
                 text_surf.set_alpha(text_color[3])
                 cached.blit(text_surf,
-                            text_surf.get_rect(center=(text_area_left + text_area_width // 2, local_rect.centery)))
+                            text_surf.get_rect(
+                                center=(text_area_left + text_area_width // 2, local_rect.centery + descent)))
         else:
             text_surf = tooltip.font.render(tooltip.text, True, text_color)
             text_surf.set_alpha(text_color[3])
             text_rect = text_surf.get_rect()
-            text_rect.centery = local_rect.centery
+            text_rect.centery = local_rect.centery + descent
             if tooltip.alignment == "left":
                 text_rect.left = text_area_left + tooltip.alignment_spacing
             elif tooltip.alignment == "right":
@@ -344,7 +353,7 @@ def render_tooltip_surface(tooltip):
 def draw(tooltip, surface: pygame.Surface):
     if not tooltip._visible:
         return
-    tooltip.font.set_linesize(tooltip.line_spacing)
+    safe_set_linesize(tooltip.font, tooltip.line_spacing)
     mouse_pos = pygame.mouse.get_pos()
     is_hovering = is_point_in_rounded_rect(tooltip, mouse_pos)
     if tooltip.needs_redraw or tooltip.cached_surface is None:

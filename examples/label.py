@@ -13,7 +13,7 @@ epw.link_pygame_window(window)
 epw.set_appearance_mode(2)
 
 label1 = epw.Label(text="Hello World").place(0, 10)
-label2 = epw.Label(text="You can\ndrag me!", dragable=True).place(0, 75)
+label2 = epw.Label(text="You can\ndrag me!", dragable=True, font=epw.SysFont(font="Calibri", font_size=70)).place(0, 75)
 
 
 def draw():

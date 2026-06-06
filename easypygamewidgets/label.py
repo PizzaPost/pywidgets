@@ -8,7 +8,8 @@ from typing import Unpack, Any
 import pygame
 
 from easypygamewidgets import font, misc
-from .assets import TypeHints
+from easypygamewidgets.assets import TypeHints
+from easypygamewidgets.masterWidget import Widget
 
 pygame.init()
 
@@ -23,7 +24,7 @@ pygame.init()
 # rgba color ✅
 # four different corner radius ✅
 
-class Label:
+class Label(Widget):
     def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
                  height: int = 80,
                  text: str = "easypygamewidgets Label", state="enabled",
@@ -74,6 +75,7 @@ class Label:
                  tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
                  max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
                  anchor_x: str = "left", anchor_y: str = "top", visible: bool = True, data: Any = None):
+        super().__init__()
         safe_set_linesize(font, line_spacing)
         lines = str(text).split("\n")
         if lines == [""]:
@@ -1014,7 +1016,7 @@ class Label:
     def is_hovered(self, value):
         self._is_hovered = value
 
-    def _configure(self, **kwargs: Unpack[TypeHints.LabelConfig]):
+    def configure(self, **kwargs: Unpack[TypeHints.LabelConfig]):
         for key, value in kwargs.items():
             setattr(self, key, value)
         self._needs_redraw = True
@@ -1046,12 +1048,16 @@ class Label:
             safe_set_linesize(self._font, self._line_spacing)
         return self
 
-    def _delete(self):
+    def config(self, **kwargs: Unpack[TypeHints.LabelConfig]):
+        self.configure(**kwargs)
+        return self
+
+    def delete(self):
         self._alive = False
         if self in misc.all_widgets:
             misc.all_widgets.remove(self)
 
-    def _place(self, x: int, y: int, mode: str = "px"):
+    def place(self, x: int, y: int, mode: str = "px"):
         anchor_offset = [0, 0]
         if self._anchor_x == "left":
             anchor_offset[0] = 0
@@ -1083,17 +1089,17 @@ class Label:
         self._needs_transform = True
         return self
 
-    def _anchor(self, anchor_x: str = "left", anchor_y: str = "top"):
+    def anchor(self, anchor_x: str = "left", anchor_y: str = "top"):
         self._anchor_x = anchor_x
         self._anchor_y = anchor_y
         self._place(self._x, self._y)
         return self
 
-    def _bind(self, event: str, command, require_hover: bool = True):
+    def bind(self, event: str, command, require_hover: bool = True):
         self._bindings[event] = {"command": command, "require_hover": require_hover}
         return self
 
-    def _trigger_event(self, event: str, *args, **kwargs):
+    def trigger_event(self, event: str, *args, **kwargs):
         if event in self._bindings:
             binding_data = self._bindings[event]
             command = binding_data["command"]
@@ -1101,33 +1107,33 @@ class Label:
             if not require_hover or is_point_in_rounded_rect(self, pygame.mouse.get_pos()):
                 command(*args, **kwargs)
 
-    def _set_screen(self, screen):
+    def set_screen(self, screen):
         if self in screen.widgets:
             return self
         self._screen = screen
         screen.add_widget(self)
         return self
 
-    def _set_strikethrough(self, value: bool):
+    def set_strikethrough(self, value: bool):
         self._strikethrough = value
         self._needs_redraw = True
         return self
 
-    def _set_underline(self, value: bool):
+    def set_underline(self, value: bool):
         self._underline = value
         self._needs_redraw = True
         return self
 
-    def _unbind(self, event: str):
+    def unbind(self, event: str):
         if event in self._bindings:
             del self._bindings[event]
         return self
 
-    def _unbind_all(self):
+    def unbind_all(self):
         self._bindings.clear()
         return self
 
-    def _set_tooltip(self, tooltip):
+    def set_tooltip(self, tooltip):
         self._tooltip = tooltip
         tooltip.configure(layer=self._layer + 1)
         if not tooltip.style:
@@ -1140,13 +1146,13 @@ class Label:
                               active_unpressed_border_color=self._active_unpressed_border_color if self._active_unpressed_border_color else bd_color)
         return self
 
-    def _remove_tooltip(self):
+    def remove_tooltip(self):
         if self._tooltip:
             self._tooltip.visible = False
             self._tooltip = None
         return self
 
-    def _scale(self, value=None, frames_to_finish=1):
+    def scale(self, value=None, frames_to_finish=1):
         if frames_to_finish <= 0:
             frames_to_finish = 1
         if value is None:
@@ -1157,7 +1163,7 @@ class Label:
         update_animation(self)
         return self
 
-    def _rotate(self, value=None, frames_to_finish=1):
+    def rotate(self, value=None, frames_to_finish=1):
         if frames_to_finish <= 0:
             frames_to_finish = 1
         if value is None:
@@ -1168,7 +1174,7 @@ class Label:
         update_animation(self)
         return self
 
-    def _rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
+    def rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
         if frames_to_finish <= 0:
             frames_to_finish = 1
         self._target_scale = 1 if scale is None else scale
@@ -1179,7 +1185,7 @@ class Label:
         update_animation(self)
         return self
 
-    def _offset(self, value: tuple[int, int], frames_to_finish=1):
+    def offset(self, value: tuple[int, int], frames_to_finish=1):
         if frames_to_finish <= 0:
             frames_to_finish = 1
         if value is None:
@@ -1190,78 +1196,6 @@ class Label:
         self._offset_step[1] = (self._target_offset[1] - self._current_offset[1]) / frames_to_finish
         update_animation(self)
         return self
-
-    @property
-    def configure(self):
-        return self._configure
-
-    @property
-    def config(self):
-        return self._configure
-
-    @property
-    def delete(self):
-        return self._delete
-
-    @property
-    def place(self):
-        return self._place
-
-    @property
-    def anchor(self):
-        return self._anchor
-
-    @property
-    def bind(self):
-        return self._bind
-
-    @property
-    def trigger_event(self):
-        return self._trigger_event
-
-    @property
-    def set_screen(self):
-        return self._set_screen
-
-    @property
-    def set_strikethrough(self):
-        return self._set_strikethrough
-
-    @property
-    def set_underline(self):
-        return self._set_underline
-
-    @property
-    def unbind(self):
-        return self._unbind
-
-    @property
-    def unbind_all(self):
-        return self._unbind_all
-
-    @property
-    def set_tooltip(self):
-        return self._set_tooltip
-
-    @property
-    def remove_tooltip(self):
-        return self._remove_tooltip
-
-    @property
-    def scale(self):
-        return self._scale
-
-    @property
-    def rotate(self):
-        return self._rotate
-
-    @property
-    def rotozoom(self):
-        return self._rotozoom
-
-    @property
-    def offset(self):
-        return self._offset
 
 
 def update_animation(label):
@@ -1299,10 +1233,7 @@ def normalize_color(color):
 
 
 def safe_set_linesize(font, line_spacing):
-    try:
-        descent = abs(font.get_descent())
-    except Exception:
-        descent = 0
+    descent = abs(font.get_descent())
     font.set_linesize(line_spacing + descent)
 
 

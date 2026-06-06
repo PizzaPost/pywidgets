@@ -15,10 +15,10 @@ epw.set_appearance_mode(2)
 stopwatch = epw.Timekeeper(ticking=True, start_at=0)
 stopwatch.place(50, 50)
 
-timer = epw.Timekeeper(ticking=True, start_at=90, reversed=True)
+timer = epw.Timekeeper(ticking=True, start_at=90, end_at=0, reversed=True)
 timer.place(50, 200)
 
-timer_with_milliseconds = epw.Timekeeper(ticking=True, start_at=90, reversed=True, show_milliseconds=True)
+timer_with_milliseconds = epw.Timekeeper(ticking=True, start_at=90, end_at=-60, reversed=True, show_milliseconds=True)
 timer_with_milliseconds.place(50, 350)
 
 

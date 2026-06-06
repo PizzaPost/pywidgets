@@ -8,12 +8,13 @@ from typing import Unpack, Any
 import pygame
 
 from easypygamewidgets import font, misc
-from .assets import TypeHints
+from easypygamewidgets.assets import TypeHints
+from easypygamewidgets.masterWidget import Widget
 
 pygame.init()
 
 
-class Entry:
+class Entry(Widget):
     def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
                  height: int = 80, placeholder_text: str = "",
                  text: str = "", char_limit: int | None = None,
@@ -51,6 +52,7 @@ class Entry:
                  tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
                  max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
                  anchor_x: str = "left", anchor_y: str = "top", visible: bool = True, data: Any = None):
+        super().__init__()
         if screen:
             screen.add_widget(self)
             self._screen = screen
@@ -917,7 +919,7 @@ class Entry:
     def use_rotozoom(self, value):
         self._use_rotozoom = value
 
-    def _configure(self, **kwargs: Unpack[TypeHints.EntryConfig]):
+    def configure(self, **kwargs: Unpack[TypeHints.EntryConfig]):
         for key, value in kwargs.items():
             setattr(self, key, value)
         self._needs_redraw = True
@@ -936,12 +938,16 @@ class Entry:
             self.set_screen(kwargs["screen"])
         return self
 
-    def _delete(self):
+    def config(self, **kwargs: Unpack[TypeHints.EntryConfig]):
+        self.configure(**kwargs)
+        return self
+
+    def delete(self):
         self._alive = False
         if self in misc.all_widgets:
             misc.all_widgets.remove(self)
 
-    def _place(self, x: int, y: int, mode: str = "px"):
+    def place(self, x: int, y: int, mode: str = "px"):
         anchor_offset = [0, 0]
         if self._anchor_x == "left":
             anchor_offset[0] = 0
@@ -973,17 +979,17 @@ class Entry:
         self._needs_transform = True
         return self
 
-    def _anchor(self, anchor_x: str = "left", anchor_y: str = "top"):
+    def anchor(self, anchor_x: str = "left", anchor_y: str = "top"):
         self._anchor_x = anchor_x
         self._anchor_y = anchor_y
         self._place(self._x, self._y)
         return self
 
-    def _bind(self, event: str, command, require_hover: bool = True):
+    def bind(self, event: str, command, require_hover: bool = True):
         self._bindings[event] = {"command": command, "require_hover": require_hover}
         return self
 
-    def _trigger_event(self, event: str, *args, **kwargs):
+    def trigger_event(self, event: str, *args, **kwargs):
         if event in self._bindings:
             binding_data = self._bindings[event]
             command = binding_data["command"]
@@ -991,10 +997,10 @@ class Entry:
             if not require_hover or is_point_in_rounded_rect(self, pygame.mouse.get_pos()):
                 command(*args, **kwargs)
 
-    def _get(self):
+    def get(self):
         return self._text
 
-    def _text_delete(self, position_start: int = 0, position_end: int | None = None):
+    def text_delete(self, position_start: int = 0, position_end: int | None = None):
         if position_end is None:
             position_end = len(self._text)
         position_start = max(0, min(position_start, len(self._text)))
@@ -1007,7 +1013,7 @@ class Entry:
                 self._cursor_position = position_start
         self.reset_cursor_blink()
 
-    def _text_insert(self, text: str, position: int = None):
+    def text_insert(self, text: str, position: int = None):
         if position is None:
             position = len(self._text)
         if self._char_limit is not None and len(self._text) + len(text) > self._char_limit:
@@ -1016,25 +1022,25 @@ class Entry:
         self._cursor_position += len(text)
         self.reset_cursor_blink()
 
-    def _text_select(self, position_start: int = 0, position_end: int | None = None):
+    def text_select(self, position_start: int = 0, position_end: int | None = None):
         if position_end is None:
             position_end = len(self._text)
         self._selected_text = [min(position_start, position_end), max(position_start, position_end)]
         self.reset_cursor_blink()
 
-    def _text_copy(self):
+    def text_copy(self):
         if self._selected_text and self._selected_text[0] != self._selected_text[1]:
             start, end = self._selected_text
             clipboard_text = self._text[start:end]
             pygame.scrap.put(pygame.SCRAP_TEXT, clipboard_text.encode('utf-8'))
 
-    def _text_cut(self):
+    def text_cut(self):
         if self._selected_text and self._selected_text[0] != self._selected_text[1]:
             self.text_copy()
             self.text_delete(self._selected_text[0], self._selected_text[1])
             self._selected_text = None
 
-    def _text_paste(self):
+    def text_paste(self):
         if not pygame.scrap.get_init():
             pygame.scrap.init()
         if self._selected_text:
@@ -1048,11 +1054,11 @@ class Entry:
             except Exception as e:
                 print(f"Paste error: {e}")
 
-    def _reset_cursor_blink(self):
+    def reset_cursor_blink(self):
         self._cursor_visible = True
         self._last_blink_time = pygame.time.get_ticks()
 
-    def _get_display_text(self):
+    def get_display_text(self):
         if self._text:
             if self._show:
                 return self._show * len(self._text)
@@ -1061,23 +1067,23 @@ class Entry:
             return self._placeholder_text
         return ""
 
-    def _set_screen(self, screen):
+    def set_screen(self, screen):
         if self in screen.widgets:
             return self
         self._screen = screen
         screen.add_widget(self)
         return self
 
-    def _unbind(self, event: str):
+    def unbind(self, event: str):
         if event in self._bindings:
             del self._bindings[event]
         return self
 
-    def _unbind_all(self):
+    def unbind_all(self):
         self._bindings.clear()
         return self
 
-    def _set_tooltip(self, tooltip):
+    def set_tooltip(self, tooltip):
         self._tooltip = tooltip
         tooltip.configure(layer=self._layer + 1)
         if not tooltip.style:
@@ -1086,13 +1092,13 @@ class Entry:
                               active_unpressed_border_color=self._active_unpressed_border_color)
         return self
 
-    def _remove_tooltip(self):
+    def remove_tooltip(self):
         if self._tooltip:
             self._tooltip.visible = False
             self._tooltip = None
         return self
 
-    def _scale(self, value=None, frames_to_finish=1):
+    def scale(self, value=None, frames_to_finish=1):
         if frames_to_finish <= 0:
             frames_to_finish = 1
         self._target_scale = 1 if value is None else value
@@ -1100,7 +1106,7 @@ class Entry:
         update_animation(self)
         return self
 
-    def _rotate(self, value=None, frames_to_finish=1):
+    def rotate(self, value=None, frames_to_finish=1):
         if frames_to_finish <= 0:
             frames_to_finish = 1
         self._target_rotation = 0 if value is None else value
@@ -1108,7 +1114,7 @@ class Entry:
         update_animation(self)
         return self
 
-    def _rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
+    def rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
         if frames_to_finish <= 0:
             frames_to_finish = 1
         self._target_scale = 1 if scale is None else scale
@@ -1119,7 +1125,7 @@ class Entry:
         update_animation(self)
         return self
 
-    def _offset(self, value: tuple[int, int], frames_to_finish=1):
+    def offset(self, value: tuple[int, int], frames_to_finish=1):
         if frames_to_finish <= 0:
             frames_to_finish = 1
         self._target_offset = (0, 0) if value is None else value
@@ -1127,106 +1133,6 @@ class Entry:
         self._offset_step[1] = (self._target_offset[1] - self._current_offset[1]) / frames_to_finish
         update_animation(self)
         return self
-
-    @property
-    def configure(self):
-        return self._configure
-
-    @property
-    def config(self):
-        return self._configure
-
-    @property
-    def delete(self):
-        return self._delete
-
-    @property
-    def place(self):
-        return self._place
-
-    @property
-    def anchor(self):
-        return self._anchor
-
-    @property
-    def bind(self):
-        return self._bind
-
-    @property
-    def trigger_event(self):
-        return self._trigger_event
-
-    @property
-    def get(self):
-        return self._get
-
-    @property
-    def text_delete(self):
-        return self._text_delete
-
-    @property
-    def text_insert(self):
-        return self._text_insert
-
-    @property
-    def text_select(self):
-        return self._text_select
-
-    @property
-    def text_copy(self):
-        return self._text_copy
-
-    @property
-    def text_cut(self):
-        return self._text_cut
-
-    @property
-    def text_paste(self):
-        return self._text_paste
-
-    @property
-    def reset_cursor_blink(self):
-        return self._reset_cursor_blink
-
-    @property
-    def get_display_text(self):
-        return self._get_display_text
-
-    @property
-    def set_screen(self):
-        return self._set_screen
-
-    @property
-    def unbind(self):
-        return self._unbind
-
-    @property
-    def unbind_all(self):
-        return self._unbind_all
-
-    @property
-    def set_tooltip(self):
-        return self._set_tooltip
-
-    @property
-    def remove_tooltip(self):
-        return self._remove_tooltip
-
-    @property
-    def scale(self):
-        return self._scale
-
-    @property
-    def rotate(self):
-        return self._rotate
-
-    @property
-    def rotozoom(self):
-        return self._rotozoom
-
-    @property
-    def offset(self):
-        return self._offset
 
 
 def update_animation(entry):
