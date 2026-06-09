@@ -85,9 +85,13 @@ class Label(Widget, Tooltipable):
         if screen:
             screen.add_widget(self)
             self._screen = screen
+            if state:
+                self._state = state
+            if visible is not None:
+                self._visible = visible
         else:
             self._screen = None
-            self._visible = visible
+            self._visible = True if visible is None else visible
             self._state = state
         self._strikethrough = False
         self._underline = False

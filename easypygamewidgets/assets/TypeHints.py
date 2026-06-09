@@ -14,7 +14,6 @@ class ButtonConfig(TypedDict, total=False):
     height: int
     screen: "easypygamewidgets.Screen"
     state: str
-    visible: bool
     auto_size: bool
     text: str
     active_unpressed_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
@@ -52,7 +51,7 @@ class ButtonConfig(TypedDict, total=False):
     max_width: int
     min_height: int
     max_height: int
-    visible: bool
+    visible: bool | None
     data: Any
     x: int
     y: int
@@ -82,7 +81,6 @@ class ButtonConfig(TypedDict, total=False):
 class EntryConfig(TypedDict, total=False):
     screen: "easypygamewidgets.Screen"
     state: str
-    visible: bool
     auto_size: bool
     width: int
     height: int
@@ -134,7 +132,7 @@ class EntryConfig(TypedDict, total=False):
     max_width: int
     min_height: int
     max_height: int
-    visible: bool
+    visible: bool | None
     data: Any
     x: int
     y: int
@@ -177,7 +175,6 @@ class EntryConfig(TypedDict, total=False):
 class LabelConfig(TypedDict, total=False):
     screen: "easypygamewidgets.Screen"
     state: str
-    visible: bool
     strikethrough: bool
     underline: bool
     auto_size: bool
@@ -240,7 +237,7 @@ class LabelConfig(TypedDict, total=False):
     max_width: int
     min_height: int
     max_height: int
-    visible: bool
+    visible: bool | None
     data: Any
     x: int
     y: int

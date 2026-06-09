@@ -65,9 +65,11 @@ class Timekeeper(Widget, Tooltipable):
             self._screen = screen
             if state:
                 self._state = state
+            if visible is not None:
+                self._visible = visible
         else:
             self._screen = None
-            self._visible = visible
+            self._visible = True if visible is None else visible
             if state:
                 self._state = state
             else:
