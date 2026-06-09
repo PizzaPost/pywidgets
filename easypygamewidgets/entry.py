@@ -51,7 +51,7 @@ class Entry(Widget, Tooltipable):
                  repeat_interval: int = 50, layer=1000, line_spacing: int = 30,
                  tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
                  max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
-                 anchor_x: str = "left", anchor_y: str = "top", visible: bool = True, data: Any = None):
+                 anchor_x: str = "left", anchor_y: str = "top", visible: bool | None = None, data: Any = None):
         super().__init__()
         if screen:
             screen.add_widget(self)

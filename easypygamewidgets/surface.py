@@ -27,7 +27,7 @@ class Surface(Widget, Tooltipable):
                  disabled_hover_cursor: pygame.Cursor | None = None,
                  active_pressed_cursor: pygame.Cursor | None = None, dragable: bool = False, layer=1000,
                  tooltip: "easypygamewidgets.Tooltip | None" = None, anchor_x: str = "left", anchor_y: str = "top",
-                 visible: bool = True, data: Any = None):
+                 visible: bool | None = None, data: Any = None):
         super().__init__()
         self._surface = surface
         if screen:

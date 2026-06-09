@@ -80,8 +80,8 @@ class Slider(Widget, Tooltipable):
                  show_full_rounding_of_whole_numbers: bool = False, trigger_hold_delay: int = 150, layer=1000,
                  tooltip: "easypygamewidgets.Tooltip | None" = None, line_spacing: int = 30,
                  min_width: int | None = None, max_width: int | None = None, min_height: int | None = None,
-                 max_height: int | None = None, anchor_x: str = "left", anchor_y: str = "top", visible: bool = True,
-                 data: Any = None):
+                 max_height: int | None = None, anchor_x: str = "left", anchor_y: str = "top",
+                 visible: bool | None = None, data: Any = None):
         super().__init__()
         if screen:
             screen.add_widget(self)

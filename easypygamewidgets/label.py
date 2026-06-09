@@ -74,7 +74,7 @@ class Label(Widget, Tooltipable):
                  bottom_right_corner_radius: int = 25, layer=1000, line_spacing=30,
                  tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
                  max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
-                 anchor_x: str = "left", anchor_y: str = "top", visible: bool = True, data: Any = None):
+                 anchor_x: str = "left", anchor_y: str = "top", visible: bool | None = None, data: Any = None):
         super().__init__()
         safe_set_linesize(font, line_spacing)
         lines = str(text).split("\n")

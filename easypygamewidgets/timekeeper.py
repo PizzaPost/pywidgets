@@ -58,7 +58,7 @@ class Timekeeper(Widget, Tooltipable):
                  type_order: list[str] = ("h", ":", "m", ":", "s", ".", "ms"), reversed: bool = False, layer=1000,
                  tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
                  max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
-                 anchor_x: str = "left", anchor_y: str = "top", visible: bool = True, data: Any = None):
+                 anchor_x: str = "left", anchor_y: str = "top", visible: bool | None = None, data: Any = None):
         super().__init__()
         if screen:
             screen.add_widget(self)
