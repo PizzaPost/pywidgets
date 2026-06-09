@@ -8,7 +8,7 @@ from typing import Any
 import pygame
 
 from easypygamewidgets import misc
-from easypygamewidgets.masterWidget import Widget
+from easypygamewidgets.masterWidget import Widget, Tooltipable
 
 pygame.init()
 
@@ -20,7 +20,7 @@ pygame.init()
 # config suggestions ❌
 # optimized set_screen function ❌
 
-class Surface(Widget):
+class Surface(Widget, Tooltipable):
     def __init__(self, surface: pygame.Surface, screen: "easypygamewidgets.Screen | None" = None,
                  state: str | None = None,
                  active_hover_cursor: pygame.Cursor | None = None,
@@ -29,100 +29,391 @@ class Surface(Widget):
                  tooltip: "easypygamewidgets.Tooltip | None" = None, anchor_x: str = "left", anchor_y: str = "top",
                  visible: bool = True, data: Any = None):
         super().__init__()
-        self.surface = surface
+        self._surface = surface
         if screen:
             screen.add_widget(self)
-            self.screen = screen
+            self._screen = screen
             if state:
-                self.state = state
+                self._state = state
         else:
-            self.screen = None
-            self.visible = visible
+            self._screen = None
+            self._visible = visible
             if state:
-                self.state = state
+                self._state = state
             else:
-                self.state = "enabled"
+                self._state = "enabled"
         cursor_input = {
             "active_hover": active_hover_cursor,
             "disabled_hover": disabled_hover_cursor,
             "active_pressed": active_pressed_cursor
         }
-        self.cursors = {}
+        self._cursors = {}
         for name, cursor in cursor_input.items():
             if isinstance(cursor, pygame.cursors.Cursor):
-                self.cursors[name] = cursor
+                self._cursors[name] = cursor
             else:
                 if cursor is not None:
                     print(
                         f"No custom cursor is used for a surface because it's not a pygame.Cursor object. ({cursor})")
-                self.cursors[name] = None
-        self.dragable = dragable
-        self.layer = layer
-        self.tooltip = tooltip
+                self._cursors[name] = None
+        self._dragable = dragable
+        self._layer = layer
+        self._tooltip = tooltip
         if tooltip:
-            tooltip.configure(layer=self.layer + 1)
+            tooltip.configure(layer=self._layer + 1)
             if not tooltip.style:
                 tooltip.configure(active_unpressed_text_color=(255, 255, 255, 255),
                                   active_unpressed_background_color=(50, 50, 50, 255),
                                   active_unpressed_border_color=(100, 100, 100, 255))
-        self.anchor_x = anchor_x
-        self.anchor_y = anchor_y
-        self.data = data
+        self._anchor_x = anchor_x
+        self._anchor_y = anchor_y
+        self._data = data
         self._width = surface.get_width()
         self._height = surface.get_height()
-        self.x = 0
-        self.y = 0
-        self.alive = True
-        self.pressed = False
-        self.rect = surface.get_rect()
-        self.original_cursor = None
-        self.drag_offset = None
-        self.is_dragging = False
-        self.last_checked_dragging = None
-        self.bindings = {}
-        self.original_surface = surface
-        self.target_scale = 1
-        self.current_scale = 1
-        self.scale_step = 0
-        self.target_rotation = 0
-        self.current_rotation = 0
-        self.rotation_step = 0
-        self.target_offset = (0, 0)
-        self.current_offset = [0, 0]
-        self.offset_step = [0, 0]
-        self.use_rotozoom = False
+        self._x = 0
+        self._y = 0
+        self._alive = True
+        self._pressed = False
+        self._rect = surface.get_rect()
+        self._original_cursor = None
+        self._drag_offset = None
+        self._is_dragging = False
+        self._last_checked_dragging = None
+        self._bindings = {}
+        self._original_surface = surface
+        self._target_scale = 1
+        self._current_scale = 1
+        self._scale_step = 0
+        self._target_rotation = 0
+        self._current_rotation = 0
+        self._rotation_step = 0
+        self._target_offset = (0, 0)
+        self._current_offset = [0, 0]
+        self._offset_step = [0, 0]
+        self._use_rotozoom = False
 
         misc.add_widget(self)
 
     @property
+    def surface(self):
+        return self._surface
+
+    @surface.setter
+    def surface(self, value):
+        self._surface = value
+
+    @property
+    def screen(self):
+        return self._screen
+
+    @screen.setter
+    def screen(self, value):
+        self.set_screen(value)
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        self._state = value
+
+    @property
+    def visible(self):
+        return self._visible
+
+    @visible.setter
+    def visible(self, value):
+        self._visible = value
+
+    @property
+    def active_hover_cursor(self):
+        return self._cursors["active_hover"]
+
+    @active_hover_cursor.setter
+    def active_hover_cursor(self, value):
+        self._cursors["active_hover"] = value
+
+    @property
+    def disabled_hover_cursor(self):
+        return self._cursors["disabled_hover"]
+
+    @disabled_hover_cursor.setter
+    def disabled_hover_cursor(self, value):
+        self._cursors["disabled_hover"] = value
+
+    @property
+    def active_pressed_cursor(self):
+        return self._cursors["active_pressed"]
+
+    @active_pressed_cursor.setter
+    def active_pressed_cursor(self, value):
+        self._cursors["active_pressed"] = value
+
+    @property
+    def cursors(self):
+        return self._cursors
+
+    @cursors.setter
+    def cursors(self, value):
+        self._cursors = value
+
+    @property
+    def dragable(self):
+        return self._dragable
+
+    @dragable.setter
+    def dragable(self, value):
+        self._dragable = value
+
+    @property
+    def layer(self):
+        return self._layer
+
+    @layer.setter
+    def layer(self, value):
+        self._layer = value
+        if self._tooltip:
+            self._tooltip.configure(layer=self._layer + 1)
+        misc.resort_layers()
+
+    @property
+    def tooltip(self):
+        return self._tooltip
+
+    @tooltip.setter
+    def tooltip(self, value):
+        self.set_tooltip(value)
+
+    @property
+    def anchor_x(self):
+        return self._anchor_x
+
+    @anchor_x.setter
+    def anchor_x(self, value):
+        self._anchor_x = value
+
+    @property
+    def anchor_y(self):
+        return self._anchor_y
+
+    @anchor_y.setter
+    def anchor_y(self, value):
+        self._anchor_y = value
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        self._data = value
+
+    @property
     def width(self):
-        return int(self._width * self.current_scale)
+        return int(self._width * self._current_scale)
+
+    @width.setter
+    def width(self, value):
+        self._width = value
 
     @property
     def height(self):
-        return int(self._height * self.current_scale)
+        return int(self._height * self._current_scale)
+
+    @height.setter
+    def height(self, value):
+        self._height = value
+
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self, value):
+        self._x = value
+
+    @property
+    def y(self):
+        return self._y
+
+    @y.setter
+    def y(self, value):
+        self._y = value
+
+    @property
+    def alive(self):
+        return self._alive
+
+    @alive.setter
+    def alive(self, value):
+        self._alive = value
+
+    @property
+    def pressed(self):
+        return self._pressed
+
+    @pressed.setter
+    def pressed(self, value):
+        self._pressed = value
+
+    @property
+    def rect(self):
+        return self._rect
+
+    @rect.setter
+    def rect(self, value):
+        self._rect = value
+
+    @property
+    def original_cursor(self):
+        return self._original_cursor
+
+    @original_cursor.setter
+    def original_cursor(self, value):
+        self._original_cursor = value
+
+    @property
+    def drag_offset(self):
+        return self._drag_offset
+
+    @drag_offset.setter
+    def drag_offset(self, value):
+        self._drag_offset = value
+
+    @property
+    def is_dragging(self):
+        return self._is_dragging
+
+    @is_dragging.setter
+    def is_dragging(self, value):
+        self._is_dragging = value
+
+    @property
+    def last_checked_dragging(self):
+        return self._last_checked_dragging
+
+    @last_checked_dragging.setter
+    def last_checked_dragging(self, value):
+        self._last_checked_dragging = value
+
+    @property
+    def bindings(self):
+        return self._bindings
+
+    @bindings.setter
+    def bindings(self, value):
+        self._bindings = value
+
+    @property
+    def original_surface(self):
+        return self._original_surface
+
+    @original_surface.setter
+    def original_surface(self, value):
+        self._original_surface = value
+
+    @property
+    def target_scale(self):
+        return self._target_scale
+
+    @target_scale.setter
+    def target_scale(self, value):
+        self._target_scale = value
+
+    @property
+    def current_scale(self):
+        return self._current_scale
+
+    @current_scale.setter
+    def current_scale(self, value):
+        self._current_scale = value
+
+    @property
+    def scale_step(self):
+        return self._scale_step
+
+    @scale_step.setter
+    def scale_step(self, value):
+        self._scale_step = value
+
+    @property
+    def target_rotation(self):
+        return self._target_rotation
+
+    @target_rotation.setter
+    def target_rotation(self, value):
+        self._target_rotation = value
+
+    @property
+    def current_rotation(self):
+        return self._current_rotation
+
+    @current_rotation.setter
+    def current_rotation(self, value):
+        self._current_rotation = value
+
+    @property
+    def rotation_step(self):
+        return self._rotation_step
+
+    @rotation_step.setter
+    def rotation_step(self, value):
+        self._rotation_step = value
+
+    @property
+    def target_offset(self):
+        return self._target_offset
+
+    @target_offset.setter
+    def target_offset(self, value):
+        self._target_offset = value
+
+    @property
+    def current_offset(self):
+        return self._current_offset
+
+    @current_offset.setter
+    def current_offset(self, value):
+        self._current_offset = value
+
+    @property
+    def offset_step(self):
+        return self._offset_step
+
+    @offset_step.setter
+    def offset_step(self, value):
+        self._offset_step = value
+
+    @property
+    def use_rotozoom(self):
+        return self._use_rotozoom
+
+    @use_rotozoom.setter
+    def use_rotozoom(self, value):
+        self._use_rotozoom = value
 
     def configure(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
         if 'surface' in kwargs:
-            self.original_surface = kwargs["surface"]
-            self._width = self.original_surface.get_width()
-            self._height = self.original_surface.get_height()
-            if self.current_scale != 1 or self.current_rotation != 0:
-                new_width = int(self._width * self.current_scale)
-                new_height = int(self._height * self.current_scale)
+            self._original_surface = kwargs["surface"]
+            self._width = self._original_surface.get_width()
+            self._height = self._original_surface.get_height()
+            if self._current_scale != 1 or self._current_rotation != 0:
+                new_width = int(self._width * self._current_scale)
+                new_height = int(self._height * self._current_scale)
                 if new_width > 0 and new_height > 0:
-                    if self.use_rotozoom:
-                        self.surface = pygame.transform.rotozoom(self.original_surface, self.current_rotation,
-                                                                 self.current_scale)
+                    if self._use_rotozoom:
+                        self._surface = pygame.transform.rotozoom(self._original_surface, self._current_rotation,
+                                                                  self._current_scale)
                     else:
-                        scaled_surface = pygame.transform.smoothscale(self.original_surface, (new_width, new_height))
-                        self.surface = pygame.transform.rotate(scaled_surface, self.current_rotation)
+                        scaled_surface = pygame.transform.smoothscale(self._original_surface, (new_width, new_height))
+                        self._surface = pygame.transform.rotate(scaled_surface, self._current_rotation)
             else:
-                self.surface = self.original_surface.copy()
+                self._surface = self._original_surface.copy()
         if 'x' in kwargs or 'y' in kwargs or 'surface' in kwargs:
-            self.rect = self.surface.get_rect(topleft=(self.x, self.y))
+            self._rect = self._surface.get_rect(topleft=(self._x, self._y))
         if 'screen' in kwargs:
             self.set_screen(kwargs["screen"])
         if 'layer' in kwargs:
@@ -132,104 +423,35 @@ class Surface(Widget):
     def config(self, **kwargs):
         self.configure(**kwargs)
 
-    def delete(self):
-        self.alive = False
-        if self in misc.all_widgets:
-            misc.all_widgets.remove(self)
-
-    def place(self, x: int, y: int, mode: str = "px"):
-        anchor_offset = [0, 0]
-        if self.anchor_x == "left":
-            anchor_offset[0] = 0
-        elif self.anchor_x == "center":
-            anchor_offset[0] = self.width // 2
-        elif self.anchor_x == "right":
-            anchor_offset[0] = self.width
-        if self.anchor_y == "top":
-            anchor_offset[1] = 0
-        elif self.anchor_y == "center":
-            anchor_offset[1] = self.height // 2
-        elif self.anchor_y == "bottom":
-            anchor_offset[1] = self.height
-        if mode == "px":
-            self.x = x
-            self.y = y
-        elif mode in ("%", "percent", "percentage"):
-            screen_width = misc.pg.get_width()
-            screen_height = misc.pg.get_height()
-            self.x = int(x * screen_width / 100)
-            self.y = int(y * screen_height / 100)
-        else:
-            self.x = x
-            self.y = y
-            print(f"Invalid Mode: {mode}\nFallback: px")
-        self.x -= anchor_offset[0]
-        self.y -= anchor_offset[1]
-        self.rect = self.surface.get_rect(topleft=(self.x, self.y))
-        self.needs_transform = True
-        return self
-
-    def anchor(self, anchor_x: str = "left", anchor_y: str = "top"):
-        self.anchor_x = anchor_x
-        self.anchor_y = anchor_y
-        self.place(self.x, self.y)
-        return self
-
-    def bind(self, event: str, command, require_hover: bool = True):
-        self.bindings[event] = {"command": command, "require_hover": require_hover}
-        return self
-
     def trigger_event(self, event: str, *args, **kwargs):
-        if event in self.bindings:
-            binding_data = self.bindings[event]
+        if event in self._bindings:
+            binding_data = self._bindings[event]
             command = binding_data["command"]
             require_hover = binding_data["require_hover"]
-            offset_x, offset_y = get_screen_offset(self)
-            total_offset_x = offset_x + round(self.current_offset[0])
-            total_offset_y = offset_y + round(self.current_offset[1])
-            if not require_hover or self.rect.move(total_offset_x, total_offset_y).collidepoint(pygame.mouse.get_pos()):
+            offset_x, offset_y = misc.get_screen_offset(self)
+            total_offset_x = offset_x + round(self._current_offset[0])
+            total_offset_y = offset_y + round(self._current_offset[1])
+            if not require_hover or self._rect.move(total_offset_x, total_offset_y).collidepoint(
+                    pygame.mouse.get_pos()):
                 command(*args, **kwargs)
 
-    def set_screen(self, screen):
-        if self.screen:
-            if self in screen.widgets:
-                self.screen.widgets.remove(self)
-        self.screen = screen
-        screen.add_widget(self)
-        return self
-
-    def unbind(self, event: str):
-        if event in self.bindings:
-            del self.bindings[event]
-        return self
-
-    def unbind_all(self):
-        self.bindings.clear()
-        return self
-
     def set_tooltip(self, tooltip):
-        self.tooltip = tooltip
-        tooltip.configure(layer=self.layer + 1)
+        self._tooltip = tooltip
+        tooltip.configure(layer=self._layer + 1)
         if not tooltip.style:
             tooltip.configure(active_unpressed_text_color=(255, 255, 255, 255),
                               active_unpressed_background_color=(50, 50, 50, 255),
                               active_unpressed_border_color=(100, 100, 100, 255))
         return self
 
-    def remove_tooltip(self):
-        if self.tooltip:
-            self.tooltip.visible = False
-            self.tooltip = None
-        return self
-
     def scale(self, value=None, frames_to_finish=1):
         if frames_to_finish <= 0:
             frames_to_finish = 1
         if value is None:
-            self.target_scale = 1
+            self._target_scale = 1
         else:
-            self.target_scale = value
-        self.scale_step = (self.target_scale - self.current_scale) / frames_to_finish
+            self._target_scale = value
+        self._scale_step = (self._target_scale - self._current_scale) / frames_to_finish
         update_animation(self)
         return self
 
@@ -237,33 +459,30 @@ class Surface(Widget):
         if frames_to_finish <= 0:
             frames_to_finish = 1
         if value is None:
-            self.target_rotation = 0
+            self._target_rotation = 0
         else:
-            self.target_rotation = value
-        self.rotation_step = (self.target_rotation - self.current_rotation) / frames_to_finish
+            self._target_rotation = value
+        self._rotation_step = (self._target_rotation - self._current_rotation) / frames_to_finish
         update_animation(self)
         return self
 
     def rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
         if frames_to_finish <= 0:
             frames_to_finish = 1
-        self.target_scale = 1 if scale is None else scale
-        self.scale_step = (self.target_scale - self.current_scale) / frames_to_finish
-        self.target_rotation = 0 if rotation is None else rotation
-        self.rotation_step = (self.target_rotation - self.current_rotation) / frames_to_finish
-        self.use_rotozoom = True
+        self._target_scale = 1 if scale is None else scale
+        self._scale_step = (self._target_scale - self._current_scale) / frames_to_finish
+        self._target_rotation = 0 if rotation is None else rotation
+        self._rotation_step = (self._target_rotation - self._current_rotation) / frames_to_finish
+        self._use_rotozoom = True
         update_animation(self)
         return self
 
     def offset(self, value: tuple[int, int], frames_to_finish=1):
         if frames_to_finish <= 0:
             frames_to_finish = 1
-        if value is None:
-            self.target_offset = (0, 0)
-        else:
-            self.target_offset = value
-        self.offset_step[0] = (self.target_offset[0] - self.current_offset[0]) / frames_to_finish
-        self.offset_step[1] = (self.target_offset[1] - self.current_offset[1]) / frames_to_finish
+        self._target_offset = (0, 0) if value is None else value
+        self._offset_step[0] = (self._target_offset[0] - self._current_offset[0]) / frames_to_finish
+        self._offset_step[1] = (self._target_offset[1] - self._current_offset[1]) / frames_to_finish
         update_animation(self)
         return self
 
@@ -308,17 +527,11 @@ def update_animation(surface):
         surface.y = surface.rect.y
 
 
-def get_screen_offset(widget):
-    if widget.screen:
-        return widget.screen.x, widget.screen.y
-    return 0, 0
-
-
 def draw(surface, window: pygame.Surface):
     if not surface.alive or not surface.visible:
         return
     mouse_pos = pygame.mouse.get_pos()
-    offset_x, offset_y = get_screen_offset(surface)
+    offset_x, offset_y = misc.get_screen_offset(surface)
     total_offset_x = offset_x + round(surface.current_offset[0])
     total_offset_y = offset_y + round(surface.current_offset[1])
     interaction_rect = surface.rect.move(total_offset_x, total_offset_y)
@@ -366,7 +579,7 @@ def react(surface, event=None):
         surface.pressed = False
         return
     mouse_pos = pygame.mouse.get_pos()
-    offset_x, offset_y = get_screen_offset(surface)
+    offset_x, offset_y = misc.get_screen_offset(surface)
     total_offset_x = offset_x + round(surface.current_offset[0])
     total_offset_y = offset_y + round(surface.current_offset[1])
     interaction_rect = surface.rect.move(total_offset_x, total_offset_y)

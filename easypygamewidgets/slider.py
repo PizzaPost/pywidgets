@@ -8,7 +8,7 @@ from typing import Any
 import pygame
 
 from easypygamewidgets import font, misc
-from easypygamewidgets.masterWidget import Widget
+from easypygamewidgets.masterWidget import Widget, Tooltipable
 
 pygame.init()
 
@@ -21,7 +21,7 @@ pygame.init()
 # optimized set_screen function ❌
 # rgba color ❌
 
-class Slider(Widget):
+class Slider(Widget, Tooltipable):
     def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
                  height: int = 16,
                  text: str = "easypygamewidgets Slider", start: int | float = 0,
@@ -85,256 +85,876 @@ class Slider(Widget):
         super().__init__()
         if screen:
             screen.add_widget(self)
-            self.screen = screen
+            self._screen = screen
             if state:
-                self.state = state
+                self._state = state
         else:
-            self.screen = None
-            self.visible = visible
+            self._screen = None
+            self._visible = visible
             if state:
-                self.state = state
+                self._state = state
             else:
-                self.state = "enabled"
-        self.auto_size = auto_size
-        self.width = width
-        self.height = height
+                self._state = "enabled"
+        self._auto_size = auto_size
+        self._width = width
+        self._height = height
         if auto_size:
             if min_width:
-                self.width = max(width, min_width)
+                self._width = max(width, min_width)
             if max_width:
-                self.width = min(width, max_width)
+                self._width = min(width, max_width)
             if min_height:
-                self.height = max(height, min_height)
+                self._height = max(height, min_height)
             if max_height:
-                self.height = min(height, max_height)
-        self.text = text
-        self.start = start
-        self.end = end
-        self.start = start
-        self.end = end
-        self.value = min(max(initial_value or start, start), end)
-        self.top_left_corner_radius = top_left_corner_radius
-        self.top_right_corner_radius = top_right_corner_radius
-        self.bottom_left_corner_radius = bottom_left_corner_radius
-        self.bottom_right_corner_radius = bottom_right_corner_radius
+                self._height = min(height, max_height)
+        self._text = text
+        self._start = start
+        self._start = start
+        self._end = end
+        self._value = min(max(initial_value or start, start), end)
+        self._top_left_corner_radius = top_left_corner_radius
+        self._top_right_corner_radius = top_right_corner_radius
+        self._bottom_left_corner_radius = bottom_left_corner_radius
+        self._bottom_right_corner_radius = bottom_right_corner_radius
         if not dot_radius:
-            self.dot_radius = height // 2
+            self._dot_radius = height // 2
         else:
-            self.dot_radius = dot_radius
+            self._dot_radius = dot_radius
         if not max_extra_dot_radius:
-            self.max_extra_dot_radius = self.dot_radius // 5 + 1
+            self._max_extra_dot_radius = self._dot_radius // 5 + 1
         else:
-            self.max_extra_dot_radius = max_extra_dot_radius
-        self.move_text_with_dot_radius = move_text_with_dot_radius
-        self.active_unpressed_text_color = active_unpressed_text_color
-        self.disabled_unpressed_text_color = disabled_unpressed_text_color
-        self.active_hover_text_color = active_hover_text_color
-        self.disabled_hover_text_color = disabled_hover_text_color
-        self.active_pressed_text_color = active_pressed_text_color
-        self.active_unpressed_used_background_color = active_unpressed_used_background_color
-        self.disabled_unpressed_used_background_color = disabled_unpressed_used_background_color
-        self.active_hover_used_background_color = active_hover_used_background_color
-        self.disabled_hover_used_background_color = disabled_hover_used_background_color
-        self.active_pressed_used_background_color = active_pressed_used_background_color
-        self.active_unpressed_unused_background_color = active_unpressed_unused_background_color
-        self.disabled_unpressed_unused_background_color = disabled_unpressed_unused_background_color
-        self.active_hover_unused_background_color = active_hover_unused_background_color
-        self.disabled_hover_unused_background_color = disabled_hover_unused_background_color
-        self.active_pressed_unused_background_color = active_pressed_unused_background_color
-        self.active_unpressed_dot_color = active_unpressed_dot_color
-        self.disabled_unpressed_dot_color = disabled_unpressed_dot_color
-        self.active_hover_dot_color = active_hover_dot_color
-        self.disabled_hover_dot_color = disabled_hover_dot_color
-        self.active_pressed_dot_color = active_pressed_dot_color
-        self.active_unpressed_border_color = active_unpressed_border_color
-        self.disabled_unpressed_border_color = disabled_unpressed_border_color
-        self.active_hover_border_color = active_hover_border_color
-        self.disabled_hover_border_color = disabled_hover_border_color
-        self.active_pressed_border_color = active_pressed_border_color
-        self.active_pressed_display_color = active_pressed_display_color
-        self.active_hover_display_color = active_hover_display_color
-        self.active_unpressed_display_color = active_unpressed_display_color
-        self.disabled_hover_display_color = disabled_hover_display_color
-        self.disabled_unpressed_display_color = disabled_unpressed_display_color
-        self.border_width = border_width
-        self.hide_text = hide_text
-        self.hide_used_background = hide_used_background
-        self.hide_unused_background = hide_unused_background
-        self.hide_dot = hide_dot
-        self.hide_border = hide_border
-        self.hide_display = hide_display
+            self._max_extra_dot_radius = max_extra_dot_radius
+        self._move_text_with_dot_radius = move_text_with_dot_radius
+        self._active_unpressed_text_color = active_unpressed_text_color
+        self._disabled_unpressed_text_color = disabled_unpressed_text_color
+        self._active_hover_text_color = active_hover_text_color
+        self._disabled_hover_text_color = disabled_hover_text_color
+        self._active_pressed_text_color = active_pressed_text_color
+        self._active_unpressed_used_background_color = active_unpressed_used_background_color
+        self._disabled_unpressed_used_background_color = disabled_unpressed_used_background_color
+        self._active_hover_used_background_color = active_hover_used_background_color
+        self._disabled_hover_used_background_color = disabled_hover_used_background_color
+        self._active_pressed_used_background_color = active_pressed_used_background_color
+        self._active_unpressed_unused_background_color = active_unpressed_unused_background_color
+        self._disabled_unpressed_unused_background_color = disabled_unpressed_unused_background_color
+        self._active_hover_unused_background_color = active_hover_unused_background_color
+        self._disabled_hover_unused_background_color = disabled_hover_unused_background_color
+        self._active_pressed_unused_background_color = active_pressed_unused_background_color
+        self._active_unpressed_dot_color = active_unpressed_dot_color
+        self._disabled_unpressed_dot_color = disabled_unpressed_dot_color
+        self._active_hover_dot_color = active_hover_dot_color
+        self._disabled_hover_dot_color = disabled_hover_dot_color
+        self._active_pressed_dot_color = active_pressed_dot_color
+        self._active_unpressed_border_color = active_unpressed_border_color
+        self._disabled_unpressed_border_color = disabled_unpressed_border_color
+        self._active_hover_border_color = active_hover_border_color
+        self._disabled_hover_border_color = disabled_hover_border_color
+        self._active_pressed_border_color = active_pressed_border_color
+        self._active_pressed_display_color = active_pressed_display_color
+        self._active_hover_display_color = active_hover_display_color
+        self._active_unpressed_display_color = active_unpressed_display_color
+        self._disabled_hover_display_color = disabled_hover_display_color
+        self._disabled_unpressed_display_color = disabled_unpressed_display_color
+        self._border_width = border_width
+        self._hide_text = hide_text
+        self._hide_used_background = hide_used_background
+        self._hide_unused_background = hide_unused_background
+        self._hide_dot = hide_dot
+        self._hide_border = hide_border
+        self._hide_display = hide_display
         cursor_input = {
             "active_hover": active_hover_cursor,
             "disabled_hover": disabled_hover_cursor,
             "active_pressed": active_pressed_cursor
         }
-        self.cursors = {}
+        self._cursors = {}
         for name, cursor in cursor_input.items():
             if isinstance(cursor, pygame.cursors.Cursor):
-                self.cursors[name] = cursor
+                self._cursors[name] = cursor
             else:
                 if cursor is not None:
                     print(
-                        f"No custom cursor is used for the slider {self.text} because it's not a pygame.Cursor object. ({cursor})")
-                self.cursors[name] = None
-        self.font = font
-        self.alignment = alignment
-        self.alignment_spacing = alignment_spacing
-        self.show_value_when_pressed = show_value_when_pressed
-        self.show_value_when_hovered = show_value_when_hovered
-        self.show_value_when_unpressed = show_value_when_unpressed
-        self.show_value_when_disabled = show_value_when_disabled
-        self.round_display_value = round_display_value
-        self.show_full_rounding_of_whole_numbers = show_full_rounding_of_whole_numbers
-        self.trigger_hold_delay = trigger_hold_delay
-        self.layer = layer
-        self.tooltip = tooltip
+                        f"No custom cursor is used for the slider {text} because it's not a pygame.Cursor object. ({cursor})")
+                self._cursors[name] = None
+        self._font = font
+        self._alignment = alignment
+        self._alignment_spacing = alignment_spacing
+        self._show_value_when_pressed = show_value_when_pressed
+        self._show_value_when_hovered = show_value_when_hovered
+        self._show_value_when_unpressed = show_value_when_unpressed
+        self._show_value_when_disabled = show_value_when_disabled
+        self._round_display_value = round_display_value
+        self._show_full_rounding_of_whole_numbers = show_full_rounding_of_whole_numbers
+        self._trigger_hold_delay = trigger_hold_delay
+        self._layer = layer
+        self._tooltip = tooltip
         if tooltip:
-            tooltip.configure(layer=self.layer + 1)
+            tooltip.configure(layer=self._layer + 1)
             if not tooltip.style:
-                tooltip.configure(active_unpressed_text_color=self.active_unpressed_text_color,
-                                  active_unpressed_background_color=self.active_unpressed_used_background_color,
-                                  active_unpressed_border_color=self.active_unpressed_border_color)
-        self.line_spacing = line_spacing
-        self.min_width = min_width
-        self.max_width = max_width
-        self.min_height = min_height
-        self.max_height = max_height
-        self.anchor_x = anchor_x
-        self.anchor_y = anchor_y
-        self.data = data
-        self.x = 0
-        self.y = font.render(text, True, (255, 255, 255)).get_height()
-        self.alive = True
-        self.pressed = False
-        self.rect = pygame.Rect(self.x, self.y, self.width, 60)
-        self.original_cursor = None
-        self.extra_dot_radius = 0
-        self.pressed_before = False
-        self.last_value_update_time = 0
-        self.bindings = {}
+                tooltip.configure(active_unpressed_text_color=self._active_unpressed_text_color,
+                                  active_unpressed_background_color=self._active_unpressed_used_background_color,
+                                  active_unpressed_border_color=self._active_unpressed_border_color)
+        self._line_spacing = line_spacing
+        self._min_width = min_width
+        self._max_width = max_width
+        self._min_height = min_height
+        self._max_height = max_height
+        self._anchor_x = anchor_x
+        self._anchor_y = anchor_y
+        self._data = data
+        self._x = 0
+        self._y = 0
+        self._alive = True
+        self._pressed = False
+        self._rect = pygame.Rect(self._x, self._y, self._width, self._height)
+        self._original_cursor = None
+        self._extra_dot_radius = 0
+        self._pressed_before = False
+        self._last_value_update_time = 0
+        self._bindings = {}
 
         safe_set_linesize(font, line_spacing)
 
         misc.add_widget(self)
+
+    @property
+    def screen(self):
+        return self._screen
+
+    @screen.setter
+    def screen(self, value):
+        self.set_screen(value)
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        self._state = value
+
+    @property
+    def visible(self):
+        return self._visible
+
+    @visible.setter
+    def visible(self, value):
+        self._visible = value
+
+    @property
+    def auto_size(self):
+        return self._auto_size
+
+    @auto_size.setter
+    def auto_size(self, value):
+        self._auto_size = value
+
+    @property
+    def width(self):
+        return self._width
+
+    @width.setter
+    def width(self, value):
+        self._width = value
+
+    @property
+    def height(self):
+        return self._height
+
+    @height.setter
+    def height(self, value):
+        self._height = value
+
+    @property
+    def text(self):
+        return self._text
+
+    @text.setter
+    def text(self, value):
+        self._text = value
+
+    @property
+    def start(self):
+        return self._start
+
+    @start.setter
+    def start(self, value):
+        self._start = value
+
+    @property
+    def end(self):
+        return self._end
+
+    @end.setter
+    def end(self, value):
+        self._end = value
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        self._value = value
+
+    @property
+    def top_left_corner_radius(self):
+        return self._top_left_corner_radius
+
+    @top_left_corner_radius.setter
+    def top_left_corner_radius(self, value):
+        self._top_left_corner_radius = value
+
+    @property
+    def top_right_corner_radius(self):
+        return self._top_right_corner_radius
+
+    @top_right_corner_radius.setter
+    def top_right_corner_radius(self, value):
+        self._top_right_corner_radius = value
+
+    @property
+    def bottom_left_corner_radius(self):
+        return self._bottom_left_corner_radius
+
+    @bottom_left_corner_radius.setter
+    def bottom_left_corner_radius(self, value):
+        self._bottom_left_corner_radius = value
+
+    @property
+    def bottom_right_corner_radius(self):
+        return self._bottom_right_corner_radius
+
+    @bottom_right_corner_radius.setter
+    def bottom_right_corner_radius(self, value):
+        self._bottom_right_corner_radius = value
+
+    @property
+    def dot_radius(self):
+        return self._dot_radius
+
+    @dot_radius.setter
+    def dot_radius(self, value):
+        self._dot_radius = value
+
+    @property
+    def max_extra_dot_radius(self):
+        return self._max_extra_dot_radius
+
+    @max_extra_dot_radius.setter
+    def max_extra_dot_radius(self, value):
+        self._max_extra_dot_radius = value
+
+    @property
+    def move_text_with_dot_radius(self):
+        return self._move_text_with_dot_radius
+
+    @move_text_with_dot_radius.setter
+    def move_text_with_dot_radius(self, value):
+        self._move_text_with_dot_radius = value
+
+    @property
+    def active_unpressed_text_color(self):
+        return self._active_unpressed_text_color
+
+    @active_unpressed_text_color.setter
+    def active_unpressed_text_color(self, value):
+        self._active_unpressed_text_color = value
+
+    @property
+    def disabled_unpressed_text_color(self):
+        return self._disabled_unpressed_text_color
+
+    @disabled_unpressed_text_color.setter
+    def disabled_unpressed_text_color(self, value):
+        self._disabled_unpressed_text_color = value
+
+    @property
+    def active_hover_text_color(self):
+        return self._active_hover_text_color
+
+    @active_hover_text_color.setter
+    def active_hover_text_color(self, value):
+        self._active_hover_text_color = value
+
+    @property
+    def disabled_hover_text_color(self):
+        return self._disabled_hover_text_color
+
+    @disabled_hover_text_color.setter
+    def disabled_hover_text_color(self, value):
+        self._disabled_hover_text_color = value
+
+    @property
+    def active_pressed_text_color(self):
+        return self._active_pressed_text_color
+
+    @active_pressed_text_color.setter
+    def active_pressed_text_color(self, value):
+        self._active_pressed_text_color = value
+
+    @property
+    def active_unpressed_used_background_color(self):
+        return self._active_unpressed_used_background_color
+
+    @active_unpressed_used_background_color.setter
+    def active_unpressed_used_background_color(self, value):
+        self._active_unpressed_used_background_color = value
+
+    @property
+    def disabled_unpressed_used_background_color(self):
+        return self._disabled_unpressed_used_background_color
+
+    @disabled_unpressed_used_background_color.setter
+    def disabled_unpressed_used_background_color(self, value):
+        self._disabled_unpressed_used_background_color = value
+
+    @property
+    def active_hover_used_background_color(self):
+        return self._active_hover_used_background_color
+
+    @active_hover_used_background_color.setter
+    def active_hover_used_background_color(self, value):
+        self._active_hover_used_background_color = value
+
+    @property
+    def disabled_hover_used_background_color(self):
+        return self._disabled_hover_used_background_color
+
+    @disabled_hover_used_background_color.setter
+    def disabled_hover_used_background_color(self, value):
+        self._disabled_hover_used_background_color = value
+
+    @property
+    def active_pressed_used_background_color(self):
+        return self._active_pressed_used_background_color
+
+    @active_pressed_used_background_color.setter
+    def active_pressed_used_background_color(self, value):
+        self._active_pressed_used_background_color = value
+
+    @property
+    def active_unpressed_unused_background_color(self):
+        return self._active_unpressed_unused_background_color
+
+    @active_unpressed_unused_background_color.setter
+    def active_unpressed_unused_background_color(self, value):
+        self._active_unpressed_unused_background_color = value
+
+    @property
+    def disabled_unpressed_unused_background_color(self):
+        return self._disabled_unpressed_unused_background_color
+
+    @disabled_unpressed_unused_background_color.setter
+    def disabled_unpressed_unused_background_color(self, value):
+        self._disabled_unpressed_unused_background_color = value
+
+    @property
+    def active_hover_unused_background_color(self):
+        return self._active_hover_unused_background_color
+
+    @active_hover_unused_background_color.setter
+    def active_hover_unused_background_color(self, value):
+        self._active_hover_unused_background_color = value
+
+    @property
+    def disabled_hover_unused_background_color(self):
+        return self._disabled_hover_unused_background_color
+
+    @disabled_hover_unused_background_color.setter
+    def disabled_hover_unused_background_color(self, value):
+        self._disabled_hover_unused_background_color = value
+
+    @property
+    def active_pressed_unused_background_color(self):
+        return self._active_pressed_unused_background_color
+
+    @active_pressed_unused_background_color.setter
+    def active_pressed_unused_background_color(self, value):
+        self._active_pressed_unused_background_color = value
+
+    @property
+    def active_unpressed_dot_color(self):
+        return self._active_unpressed_dot_color
+
+    @active_unpressed_dot_color.setter
+    def active_unpressed_dot_color(self, value):
+        self._active_unpressed_dot_color = value
+
+    @property
+    def disabled_unpressed_dot_color(self):
+        return self._disabled_unpressed_dot_color
+
+    @disabled_unpressed_dot_color.setter
+    def disabled_unpressed_dot_color(self, value):
+        self._disabled_unpressed_dot_color = value
+
+    @property
+    def active_hover_dot_color(self):
+        return self._active_hover_dot_color
+
+    @active_hover_dot_color.setter
+    def active_hover_dot_color(self, value):
+        self._active_hover_dot_color = value
+
+    @property
+    def disabled_hover_dot_color(self):
+        return self._disabled_hover_dot_color
+
+    @disabled_hover_dot_color.setter
+    def disabled_hover_dot_color(self, value):
+        self._disabled_hover_dot_color = value
+
+    @property
+    def active_pressed_dot_color(self):
+        return self._active_pressed_dot_color
+
+    @active_pressed_dot_color.setter
+    def active_pressed_dot_color(self, value):
+        self._active_pressed_dot_color = value
+
+    @property
+    def active_unpressed_border_color(self):
+        return self._active_unpressed_border_color
+
+    @active_unpressed_border_color.setter
+    def active_unpressed_border_color(self, value):
+        self._active_unpressed_border_color = value
+
+    @property
+    def disabled_unpressed_border_color(self):
+        return self._disabled_unpressed_border_color
+
+    @disabled_unpressed_border_color.setter
+    def disabled_unpressed_border_color(self, value):
+        self._disabled_unpressed_border_color = value
+
+    @property
+    def active_hover_border_color(self):
+        return self._active_hover_border_color
+
+    @active_hover_border_color.setter
+    def active_hover_border_color(self, value):
+        self._active_hover_border_color = value
+
+    @property
+    def disabled_hover_border_color(self):
+        return self._disabled_hover_border_color
+
+    @disabled_hover_border_color.setter
+    def disabled_hover_border_color(self, value):
+        self._disabled_hover_border_color = value
+
+    @property
+    def active_pressed_border_color(self):
+        return self._active_pressed_border_color
+
+    @active_pressed_border_color.setter
+    def active_pressed_border_color(self, value):
+        self._active_pressed_border_color = value
+
+    @property
+    def active_pressed_display_color(self):
+        return self._active_pressed_display_color
+
+    @active_pressed_display_color.setter
+    def active_pressed_display_color(self, value):
+        self._active_pressed_display_color = value
+
+    @property
+    def active_hover_display_color(self):
+        return self._active_hover_display_color
+
+    @active_hover_display_color.setter
+    def active_hover_display_color(self, value):
+        self._active_hover_display_color = value
+
+    @property
+    def active_unpressed_display_color(self):
+        return self._active_unpressed_display_color
+
+    @active_unpressed_display_color.setter
+    def active_unpressed_display_color(self, value):
+        self._active_unpressed_display_color = value
+
+    @property
+    def disabled_hover_display_color(self):
+        return self._disabled_hover_display_color
+
+    @disabled_hover_display_color.setter
+    def disabled_hover_display_color(self, value):
+        self._disabled_hover_display_color = value
+
+    @property
+    def disabled_unpressed_display_color(self):
+        return self._disabled_unpressed_display_color
+
+    @disabled_unpressed_display_color.setter
+    def disabled_unpressed_display_color(self, value):
+        self._disabled_unpressed_display_color = value
+
+    @property
+    def border_width(self):
+        return self._border_width
+
+    @border_width.setter
+    def border_width(self, value):
+        self._border_width = value
+
+    @property
+    def hide_text(self):
+        return self._hide_text
+
+    @hide_text.setter
+    def hide_text(self, value):
+        self._hide_text = value
+
+    @property
+    def hide_used_background(self):
+        return self._hide_used_background
+
+    @hide_used_background.setter
+    def hide_used_background(self, value):
+        self._hide_used_background = value
+
+    @property
+    def hide_unused_background(self):
+        return self._hide_unused_background
+
+    @hide_unused_background.setter
+    def hide_unused_background(self, value):
+        self._hide_unused_background = value
+
+    @property
+    def hide_dot(self):
+        return self._hide_dot
+
+    @hide_dot.setter
+    def hide_dot(self, value):
+        self._hide_dot = value
+
+    @property
+    def hide_border(self):
+        return self._hide_border
+
+    @hide_border.setter
+    def hide_border(self, value):
+        self._hide_border = value
+
+    @property
+    def hide_display(self):
+        return self._hide_display
+
+    @hide_display.setter
+    def hide_display(self, value):
+        self._hide_display = value
+
+    @property
+    def active_hover_cursor(self):
+        return self._cursors["active_hover"]
+
+    @active_hover_cursor.setter
+    def active_hover_cursor(self, value):
+        self._cursors["active_hover"] = value
+
+    @property
+    def disabled_hover_cursor(self):
+        return self._cursors["disabled_hover"]
+
+    @disabled_hover_cursor.setter
+    def disabled_hover_cursor(self, value):
+        self._cursors["disabled_hover"] = value
+
+    @property
+    def active_pressed_cursor(self):
+        return self._cursors["active_pressed"]
+
+    @active_pressed_cursor.setter
+    def active_pressed_cursor(self, value):
+        self._cursors["active_pressed"] = value
+
+    @property
+    def cursors(self):
+        return self._cursors
+
+    @cursors.setter
+    def cursors(self, value):
+        self._cursors = value
+
+    @property
+    def font(self):
+        return self._font
+
+    @font.setter
+    def font(self, value):
+        self._font = value
+
+    @property
+    def alignment(self):
+        return self._alignment
+
+    @alignment.setter
+    def alignment(self, value):
+        self._alignment = value
+
+    @property
+    def alignment_spacing(self):
+        return self._alignment_spacing
+
+    @alignment_spacing.setter
+    def alignment_spacing(self, value):
+        self._alignment_spacing = value
+
+    @property
+    def show_value_when_pressed(self):
+        return self._show_value_when_pressed
+
+    @show_value_when_pressed.setter
+    def show_value_when_pressed(self, value):
+        self._show_value_when_pressed = value
+
+    @property
+    def show_value_when_hovered(self):
+        return self._show_value_when_hovered
+
+    @show_value_when_hovered.setter
+    def show_value_when_hovered(self, value):
+        self._show_value_when_hovered = value
+
+    @property
+    def show_value_when_unpressed(self):
+        return self._show_value_when_unpressed
+
+    @show_value_when_unpressed.setter
+    def show_value_when_unpressed(self, value):
+        self._show_value_when_unpressed = value
+
+    @property
+    def show_value_when_disabled(self):
+        return self._show_value_when_disabled
+
+    @show_value_when_disabled.setter
+    def show_value_when_disabled(self, value):
+        self._show_value_when_disabled = value
+
+    @property
+    def round_display_value(self):
+        return self._round_display_value
+
+    @round_display_value.setter
+    def round_display_value(self, value):
+        self._round_display_value = value
+
+    @property
+    def show_full_rounding_of_whole_numbers(self):
+        return self._show_full_rounding_of_whole_numbers
+
+    @show_full_rounding_of_whole_numbers.setter
+    def show_full_rounding_of_whole_numbers(self, value):
+        self._show_full_rounding_of_whole_numbers = value
+
+    @property
+    def trigger_hold_delay(self):
+        return self._trigger_hold_delay
+
+    @trigger_hold_delay.setter
+    def trigger_hold_delay(self, value):
+        self._trigger_hold_delay = value
+
+    @property
+    def layer(self):
+        return self._layer
+
+    @layer.setter
+    def layer(self, value):
+        self._layer = value
+        if self._tooltip:
+            self._tooltip.configure(layer=self._layer + 1)
+        misc.resort_layers()
+
+    @property
+    def tooltip(self):
+        return self._tooltip
+
+    @tooltip.setter
+    def tooltip(self, value):
+        self._tooltip = value
+
+    @property
+    def line_spacing(self):
+        return self._line_spacing
+
+    @line_spacing.setter
+    def line_spacing(self, value):
+        self._line_spacing = value
+
+    @property
+    def min_width(self):
+        return self._min_width
+
+    @min_width.setter
+    def min_width(self, value):
+        self._min_width = value
+
+    @property
+    def max_width(self):
+        return self._max_width
+
+    @max_width.setter
+    def max_width(self, value):
+        self._max_width = value
+
+    @property
+    def min_height(self):
+        return self._min_height
+
+    @min_height.setter
+    def min_height(self, value):
+        self._min_height = value
+
+    @property
+    def max_height(self):
+        return self._max_height
+
+    @max_height.setter
+    def max_height(self, value):
+        self._max_height = value
+
+    @property
+    def anchor_x(self):
+        return self._anchor_x
+
+    @anchor_x.setter
+    def anchor_x(self, value):
+        self._anchor_x = value
+
+    @property
+    def anchor_y(self):
+        return self._anchor_y
+
+    @anchor_y.setter
+    def anchor_y(self, value):
+        self._anchor_y = value
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        self._data = value
+
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self, value):
+        self._x = value
+
+    @property
+    def y(self):
+        return self._y
+
+    @y.setter
+    def y(self, value):
+        self._y = value
+
+    @property
+    def alive(self):
+        return self._alive
+
+    @alive.setter
+    def alive(self, value):
+        self._alive = value
+
+    @property
+    def pressed(self):
+        return self._pressed
+
+    @pressed.setter
+    def pressed(self, value):
+        self._pressed = value
+
+    @property
+    def rect(self):
+        return self._rect
+
+    @rect.setter
+    def rect(self, value):
+        self._rect = value
+
+    @property
+    def original_cursor(self):
+        return self._original_cursor
+
+    @original_cursor.setter
+    def original_cursor(self, value):
+        self._original_cursor = value
+
+    @property
+    def extra_dot_radius(self):
+        return self._extra_dot_radius
+
+    @extra_dot_radius.setter
+    def extra_dot_radius(self, value):
+        self._extra_dot_radius = value
+
+    @property
+    def pressed_before(self):
+        return self._pressed_before
+
+    @pressed_before.setter
+    def pressed_before(self, value):
+        self._pressed_before = value
+
+    @property
+    def last_value_update_time(self):
+        return self._last_value_update_time
+
+    @last_value_update_time.setter
+    def last_value_update_time(self, value):
+        self._last_value_update_time = value
+
+    @property
+    def bindings(self):
+        return self._bindings
+
+    @bindings.setter
+    def bindings(self, value):
+        self._bindings = value
 
     def configure(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
         if any(k in kwargs for k in
                ('auto_size', 'x', 'y', 'width', 'height', 'min_width', 'max_width', 'min_height', 'max_height')):
-            if self.auto_size:
-                if self.min_width:
-                    self.width = max(self.width, self.min_width)
-                if self.max_width:
-                    self.width = min(self.width, self.max_width)
-                if self.min_height:
-                    self.height = max(self.height, self.min_height)
-                if self.max_height:
-                    self.height = min(self.height, self.max_height)
-            self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+            if self._auto_size:
+                if self._min_width:
+                    self._width = max(self._width, self._min_width)
+                if self._max_width:
+                    self._width = min(self._width, self._max_width)
+                if self._min_height:
+                    self._height = max(self._height, self._min_height)
+                if self._max_height:
+                    self._height = min(self._height, self._max_height)
+            self._rect = pygame.Rect(self._x, self._y, self._width, self._height)
         if 'screen' in kwargs:
             self.set_screen(kwargs["screen"])
         if 'layer' in kwargs:
             misc.resort_layers()
         if 'line_spacing' in kwargs or 'font' in kwargs:
-            safe_set_linesize(self.font, self.line_spacing)
+            safe_set_linesize(self._font, self._line_spacing)
         return self
 
     def config(self, **kwargs):
         self.configure(**kwargs)
 
-    def delete(self):
-        self.alive = False
-        if self in misc.all_widgets:
-            misc.all_widgets.remove(self)
-
-    def place(self, x: int, y: int, mode: str = "px"):
-        anchor_offset = [0, 0]
-        if self.anchor_x == "left":
-            anchor_offset[0] = 0
-        elif self.anchor_x == "center":
-            anchor_offset[0] = self.width // 2
-        elif self.anchor_x == "right":
-            anchor_offset[0] = self.width
-        if self.anchor_y == "top":
-            anchor_offset[1] = 0
-        elif self.anchor_y == "center":
-            anchor_offset[1] = self.height // 2
-        elif self.anchor_y == "bottom":
-            anchor_offset[1] = self.height
-        if mode == "px":
-            self.x = x
-            self.y = y
-        elif mode in ("%", "percent", "percentage"):
-            screen_width = misc.pg.get_width()
-            screen_height = misc.pg.get_height()
-            self.x = int(x * screen_width / 100)
-            self.y = int(y * screen_height / 100)
-        else:
-            self.x = x
-            self.y = y
-            print(f"Invalid Mode: {mode}\nFallback: px")
-        self.x -= anchor_offset[0]
-        self.y -= anchor_offset[1]
-        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        return self
-
-    def anchor(self, anchor_x: str = "left", anchor_y: str = "top"):
-        self.anchor_x = anchor_x
-        self.anchor_y = anchor_y
-        self.place(self.x, self.y)
-        return self
-
-    def bind(self, event: str, command, require_hover: bool = True):
-        self.bindings[event] = {"command": command, "require_hover": require_hover}
-        return self
-
-    def trigger_event(self, event: str, *args, **kwargs):
-        if event in self.bindings:
-            binding_data = self.bindings[event]
-            command = binding_data["command"]
-            require_hover = binding_data["require_hover"]
-            if not require_hover or is_point_in_rounded_rect(self, pygame.mouse.get_pos()):
-                command(*args, **kwargs)
-
     def get(self):
-        return self.value
+        return self._value
 
     def set(self, value):
-        self.value = min(max(value, self.start), self.end)
-
-    def set_screen(self, screen):
-        if self.screen:
-            if self in screen.widgets:
-                self.screen.widgets.remove(self)
-        self.screen = screen
-        screen.add_widget(self)
-        return self
-
-    def unbind(self, event: str):
-        if event in self.bindings:
-            del self.bindings[event]
-        return self
-
-    def unbind_all(self):
-        self.bindings.clear()
-        return self
-
-    def set_tooltip(self, tooltip):
-        self.tooltip = tooltip
-        tooltip.configure(layer=self.layer + 1)
-        if not tooltip.style:
-            tooltip.configure(active_unpressed_text_color=self.active_unpressed_text_color,
-                              active_unpressed_background_color=self.active_unpressed_used_background_color,
-                              active_unpressed_border_color=self.active_unpressed_border_color)
-        return self
-
-    def remove_tooltip(self):
-        if self.tooltip:
-            self.tooltip.visible = False
-            self.tooltip = None
-        return self
+        self._value = min(max(value, self._start), self._end)
 
 
 def safe_set_linesize(font, line_spacing):
@@ -342,17 +962,11 @@ def safe_set_linesize(font, line_spacing):
     font.set_linesize(line_spacing + descent)
 
 
-def get_screen_offset(widget):
-    if widget.screen:
-        return widget.screen.x, widget.screen.y
-    return 0, 0
-
-
 def draw(slider, surface: pygame.Surface):
     if not slider.alive or not slider.visible:
         return
     mouse_pos = pygame.mouse.get_pos()
-    is_hovering = is_point_in_rounded_rect(slider, mouse_pos)
+    is_hovering = misc.is_point_over_widget(slider, mouse_pos)
     if slider.state == "enabled":
         if slider.pressed:
             text_color = slider.active_pressed_text_color
@@ -442,11 +1056,11 @@ def draw(slider, surface: pygame.Surface):
             slider.height = min(slider.height, slider.max_height)
         slider.rect = pygame.Rect(slider.x, slider.y, slider.width, slider.height)
 
-    offset_x, offset_y = get_screen_offset(slider)
-    offset_y += temp_surf.get_height() * 1.25
+    offset_x, offset_y = misc.get_screen_offset(slider)
     draw_rect = slider.rect.move(offset_x, offset_y)
 
-    track_y = draw_rect.centery + 5
+    text_height = temp_surf.get_height()
+    track_y = draw_rect.top + text_height + 10 + slider.height // 2
     track_rect = pygame.Rect(draw_rect.x, track_y - (slider.height // 2), draw_rect.width, slider.height)
     max_radius = min(track_rect.width, track_rect.height) // 2
     tl = min(slider.top_left_corner_radius, max_radius)
@@ -530,51 +1144,22 @@ def draw(slider, surface: pygame.Surface):
             surface.blit(text_surf, text_rect)
 
 
-def is_point_in_rounded_rect(slider, point):
-    offset_x, offset_y = get_screen_offset(slider)
-    draw_rect = slider.rect.move(offset_x, offset_y)
-    temp_surf = slider.font.render(slider.text, True, (0, 0, 0))
-    track_y = draw_rect.centery + 10 + temp_surf.get_height()
-    track_rect = pygame.Rect(draw_rect.x, track_y - (slider.height // 2), draw_rect.width, slider.height)
-    x, y = point
-    if not track_rect.collidepoint(point):
-        return False
-    max_radius = min(track_rect.width, track_rect.height) // 2
-    tl = min(slider.top_left_corner_radius, max_radius)
-    tr = min(slider.top_right_corner_radius, max_radius)
-    bl = min(slider.bottom_left_corner_radius, max_radius)
-    br = min(slider.bottom_right_corner_radius, max_radius)
-    if x < track_rect.left + tl and y < track_rect.top + tl:
-        cx, cy = track_rect.left + tl, track_rect.top + tl
-        if (x - cx) ** 2 + (y - cy) ** 2 > tl ** 2:
-            return False
-    elif x > track_rect.right - tr and y < track_rect.top + tr:
-        cx, cy = track_rect.right - tr, track_rect.top + tr
-        if (x - cx) ** 2 + (y - cy) ** 2 > tr ** 2:
-            return False
-    elif x < track_rect.left + bl and y > track_rect.bottom - bl:
-        cx, cy = track_rect.left + bl, track_rect.bottom - bl
-        if (x - cx) ** 2 + (y - cy) ** 2 > bl ** 2:
-            return False
-    elif x > track_rect.right - br and y > track_rect.bottom - br:
-        cx, cy = track_rect.right - br, track_rect.bottom - br
-        if (x - cx) ** 2 + (y - cy) ** 2 > br ** 2:
-            return False
-    return True
-
-
 def react(slider, event=None):
     if slider.state != "enabled" or not slider.visible:
         return
     mouse_pos = pygame.mouse.get_pos()
-    is_inside = is_point_in_rounded_rect(slider, mouse_pos)
+    is_inside = misc.is_point_over_widget(slider, mouse_pos)
 
     def update_value():
-        offset_x, offset_y = get_screen_offset(slider)
+        offset_x, offset_y = misc.get_screen_offset(slider)
         draw_rect = slider.rect.move(offset_x, offset_y)
 
-        relative_x = mouse_pos[0] - draw_rect.x
-        pct = relative_x / draw_rect.width
+        temp_surf = slider.font.render(slider.text, True, (0, 0, 0))
+        text_height = temp_surf.get_height()
+        track_y = draw_rect.top + text_height + 10 + slider.height // 2
+        track_rect = pygame.Rect(draw_rect.x, track_y - (slider.height // 2), draw_rect.width, slider.height)
+        relative_x = mouse_pos[0] - track_rect.x
+        pct = relative_x / track_rect.width
         pct = max(0, min(1, pct))
         new_slider_value = slider.start + (pct * (slider.end - slider.start))
         moved = slider.value != new_slider_value

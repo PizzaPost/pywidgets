@@ -9,7 +9,7 @@ from typing import Any
 import pygame
 
 from easypygamewidgets import font, misc
-from easypygamewidgets.masterWidget import Widget
+from easypygamewidgets.masterWidget import Widget, Tooltipable
 
 pygame.init()
 
@@ -24,7 +24,7 @@ pygame.init()
 # rgba color ❌
 # four different corner radii ❌
 
-class Timekeeper(Widget):
+class Timekeeper(Widget, Tooltipable):
     def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
                  height: int = 80, start_at: float | int = 60, end_at: float | int | None = None,
                  show_milliseconds: bool = False, show_seconds: bool = True,
@@ -62,104 +62,639 @@ class Timekeeper(Widget):
         super().__init__()
         if screen:
             screen.add_widget(self)
-            self.screen = screen
+            self._screen = screen
             if state:
-                self.state = state
+                self._state = state
         else:
-            self.screen = None
-            self.visible = visible
+            self._screen = None
+            self._visible = visible
             if state:
-                self.state = state
+                self._state = state
             else:
-                self.state = "enabled"
-        self.auto_size = auto_size
-        self.width = width
-        self.height = height
+                self._state = "enabled"
+        self._auto_size = auto_size
+        self._width = width
+        self._height = height
         if auto_size:
             if min_width:
-                self.width = max(width, min_width)
+                self._width = max(width, min_width)
             if max_width:
-                self.width = min(width, max_width)
+                self._width = min(width, max_width)
             if min_height:
-                self.height = max(height, min_height)
+                self._height = max(height, min_height)
             if max_height:
-                self.height = min(height, max_height)
-        self.start_at = start_at
-        self.end_at = end_at
-        self.show_milliseconds = show_milliseconds
-        self.show_seconds = show_seconds
-        self.show_minutes = show_minutes
-        self.smart_minutes = smart_minutes
-        self.show_hours = show_hours
-        self.smart_hours = smart_hours
-        self.active_unpressed_text_color = active_unpressed_text_color
-        self.disabled_unpressed_text_color = disabled_unpressed_text_color
-        self.active_hover_text_color = active_hover_text_color
-        self.disabled_hover_text_color = disabled_hover_text_color
-        self.active_pressed_text_color = active_pressed_text_color
-        self.active_unpressed_background_color = active_unpressed_background_color
-        self.disabled_unpressed_background_color = disabled_unpressed_background_color
-        self.active_hover_background_color = active_hover_background_color
-        self.disabled_hover_background_color = disabled_hover_background_color
-        self.active_pressed_background_color = active_pressed_background_color
-        self.active_unpressed_border_color = active_unpressed_border_color
-        self.disabled_unpressed_border_color = disabled_unpressed_border_color
-        self.active_hover_border_color = active_hover_border_color
-        self.disabled_hover_border_color = disabled_hover_border_color
-        self.active_pressed_border_color = active_pressed_border_color
-        self.border_thickness = border_thickness
-        self.hide_text = hide_text
-        self.hide_background = hide_background
-        self.hide_border = hide_border
+                self._height = min(height, max_height)
+        self._start_at = start_at
+        self._end_at = end_at
+        self._show_milliseconds = show_milliseconds
+        self._show_seconds = show_seconds
+        self._show_minutes = show_minutes
+        self._smart_minutes = smart_minutes
+        self._show_hours = show_hours
+        self._smart_hours = smart_hours
+        self._active_unpressed_text_color = active_unpressed_text_color
+        self._disabled_unpressed_text_color = disabled_unpressed_text_color
+        self._active_hover_text_color = active_hover_text_color
+        self._disabled_hover_text_color = disabled_hover_text_color
+        self._active_pressed_text_color = active_pressed_text_color
+        self._active_unpressed_background_color = active_unpressed_background_color
+        self._disabled_unpressed_background_color = disabled_unpressed_background_color
+        self._active_hover_background_color = active_hover_background_color
+        self._disabled_hover_background_color = disabled_hover_background_color
+        self._active_pressed_background_color = active_pressed_background_color
+        self._active_unpressed_border_color = active_unpressed_border_color
+        self._disabled_unpressed_border_color = disabled_unpressed_border_color
+        self._active_hover_border_color = active_hover_border_color
+        self._disabled_hover_border_color = disabled_hover_border_color
+        self._active_pressed_border_color = active_pressed_border_color
+        self._border_thickness = border_thickness
+        self._hide_text = hide_text
+        self._hide_background = hide_background
+        self._hide_border = hide_border
         cursor_input = {
             "active_hover": active_hover_cursor,
             "disabled_hover": disabled_hover_cursor,
             "active_pressed": active_pressed_cursor
         }
-        self.cursors = {}
+        self._cursors = {}
         for name, cursor in cursor_input.items():
             if isinstance(cursor, pygame.cursors.Cursor):
-                self.cursors[name] = cursor
+                self._cursors[name] = cursor
             else:
                 if cursor is not None:
                     print(
-                        f"No custom cursor is used for the timekeeper {self.text} because it's not a pygame.Cursor object. ({cursor})")
-                self.cursors[name] = None
-        self.font = font
-        self.alignment = alignment
-        self.alignment_spacing = alignment_spacing
-        self.corner_radius = corner_radius
-        self.ticking = ticking
-        self.type_order = type_order
-        self.reversed = reversed
-        self.layer = layer
-        self.tooltip = tooltip
+                        f"No custom cursor is used for the timekeeper {start_at=}, {end_at=} because it's not a pygame.Cursor object. ({cursor})")
+                self._cursors[name] = None
+        self._font = font
+        self._alignment = alignment
+        self._alignment_spacing = alignment_spacing
+        self._corner_radius = corner_radius
+        self._ticking = ticking
+        self._type_order = type_order
+        self._reversed = reversed
+        self._layer = layer
+        self._tooltip = tooltip
         if tooltip:
-            tooltip.configure(layer=self.layer + 1)
+            tooltip.configure(layer=self._layer + 1)
             if not tooltip.style:
-                tooltip.configure(active_unpressed_text_color=self.active_unpressed_text_color,
-                                  active_unpressed_background_color=self.active_unpressed_background_color,
-                                  active_unpressed_border_color=self.active_unpressed_border_color)
-        self.min_width = min_width
-        self.max_width = max_width
-        self.min_height = min_height
-        self.max_height = max_height
-        self.anchor_x = anchor_x
-        self.anchor_y = anchor_y
-        self.data = data
-        self.x = 0
-        self.y = 0
-        self.alive = True
-        self.pressed = False
-        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        self.original_cursor = None
-        self.last_updated = None
-        self.is_negative = False
-        self.bindings = {}
+                tooltip.configure(active_unpressed_text_color=self._active_unpressed_text_color,
+                                  active_unpressed_background_color=self._active_unpressed_background_color,
+                                  active_unpressed_border_color=self._active_unpressed_border_color)
+        self._min_width = min_width
+        self._max_width = max_width
+        self._min_height = min_height
+        self._max_height = max_height
+        self._anchor_x = anchor_x
+        self._anchor_y = anchor_y
+        self._data = data
+        self._x = 0
+        self._y = 0
+        self._alive = True
+        self._pressed = False
+        self._rect = pygame.Rect(self._x, self._y, self._width, self._height)
+        self._original_cursor = None
+        self._last_updated = None
+        self._is_negative = False
+        self._bindings = {}
 
+        self._milliseconds = None
+        self._seconds = None
+        self._minutes = None
+        self._hours = None
         split_to_values(self, start_at)
 
         misc.add_widget(self)
+
+    @property
+    def screen(self):
+        return self._screen
+
+    @screen.setter
+    def screen(self, value):
+        self.set_screen(value)
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        self._state = value
+
+    @property
+    def visible(self):
+        return self._visible
+
+    @visible.setter
+    def visible(self, value):
+        self._visible = value
+
+    @property
+    def auto_size(self):
+        return self._auto_size
+
+    @auto_size.setter
+    def auto_size(self, value):
+        self._auto_size = value
+
+    @property
+    def width(self):
+        return self._width
+
+    @width.setter
+    def width(self, value):
+        self._width = value
+
+    @property
+    def height(self):
+        return self._height
+
+    @height.setter
+    def height(self, value):
+        self._height = value
+
+    @property
+    def start_at(self):
+        return self._start_at
+
+    @start_at.setter
+    def start_at(self, value):
+        self._start_at = value
+
+    @property
+    def end_at(self):
+        return self._end_at
+
+    @end_at.setter
+    def end_at(self, value):
+        self._end_at = value
+
+    @property
+    def show_milliseconds(self):
+        return self._show_milliseconds
+
+    @show_milliseconds.setter
+    def show_milliseconds(self, value):
+        self._show_milliseconds = value
+
+    @property
+    def show_seconds(self):
+        return self._show_seconds
+
+    @show_seconds.setter
+    def show_seconds(self, value):
+        self._show_seconds = value
+
+    @property
+    def show_minutes(self):
+        return self._show_minutes
+
+    @show_minutes.setter
+    def show_minutes(self, value):
+        self._show_minutes = value
+
+    @property
+    def smart_minutes(self):
+        return self._smart_minutes
+
+    @smart_minutes.setter
+    def smart_minutes(self, value):
+        self._smart_minutes = value
+
+    @property
+    def show_hours(self):
+        return self._show_hours
+
+    @show_hours.setter
+    def show_hours(self, value):
+        self._show_hours = value
+
+    @property
+    def smart_hours(self):
+        return self._smart_hours
+
+    @smart_hours.setter
+    def smart_hours(self, value):
+        self._smart_hours = value
+
+    @property
+    def active_unpressed_text_color(self):
+        return self._active_unpressed_text_color
+
+    @active_unpressed_text_color.setter
+    def active_unpressed_text_color(self, value):
+        self._active_unpressed_text_color = value
+
+    @property
+    def disabled_unpressed_text_color(self):
+        return self._disabled_unpressed_text_color
+
+    @disabled_unpressed_text_color.setter
+    def disabled_unpressed_text_color(self, value):
+        self._disabled_unpressed_text_color = value
+
+    @property
+    def active_hover_text_color(self):
+        return self._active_hover_text_color
+
+    @active_hover_text_color.setter
+    def active_hover_text_color(self, value):
+        self._active_hover_text_color = value
+
+    @property
+    def disabled_hover_text_color(self):
+        return self._disabled_hover_text_color
+
+    @disabled_hover_text_color.setter
+    def disabled_hover_text_color(self, value):
+        self._disabled_hover_text_color = value
+
+    @property
+    def active_pressed_text_color(self):
+        return self._active_pressed_text_color
+
+    @active_pressed_text_color.setter
+    def active_pressed_text_color(self, value):
+        self._active_pressed_text_color = value
+
+    @property
+    def active_unpressed_background_color(self):
+        return self._active_unpressed_background_color
+
+    @active_unpressed_background_color.setter
+    def active_unpressed_background_color(self, value):
+        self._active_unpressed_background_color = value
+
+    @property
+    def disabled_unpressed_background_color(self):
+        return self._disabled_unpressed_background_color
+
+    @disabled_unpressed_background_color.setter
+    def disabled_unpressed_background_color(self, value):
+        self._disabled_unpressed_background_color = value
+
+    @property
+    def active_hover_background_color(self):
+        return self._active_hover_background_color
+
+    @active_hover_background_color.setter
+    def active_hover_background_color(self, value):
+        self._active_hover_background_color = value
+
+    @property
+    def disabled_hover_background_color(self):
+        return self._disabled_hover_background_color
+
+    @disabled_hover_background_color.setter
+    def disabled_hover_background_color(self, value):
+        self._disabled_hover_background_color = value
+
+    @property
+    def active_pressed_background_color(self):
+        return self._active_pressed_background_color
+
+    @active_pressed_background_color.setter
+    def active_pressed_background_color(self, value):
+        self._active_pressed_background_color = value
+
+    @property
+    def active_unpressed_border_color(self):
+        return self._active_unpressed_border_color
+
+    @active_unpressed_border_color.setter
+    def active_unpressed_border_color(self, value):
+        self._active_unpressed_border_color = value
+
+    @property
+    def disabled_unpressed_border_color(self):
+        return self._disabled_unpressed_border_color
+
+    @disabled_unpressed_border_color.setter
+    def disabled_unpressed_border_color(self, value):
+        self._disabled_unpressed_border_color = value
+
+    @property
+    def active_hover_border_color(self):
+        return self._active_hover_border_color
+
+    @active_hover_border_color.setter
+    def active_hover_border_color(self, value):
+        self._active_hover_border_color = value
+
+    @property
+    def disabled_hover_border_color(self):
+        return self._disabled_hover_border_color
+
+    @disabled_hover_border_color.setter
+    def disabled_hover_border_color(self, value):
+        self._disabled_hover_border_color = value
+
+    @property
+    def active_pressed_border_color(self):
+        return self._active_pressed_border_color
+
+    @active_pressed_border_color.setter
+    def active_pressed_border_color(self, value):
+        self._active_pressed_border_color = value
+
+    @property
+    def border_thickness(self):
+        return self._border_thickness
+
+    @border_thickness.setter
+    def border_thickness(self, value):
+        self._border_thickness = value
+
+    @property
+    def hide_text(self):
+        return self._hide_text
+
+    @hide_text.setter
+    def hide_text(self, value):
+        self._hide_text = value
+
+    @property
+    def hide_background(self):
+        return self._hide_background
+
+    @hide_background.setter
+    def hide_background(self, value):
+        self._hide_background = value
+
+    @property
+    def hide_border(self):
+        return self._hide_border
+
+    @hide_border.setter
+    def hide_border(self, value):
+        self._hide_border = value
+
+    @property
+    def active_hover_cursor(self):
+        return self._cursors["active_hover"]
+
+    @active_hover_cursor.setter
+    def active_hover_cursor(self, value):
+        self._cursors["active_hover"] = value
+
+    @property
+    def disabled_hover_cursor(self):
+        return self._cursors["disabled_hover"]
+
+    @disabled_hover_cursor.setter
+    def disabled_hover_cursor(self, value):
+        self._cursors["disabled_hover"] = value
+
+    @property
+    def active_pressed_cursor(self):
+        return self._cursors["active_pressed"]
+
+    @active_pressed_cursor.setter
+    def active_pressed_cursor(self, value):
+        self._cursors["active_pressed"] = value
+
+    @property
+    def cursors(self):
+        return self._cursors
+
+    @cursors.setter
+    def cursors(self, value):
+        self._cursors = value
+
+    @property
+    def font(self):
+        return self._font
+
+    @font.setter
+    def font(self, value):
+        self._font = value
+
+    @property
+    def alignment(self):
+        return self._alignment
+
+    @alignment.setter
+    def alignment(self, value):
+        self._alignment = value
+
+    @property
+    def alignment_spacing(self):
+        return self._alignment_spacing
+
+    @alignment_spacing.setter
+    def alignment_spacing(self, value):
+        self._alignment_spacing = value
+
+    @property
+    def corner_radius(self):
+        return self._corner_radius
+
+    @corner_radius.setter
+    def corner_radius(self, value):
+        self._corner_radius = value
+
+    @property
+    def ticking(self):
+        return self._ticking
+
+    @ticking.setter
+    def ticking(self, value):
+        self._ticking = value
+
+    @property
+    def type_order(self):
+        return self._type_order
+
+    @type_order.setter
+    def type_order(self, value):
+        self._type_order = value
+
+    @property
+    def reversed(self):
+        return self._reversed
+
+    @reversed.setter
+    def reversed(self, value):
+        self._reversed = value
+
+    @property
+    def layer(self):
+        return self._layer
+
+    @layer.setter
+    def layer(self, value):
+        self._layer = value
+        if self._tooltip:
+            self._tooltip.configure(layer=self._layer + 1)
+        misc.resort_layers()
+
+    @property
+    def tooltip(self):
+        return self._tooltip
+
+    @tooltip.setter
+    def tooltip(self, value):
+        self.set_tooltip(value)
+
+    @property
+    def min_width(self):
+        return self._min_width
+
+    @min_width.setter
+    def min_width(self, value):
+        self._min_width = value
+
+    @property
+    def max_width(self):
+        return self._max_width
+
+    @max_width.setter
+    def max_width(self, value):
+        self._max_width = value
+
+    @property
+    def min_height(self):
+        return self._min_height
+
+    @min_height.setter
+    def min_height(self, value):
+        self._min_height = value
+
+    @property
+    def max_height(self):
+        return self._max_height
+
+    @max_height.setter
+    def max_height(self, value):
+        self._max_height = value
+
+    @property
+    def anchor_x(self):
+        return self._anchor_x
+
+    @anchor_x.setter
+    def anchor_x(self, value):
+        self._anchor_x = value
+
+    @property
+    def anchor_y(self):
+        return self._anchor_y
+
+    @anchor_y.setter
+    def anchor_y(self, value):
+        self._anchor_y = value
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        self._data = value
+
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self, value):
+        self._x = value
+
+    @property
+    def y(self):
+        return self._y
+
+    @y.setter
+    def y(self, value):
+        self._y = value
+
+    @property
+    def alive(self):
+        return self._alive
+
+    @alive.setter
+    def alive(self, value):
+        self._alive = value
+
+    @property
+    def pressed(self):
+        return self._pressed
+
+    @pressed.setter
+    def pressed(self, value):
+        self._pressed = value
+
+    @property
+    def rect(self):
+        return self._rect
+
+    @rect.setter
+    def rect(self, value):
+        self._rect = value
+
+    @property
+    def original_cursor(self):
+        return self._original_cursor
+
+    @original_cursor.setter
+    def original_cursor(self, value):
+        self._original_cursor = value
+
+    @property
+    def last_updated(self):
+        return self._last_updated
+
+    @last_updated.setter
+    def last_updated(self, value):
+        self._last_updated = value
+
+    @property
+    def is_negative(self):
+        return self._is_negative
+
+    @is_negative.setter
+    def is_negative(self, value):
+        self._is_negative = value
+
+    @property
+    def bindings(self):
+        return self._bindings
+
+    @bindings.setter
+    def bindings(self, value):
+        self._bindings = value
+
+    @property
+    def milliseconds(self):
+        return self._milliseconds
+
+    @milliseconds.setter
+    def milliseconds(self, value):
+        self._milliseconds = value
+
+    @property
+    def seconds(self):
+        return self._seconds
+
+    @seconds.setter
+    def seconds(self, value):
+        self._seconds = value
+
+    @property
+    def minutes(self):
+        return self._minutes
+
+    @minutes.setter
+    def minutes(self, value):
+        self._minutes = value
+
+    @property
+    def hours(self):
+        return self._hours
+
+    @hours.setter
+    def hours(self, value):
+        self._hours = value
 
     def configure(self, **kwargs):
         for key, value in kwargs.items():
@@ -167,16 +702,16 @@ class Timekeeper(Widget):
         update_size(self)
         if any(k in kwargs for k in
                ('auto_size', 'x', 'y', 'width', 'height', 'min_width', 'max_width', 'min_height', 'max_height')):
-            if self.auto_size:
-                if self.min_width:
-                    self.width = max(self.width, self.min_width)
-                if self.max_width:
-                    self.width = min(self.width, self.max_width)
-                if self.min_height:
-                    self.height = max(self.height, self.min_height)
-                if self.max_height:
-                    self.height = min(self.height, self.max_height)
-            self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+            if self._auto_size:
+                if self._min_width:
+                    self._width = max(self._width, self._min_width)
+                if self._max_width:
+                    self._width = min(self._width, self._max_width)
+                if self._min_height:
+                    self._height = max(self._height, self._min_height)
+                if self._max_height:
+                    self._height = min(self._height, self._max_height)
+            self._rect = pygame.Rect(self._x, self._y, self._width, self._height)
         if 'screen' in kwargs:
             self.set_screen(kwargs["screen"])
         if 'layer' in kwargs:
@@ -186,70 +721,16 @@ class Timekeeper(Widget):
     def config(self, **kwargs):
         self.configure(**kwargs)
 
-    def delete(self):
-        self.alive = False
-        if self in misc.all_widgets:
-            misc.all_widgets.remove(self)
-
-    def place(self, x: int, y: int, mode: str = "px"):
-        anchor_offset = [0, 0]
-        if self.anchor_x == "left":
-            anchor_offset[0] = 0
-        elif self.anchor_x == "center":
-            anchor_offset[0] = self.width // 2
-        elif self.anchor_x == "right":
-            anchor_offset[0] = self.width
-        if self.anchor_y == "top":
-            anchor_offset[1] = 0
-        elif self.anchor_y == "center":
-            anchor_offset[1] = self.height // 2
-        elif self.anchor_y == "bottom":
-            anchor_offset[1] = self.height
-        if mode == "px":
-            self.x = x
-            self.y = y
-        elif mode in ("%", "percent", "percentage"):
-            screen_width = misc.pg.get_width()
-            screen_height = misc.pg.get_height()
-            self.x = int(x * screen_width / 100)
-            self.y = int(y * screen_height / 100)
-        else:
-            self.x = x
-            self.y = y
-            print(f"Invalid Mode: {mode}\nFallback: px")
-        self.x -= anchor_offset[0]
-        self.y -= anchor_offset[1]
-        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        return self
-
-    def anchor(self, anchor_x: str = "left", anchor_y: str = "top"):
-        self.anchor_x = anchor_x
-        self.anchor_y = anchor_y
-        self.place(self.x, self.y)
-        return self
-
-    def bind(self, event: str, command, require_hover: bool = True):
-        self.bindings[event] = {"command": command, "require_hover": require_hover}
-        return self
-
-    def trigger_event(self, event: str, *args, **kwargs):
-        if event in self.bindings:
-            binding_data = self.bindings[event]
-            command = binding_data["command"]
-            require_hover = binding_data["require_hover"]
-            if not require_hover or is_point_in_rounded_rect(self, pygame.mouse.get_pos()):
-                command(*args, **kwargs)
-
     def get_display_text(self):
         values = {
-            "ms": self.milliseconds if self.show_milliseconds else None,
-            "s": self.seconds if self.show_seconds else None,
-            "m": self.minutes if (self.show_minutes or (self.smart_minutes and self.minutes != 0)) else None,
-            "h": self.hours if (self.show_hours or (self.smart_hours and self.hours != 0)) else None,
+            "ms": self._milliseconds if self._show_milliseconds else None,
+            "s": self._seconds if self._show_seconds else None,
+            "m": self._minutes if (self._show_minutes or (self._smart_minutes and self._minutes != 0)) else None,
+            "h": self._hours if (self._show_hours or (self._smart_hours and self._hours != 0)) else None,
         }
         parts = []
         pending_sep = None
-        for token in self.type_order:
+        for token in self._type_order:
             if token in values:
                 value = values[token]
                 if value is not None:
@@ -264,7 +745,7 @@ class Timekeeper(Widget):
             else:
                 pending_sep = token
         display_str = "".join(parts)
-        if self.is_negative:
+        if self._is_negative:
             display_str = "-" + display_str
         return display_str
 
@@ -273,69 +754,37 @@ class Timekeeper(Widget):
         return self
 
     def stop(self):
-        self.ticking = False
-        self.last_updated = None
+        self._ticking = False
+        self._last_updated = None
         return self
 
     def resume(self):
-        self.ticking = True
-        self.last_updated = None
+        self._ticking = True
+        self._last_updated = None
         return self
 
     def start(self):
-        self.ticking = True
-        self.last_updated = None
+        self._ticking = True
+        self._last_updated = None
         return self
 
     def reset(self):
-        split_to_values(self, self.start_at)
-        self.last_updated = None
+        split_to_values(self, self._start_at)
+        self._last_updated = None
         return self
 
     def add(self, amount):
-        sign = -1 if self.is_negative else 1
-        curr = ((self.hours * 3600) + (self.minutes * 60) + self.seconds + self.milliseconds) * sign
+        sign = -1 if self._is_negative else 1
+        curr = ((self._hours * 3600) + (self._minutes * 60) + self._seconds + self._milliseconds) * sign
         curr += amount
         split_to_values(self, curr)
         return self
 
     def subtract(self, amount):
-        sign = -1 if self.is_negative else 1
-        curr = ((self.hours * 3600) + (self.minutes * 60) + self.seconds + self.milliseconds) * sign
+        sign = -1 if self._is_negative else 1
+        curr = ((self._hours * 3600) + (self._minutes * 60) + self._seconds + self._milliseconds) * sign
         curr -= amount
         split_to_values(self, curr)
-        return self
-
-    def set_screen(self, screen):
-        if self.screen:
-            if self in screen.widgets:
-                self.screen.widgets.remove(self)
-        self.screen = screen
-        screen.add_widget(self)
-        return self
-
-    def unbind(self, event: str):
-        if event in self.bindings:
-            del self.bindings[event]
-        return self
-
-    def unbind_all(self):
-        self.bindings.clear()
-        return self
-
-    def set_tooltip(self, tooltip):
-        self.tooltip = tooltip
-        tooltip.configure(layer=self.layer + 1)
-        if not tooltip.style:
-            tooltip.configure(active_unpressed_text_color=self.active_unpressed_text_color,
-                              active_unpressed_background_color=self.active_unpressed_background_color,
-                              active_unpressed_border_color=self.active_unpressed_border_color)
-        return self
-
-    def remove_tooltip(self):
-        if self.tooltip:
-            self.tooltip.visible = False
-            self.tooltip = None
         return self
 
 
@@ -357,12 +806,6 @@ def update_size(timekeeper):
         timekeeper.rect = pygame.Rect(timekeeper.x, timekeeper.y, timekeeper.width, timekeeper.height)
 
 
-def get_screen_offset(widget):
-    if widget.screen:
-        return widget.screen.x, widget.screen.y
-    return 0, 0
-
-
 def split_to_values(widget, total_seconds):
     base_seconds = math.floor(total_seconds)
     widget.is_negative = base_seconds < 0
@@ -377,9 +820,9 @@ def split_to_values(widget, total_seconds):
 def draw(timekeeper, surface: pygame.Surface):
     if not timekeeper.alive or not timekeeper.visible:
         return
-    offset_x, offset_y = get_screen_offset(timekeeper)
+    offset_x, offset_y = misc.get_screen_offset(timekeeper)
     mouse_pos = pygame.mouse.get_pos()
-    is_hovering = is_point_in_rounded_rect(timekeeper, mouse_pos)
+    is_hovering = misc.is_point_over_widget(timekeeper, mouse_pos)
     if timekeeper.state == "enabled":
         if timekeeper.pressed and is_hovering:
             text_color = timekeeper.active_pressed_text_color
@@ -475,27 +918,10 @@ def draw(timekeeper, surface: pygame.Surface):
             surface.set_clip(old_clip)
 
 
-def is_point_in_rounded_rect(timekeeper, point):
-    offset_x, offset_y = get_screen_offset(timekeeper)
-    rect = timekeeper.rect.move(offset_x, offset_y)
-    if not rect.collidepoint(point): return False
-    r = timekeeper.corner_radius
-    r = min(r, rect.width // 2, rect.height // 2)
-    if r <= 0: return True
-    x, y = point
-    if (rect.left + r <= x <= rect.right - r) or (rect.top + r <= y <= rect.bottom - r):
-        return True
-    centers = [(rect.left + r, rect.top + r), (rect.right - r, rect.top + r),
-               (rect.left + r, rect.bottom - r), (rect.right - r, rect.bottom - r)]
-    for cx, cy in centers:
-        if ((x - cx) ** 2 + (y - cy) ** 2) <= r ** 2: return True
-    return False
-
-
 def react(timekeeper, event=None):
     if timekeeper.state != "enabled" or not timekeeper.visible:
         return
-    is_inside = is_point_in_rounded_rect(timekeeper, pygame.mouse.get_pos())
+    is_inside = misc.is_point_over_widget(timekeeper, pygame.mouse.get_pos())
     if event:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and is_inside:
             timekeeper.trigger_event("<PRESS>")

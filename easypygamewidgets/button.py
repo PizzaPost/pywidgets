@@ -8,7 +8,7 @@ import pygame
 
 from easypygamewidgets import font, misc
 from easypygamewidgets.assets import TypeHints
-from easypygamewidgets.masterWidget import Widget
+from easypygamewidgets.masterWidget import Widget, Tooltipable
 
 pygame.init()
 
@@ -16,7 +16,7 @@ pygame.init()
 # PERFECTION
 # four different corner radii ❌
 
-class Button(Widget):
+class Button(Widget, Tooltipable):
     def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
                  height: int = 80,
                  text: str = "easypygamewidgets Button",
@@ -754,92 +754,6 @@ class Button(Widget):
         self.configure(**kwargs)
         return self
 
-    def delete(self):
-        self._alive = False
-        if self in misc.all_widgets:
-            misc.all_widgets.remove(self)
-
-    def place(self, x: int, y: int, mode: str = "px"):
-        anchor_offset = [0, 0]
-        if self._anchor_x == "left":
-            anchor_offset[0] = 0
-        elif self._anchor_x == "center":
-            anchor_offset[0] = self._width // 2
-        elif self._anchor_x == "right":
-            anchor_offset[0] = self._width
-        if self._anchor_y == "top":
-            anchor_offset[1] = 0
-        elif self._anchor_y == "center":
-            anchor_offset[1] = self._height // 2
-        elif self._anchor_y == "bottom":
-            anchor_offset[1] = self._height
-        if mode == "px":
-            self._x = x
-            self._y = y
-        elif mode in ("%", "percent", "percentage"):
-            screen_width = misc.pg.get_width()
-            screen_height = misc.pg.get_height()
-            self._x = int(x * screen_width / 100)
-            self._y = int(y * screen_height / 100)
-        else:
-            self._x = x
-            self._y = y
-            print(f"Invalid Mode: {mode}\nFallback: px")
-        self.x -= anchor_offset[0]
-        self.y -= anchor_offset[1]
-        self._rect = pygame.Rect(self._x, self._y, self._width, self._height)
-        self._needs_transform = True
-        return self
-
-    def anchor(self, anchor_x: str = "left", anchor_y: str = "top"):
-        self._anchor_x = anchor_x
-        self._anchor_y = anchor_y
-        self.place(self._x, self._y)
-        return self
-
-    def bind(self, event: str, command, require_hover: bool = True):
-        self._bindings[event] = {"command": command, "require_hover": require_hover}
-        return self
-
-    def trigger_event(self, event: str, *args, **kwargs):
-        if event in self._bindings:
-            binding_data = self._bindings[event]
-            command = binding_data["command"]
-            require_hover = binding_data["require_hover"]
-            if not require_hover or is_point_in_rounded_rect(self, pygame.mouse.get_pos()):
-                command(*args, **kwargs)
-
-    def set_screen(self, screen):
-        if self in screen.widgets:
-            return self
-        self._screen = screen
-        screen.add_widget(self)
-        return self
-
-    def unbind(self, event: str):
-        if event in self._bindings:
-            del self._bindings[event]
-        return self
-
-    def unbind_all(self):
-        self._bindings.clear()
-        return self
-
-    def set_tooltip(self, tooltip):
-        self._tooltip = tooltip
-        tooltip.configure(_layer=self._layer + 1)
-        if not tooltip.style:
-            tooltip.configure(active_unpressed_text_color=self._active_unpressed_text_color,
-                              active_unpressed_background_color=self._active_unpressed_background_color,
-                              active_unpressed_border_color=self._active_unpressed_border_color)
-        return self
-
-    def remove_tooltip(self):
-        if self._tooltip:
-            self._tooltip.configure(visible=False)
-            self._tooltip = None
-        return self
-
     def scale(self, value=None, frames_to_finish=1):
         if frames_to_finish <= 0:
             frames_to_finish = 1
@@ -913,12 +827,6 @@ def normalize_color(color):
     if len(color) == 3:
         return *color, 255
     return color
-
-
-def get_screen_offset(widget):
-    if widget.screen:
-        return widget.screen.x, widget.screen.y
-    return 0, 0
 
 
 def render_button_surface(button, is_hovering):
@@ -995,7 +903,7 @@ def draw(button, surface: pygame.Surface):
     if not button.alive or not button.visible:
         return
     mouse_pos = pygame.mouse.get_pos()
-    is_hovering = is_point_in_rounded_rect(button, mouse_pos)
+    is_hovering = misc.is_point_over_widget(button, mouse_pos)
     current_visual_state = (button.pressed, is_hovering)
     if button.needs_redraw or button.last_visual_state != current_visual_state:
         render_button_surface(button, is_hovering)
@@ -1022,7 +930,7 @@ def draw(button, surface: pygame.Surface):
         button.rect = button.cached_surface.get_rect()
         button.rect.center = old_center
         button.needs_transform = False
-    offset_x, offset_y = get_screen_offset(button)
+    offset_x, offset_y = misc.get_screen_offset(button)
     total_offset_x = offset_x + round(button.current_offset[0])
     total_offset_y = offset_y + round(button.current_offset[1])
     draw_rect = button.rect.move(total_offset_x, total_offset_y)
@@ -1063,53 +971,12 @@ def draw(button, surface: pygame.Surface):
             button.tooltip.hide()
 
 
-def is_point_in_rounded_rect(button, point):
-    offset_x, offset_y = get_screen_offset(button)
-    total_offset_x = offset_x + round(button.current_offset[0])
-    total_offset_y = offset_y + round(button.current_offset[1])
-    rect = button.rect.move(total_offset_x, total_offset_y)
-    if not rect.collidepoint(point):
-        return False
-    x, y = point
-    geom_rect = rect
-    scale = button.current_scale
-    rotation = button.current_rotation
-    if scale != 1 or rotation != 0:
-        cx, cy = rect.center
-        if rotation != 0:
-            v = pygame.math.Vector2(x - cx, y - cy)
-            v = v.rotate(rotation)
-            x, y = cx + v.x, cy + v.y
-        base_w = button.width * scale
-        base_h = button.height * scale
-        geom_rect = pygame.Rect(0, 0, base_w, base_h)
-        geom_rect.center = (cx, cy)
-        if not geom_rect.collidepoint((x, y)):
-            return False
-    r = button.corner_radius * scale
-    r = min(r, geom_rect.width // 2, geom_rect.height // 2)
-    if r <= 0:
-        return True
-    if (geom_rect.left + r <= x <= geom_rect.right - r) or (geom_rect.top + r <= y <= geom_rect.bottom - r):
-        return True
-    centers = [
-        (geom_rect.left + r, geom_rect.top + r),
-        (geom_rect.right - r, geom_rect.top + r),
-        (geom_rect.left + r, geom_rect.bottom - r),
-        (geom_rect.right - r, geom_rect.bottom - r)
-    ]
-    for cx, cy in centers:
-        if ((x - cx) ** 2 + (y - cy) ** 2) <= r ** 2:
-            return True
-    return False
-
-
 def react(button, event=None):
     if button.state != "enabled" or not button.visible:
         button.pressed = False
         return
     mouse_pos = pygame.mouse.get_pos()
-    is_inside = is_point_in_rounded_rect(button, mouse_pos)
+    is_inside = misc.is_point_over_widget(button, mouse_pos)
     if not event:
         if pygame.mouse.get_pressed()[0]:
             button.trigger_event("<HOLD>")

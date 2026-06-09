@@ -9,12 +9,12 @@ import pygame
 
 from easypygamewidgets import font, misc
 from easypygamewidgets.assets import TypeHints
-from easypygamewidgets.masterWidget import Widget
+from easypygamewidgets.masterWidget import Widget, Tooltipable
 
 pygame.init()
 
 
-class Entry(Widget):
+class Entry(Widget, Tooltipable):
     def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
                  height: int = 80, placeholder_text: str = "",
                  text: str = "", char_limit: int | None = None,
@@ -942,61 +942,6 @@ class Entry(Widget):
         self.configure(**kwargs)
         return self
 
-    def delete(self):
-        self._alive = False
-        if self in misc.all_widgets:
-            misc.all_widgets.remove(self)
-
-    def place(self, x: int, y: int, mode: str = "px"):
-        anchor_offset = [0, 0]
-        if self._anchor_x == "left":
-            anchor_offset[0] = 0
-        elif self._anchor_x == "center":
-            anchor_offset[0] = self._width // 2
-        elif self._anchor_x == "right":
-            anchor_offset[0] = self._width
-        if self._anchor_y == "top":
-            anchor_offset[1] = 0
-        elif self._anchor_y == "center":
-            anchor_offset[1] = self._height // 2
-        elif self._anchor_y == "bottom":
-            anchor_offset[1] = self._height
-        if mode == "px":
-            self._x = x
-            self._y = y
-        elif mode in ("%", "percent", "percentage"):
-            screen_width = misc.pg.get_width()
-            screen_height = misc.pg.get_height()
-            self._x = int(x * screen_width / 100)
-            self._y = int(y * screen_height / 100)
-        else:
-            self._x = x
-            self._y = y
-            print(f"Invalid Mode: {mode}\nFallback: px")
-        self.x -= anchor_offset[0]
-        self.y -= anchor_offset[1]
-        self._rect = pygame.Rect(self._x, self._y, self._width, self._height)
-        self._needs_transform = True
-        return self
-
-    def anchor(self, anchor_x: str = "left", anchor_y: str = "top"):
-        self._anchor_x = anchor_x
-        self._anchor_y = anchor_y
-        self._place(self._x, self._y)
-        return self
-
-    def bind(self, event: str, command, require_hover: bool = True):
-        self._bindings[event] = {"command": command, "require_hover": require_hover}
-        return self
-
-    def trigger_event(self, event: str, *args, **kwargs):
-        if event in self._bindings:
-            binding_data = self._bindings[event]
-            command = binding_data["command"]
-            require_hover = binding_data["require_hover"]
-            if not require_hover or is_point_in_rounded_rect(self, pygame.mouse.get_pos()):
-                command(*args, **kwargs)
-
     def get(self):
         return self._text
 
@@ -1066,37 +1011,6 @@ class Entry(Widget):
         elif self._placeholder_text and not self._focused:
             return self._placeholder_text
         return ""
-
-    def set_screen(self, screen):
-        if self in screen.widgets:
-            return self
-        self._screen = screen
-        screen.add_widget(self)
-        return self
-
-    def unbind(self, event: str):
-        if event in self._bindings:
-            del self._bindings[event]
-        return self
-
-    def unbind_all(self):
-        self._bindings.clear()
-        return self
-
-    def set_tooltip(self, tooltip):
-        self._tooltip = tooltip
-        tooltip.configure(layer=self._layer + 1)
-        if not tooltip.style:
-            tooltip.configure(active_unpressed_text_color=self._active_unpressed_text_color,
-                              active_unpressed_background_color=self._active_unpressed_background_color,
-                              active_unpressed_border_color=self._active_unpressed_border_color)
-        return self
-
-    def remove_tooltip(self):
-        if self._tooltip:
-            self._tooltip.visible = False
-            self._tooltip = None
-        return self
 
     def scale(self, value=None, frames_to_finish=1):
         if frames_to_finish <= 0:
@@ -1230,12 +1144,6 @@ def process_key_action(entry, key, unicode_char):
         entry.trigger_event("<TYPING>")
 
 
-def get_screen_offset(widget):
-    if widget.screen:
-        return widget.screen.x, widget.screen.y
-    return 0, 0
-
-
 def render_entry_surface(entry, is_hovering):
     if entry.state == "enabled":
         if entry.pressed and is_hovering:
@@ -1363,7 +1271,7 @@ def draw(entry, surface: pygame.Surface):
         pygame.scrap.init()
 
     mouse_pos = pygame.mouse.get_pos()
-    is_hovering = is_point_in_rounded_rect(entry, mouse_pos)
+    is_hovering = misc.is_point_over_widget(entry, mouse_pos)
     now = pygame.time.get_ticks()
     display_text = entry.get_display_text()
 
@@ -1424,7 +1332,7 @@ def draw(entry, surface: pygame.Surface):
         entry.rect = entry.cached_surface.get_rect()
         entry.rect.topleft = old_topleft
         entry.needs_transform = False
-    offset_x, offset_y = get_screen_offset(entry)
+    offset_x, offset_y = misc.get_screen_offset(entry)
     total_offset_x = offset_x + round(entry.current_offset[0])
     total_offset_y = offset_y + round(entry.current_offset[1])
     draw_rect = entry.rect.move(total_offset_x, total_offset_y)
@@ -1467,59 +1375,13 @@ def draw(entry, surface: pygame.Surface):
             entry.tooltip.hide()
 
 
-def is_point_in_rounded_rect(entry, point):
-    offset_x, offset_y = get_screen_offset(entry)
-    total_offset_x = offset_x + round(entry.current_offset[0])
-    total_offset_y = offset_y + round(entry.current_offset[1])
-    rect = entry.rect.move(total_offset_x, total_offset_y)
-    if not rect.collidepoint(point):
-        return False
-    x, y = point
-    geom_rect = rect
-    scale = entry.current_scale
-    rotation = entry.current_rotation
-    if scale != 1 or rotation != 0:
-        cx, cy = rect.center
-        if rotation != 0:
-            v = pygame.math.Vector2(x - cx, y - cy)
-            v = v.rotate(rotation)
-            x, y = cx + v.x, cy + v.y
-        base_w = entry.width * scale
-        base_h = entry.height * scale
-        geom_rect = pygame.Rect(0, 0, base_w, base_h)
-        geom_rect.center = (cx, cy)
-        if not geom_rect.collidepoint((x, y)):
-            return False
-    tl_r = entry.top_left_corner_radius * scale
-    tr_r = entry.top_right_corner_radius * scale
-    bl_r = entry.bottom_left_corner_radius * scale
-    br_r = entry.bottom_right_corner_radius * scale
-    max_r = max(tl_r, tr_r, bl_r, br_r)
-    if (geom_rect.left + max_r <= x <= geom_rect.right - max_r) or \
-            (geom_rect.top + max_r <= y <= geom_rect.bottom - max_r):
-        return True
-    if x < geom_rect.left + tl_r and y < geom_rect.top + tl_r:
-        cx, cy = geom_rect.left + tl_r, geom_rect.top + tl_r
-        return (x - cx) ** 2 + (y - cy) ** 2 <= tl_r ** 2
-    if x > geom_rect.right - tr_r and y < geom_rect.top + tr_r:
-        cx, cy = geom_rect.right - tr_r, geom_rect.top + tr_r
-        return (x - cx) ** 2 + (y - cy) ** 2 <= tr_r ** 2
-    if x < geom_rect.left + bl_r and y > geom_rect.bottom - bl_r:
-        cx, cy = geom_rect.left + bl_r, geom_rect.bottom - bl_r
-        return (x - cx) ** 2 + (y - cy) ** 2 <= bl_r ** 2
-    if x > geom_rect.right - br_r and y > geom_rect.bottom - br_r:
-        cx, cy = geom_rect.right - br_r, geom_rect.bottom - br_r
-        return (x - cx) ** 2 + (y - cy) ** 2 <= br_r ** 2
-    return True
-
-
 def react(entry, event=None):
     if entry.state != "enabled" or not entry.visible:
         entry.pressed = False
         entry.focused = False
         return
     display_text = entry.get_display_text()
-    is_inside = is_point_in_rounded_rect(entry, pygame.mouse.get_pos())
+    is_inside = misc.is_point_over_widget(entry, pygame.mouse.get_pos())
 
     def get_idx_at_mouse(mouse_x):
         curr_x = entry.last_text_x
