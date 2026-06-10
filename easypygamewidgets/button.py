@@ -866,6 +866,7 @@ def render_button_surface(button, is_hovering):
                          border_radius=button.corner_radius)
 
     if not button.hide_text:
+        descent_offset = abs(button.font.get_descent()) // 2
         if button.alignment == "stretched" and len(button.text) > 1 and not button.auto_size:
             total_char_width = sum(button.font.render(char, True, text_color).get_width() for char in button.text)
             available_width = local_rect.width - button.alignment_spacing
@@ -875,12 +876,13 @@ def render_button_surface(button, is_hovering):
                 for char in button.text:
                     char_surf = button.font.render(char, True, text_color)
                     char_surf.set_alpha(text_color[3])
-                    cached.blit(char_surf, char_surf.get_rect(midleft=(current_x, local_rect.centery)))
+                    cached.blit(char_surf, char_surf.get_rect(midleft=(current_x, local_rect.centery + descent_offset)))
                     current_x += char_surf.get_width() + spacing
             else:
                 text_surf = button.font.render(button.text, True, text_color)
                 text_surf.set_alpha(text_color[3])
-                cached.blit(text_surf, text_surf.get_rect(center=local_rect.center))
+                cached.blit(text_surf,
+                            text_surf.get_rect(center=(local_rect.centerx, local_rect.centery + descent_offset)))
         else:
             lines = button.text.split("\n")
             total_text_height = len(lines) * button.line_spacing
@@ -889,7 +891,7 @@ def render_button_surface(button, is_hovering):
                 text_surf = button.font.render(line, True, text_color)
                 text_surf.set_alpha(text_color[3])
                 text_rect = text_surf.get_rect()
-                line_centery = start_y + (i * button.line_spacing) + (button.line_spacing // 2)
+                line_centery = start_y + (i * button.line_spacing) + (button.line_spacing // 2) + descent_offset
                 if button.alignment == "left":
                     text_rect.midleft = (local_rect.left + button.alignment_spacing, line_centery)
                 elif button.alignment == "right":

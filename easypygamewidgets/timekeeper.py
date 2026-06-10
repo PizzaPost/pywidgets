@@ -895,6 +895,7 @@ def draw(timekeeper, surface: pygame.Surface):
     y_pos = draw_rect.centery
     drawn_stretched = False
     if not timekeeper.hide_text:
+        descent_offset = abs(timekeeper.font.get_descent()) // 2
         if timekeeper.alignment == "stretched" and len(display_text) > 1 and not timekeeper.auto_size:
             total_char_width = sum(timekeeper.font.render(char, True, text_color).get_width() for char in display_text)
             available_width = draw_rect.width - (timekeeper.alignment_spacing * 2)
@@ -904,7 +905,7 @@ def draw(timekeeper, surface: pygame.Surface):
                 current_x = draw_rect.left + timekeeper.alignment_spacing
                 for char in display_text:
                     char_surf = timekeeper.font.render(char, True, text_color)
-                    surface.blit(char_surf, char_surf.get_rect(midleft=(current_x, y_pos)))
+                    surface.blit(char_surf, char_surf.get_rect(midleft=(current_x, y_pos + descent_offset)))
                     current_x += char_surf.get_width() + spacing
         if not drawn_stretched:
             text_surf = timekeeper.font.render(display_text, True, text_color)
@@ -915,7 +916,7 @@ def draw(timekeeper, surface: pygame.Surface):
                 text_rect.midright = (draw_rect.right - timekeeper.alignment_spacing, y_pos)
             else:
                 text_rect.center = draw_rect.center
-            surface.blit(text_surf, text_rect)
+            surface.blit(text_surf, (text_rect.x, text_rect.y + descent_offset))
             timekeeper.last_text_x = text_rect.x
             surface.set_clip(old_clip)
 

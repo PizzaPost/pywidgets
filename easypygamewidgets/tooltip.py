@@ -582,19 +582,19 @@ def render_tooltip_surface(tooltip):
                 for char in tooltip.text:
                     char_surf = tooltip.font.render(char, True, text_color)
                     char_surf.set_alpha(text_color[3])
-                    cached.blit(char_surf, char_surf.get_rect(midleft=(current_x, local_rect.centery + descent)))
+                    cached.blit(char_surf, char_surf.get_rect(midleft=(current_x, local_rect.centery)))
                     current_x += char_surf.get_width() + spacing
             else:
                 text_surf = tooltip.font.render(tooltip.text, True, text_color)
                 text_surf.set_alpha(text_color[3])
                 cached.blit(text_surf,
                             text_surf.get_rect(
-                                center=(text_area_left + text_area_width // 2, local_rect.centery + descent)))
+                                center=(text_area_left + text_area_width // 2, local_rect.centery)))
         else:
             text_surf = tooltip.font.render(tooltip.text, True, text_color)
             text_surf.set_alpha(text_color[3])
             text_rect = text_surf.get_rect()
-            text_rect.centery = local_rect.centery + descent
+            text_rect.centery = local_rect.centery
             if tooltip.alignment == "left":
                 text_rect.left = text_area_left + tooltip.alignment_spacing
             elif tooltip.alignment == "right":
