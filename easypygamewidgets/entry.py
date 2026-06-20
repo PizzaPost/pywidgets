@@ -9,12 +9,12 @@ import pygame
 
 from easypygamewidgets import font, misc
 from easypygamewidgets.assets import TypeHints
-from easypygamewidgets.masterWidget import Widget, Tooltipable
+from easypygamewidgets.masterWidget import Widget, Tooltipable, Screenable
 
 pygame.init()
 
 
-class Entry(Widget, Tooltipable):
+class Entry(Widget, Tooltipable, Screenable):
     def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
                  height: int = 80, placeholder_text: str = "",
                  text: str = "", char_limit: int | None = None,
@@ -71,35 +71,54 @@ class Entry(Widget, Tooltipable):
         self._width = width
         self._height = height
         if auto_size:
-            if max_width:
-                self._width = min(self._width, max_width)
+            display_text = ""
+            if text:
+                if show:
+                    display_text = show * len(text)
+                else:
+                    display_text = text
+            elif placeholder_text:
+                display_text = placeholder_text
+            lines = display_text.split("\n")
+            total_w = 0
+            text_h = font.size(display_text)[1]
+            for line in lines:
+                text_w, text_h = font.size(line)
+                if text_w > total_w:
+                    total_w = text_w
+            total_h = len(lines) * text_h
+
+            self._width = total_w + alignment_spacing * 2
             if min_width:
                 self._width = max(self._width, min_width)
-            if max_height:
-                self._height = min(self._height, max_height)
+            if max_width:
+                self._width = min(self._width, max_width)
+            self._height = total_h + 20
             if min_height:
                 self._height = max(self._height, min_height)
+            if max_height:
+                self._height = min(self._height, max_height)
         self._placeholder_text = placeholder_text
         self._text = text
         self._char_limit = char_limit
         self._show = show
-        self._active_unpressed_text_color = normalize_color(active_unpressed_text_color)
-        self._disabled_unpressed_text_color = normalize_color(disabled_unpressed_text_color)
-        self._active_hover_text_color = normalize_color(active_hover_text_color)
-        self._disabled_hover_text_color = normalize_color(disabled_hover_text_color)
-        self._active_pressed_text_color = normalize_color(active_pressed_text_color)
-        self._active_unpressed_background_color = normalize_color(active_unpressed_background_color)
-        self._disabled_unpressed_background_color = normalize_color(disabled_unpressed_background_color)
-        self._active_hover_background_color = normalize_color(active_hover_background_color)
-        self._disabled_hover_background_color = normalize_color(disabled_hover_background_color)
-        self._active_pressed_background_color = normalize_color(active_pressed_background_color)
-        self._active_unpressed_border_color = normalize_color(active_unpressed_border_color)
-        self._disabled_unpressed_border_color = normalize_color(disabled_unpressed_border_color)
-        self._active_hover_border_color = normalize_color(active_hover_border_color)
-        self._disabled_hover_border_color = normalize_color(disabled_hover_border_color)
-        self._active_pressed_border_color = normalize_color(active_pressed_border_color)
-        self._selection_color = normalize_color(selection_color)
-        self._disabled_selection_color = normalize_color(disabled_selection_color)
+        self._active_unpressed_text_color = misc.normalize_color(active_unpressed_text_color)
+        self._disabled_unpressed_text_color = misc.normalize_color(disabled_unpressed_text_color)
+        self._active_hover_text_color = misc.normalize_color(active_hover_text_color)
+        self._disabled_hover_text_color = misc.normalize_color(disabled_hover_text_color)
+        self._active_pressed_text_color = misc.normalize_color(active_pressed_text_color)
+        self._active_unpressed_background_color = misc.normalize_color(active_unpressed_background_color)
+        self._disabled_unpressed_background_color = misc.normalize_color(disabled_unpressed_background_color)
+        self._active_hover_background_color = misc.normalize_color(active_hover_background_color)
+        self._disabled_hover_background_color = misc.normalize_color(disabled_hover_background_color)
+        self._active_pressed_background_color = misc.normalize_color(active_pressed_background_color)
+        self._active_unpressed_border_color = misc.normalize_color(active_unpressed_border_color)
+        self._disabled_unpressed_border_color = misc.normalize_color(disabled_unpressed_border_color)
+        self._active_hover_border_color = misc.normalize_color(active_hover_border_color)
+        self._disabled_hover_border_color = misc.normalize_color(disabled_hover_border_color)
+        self._active_pressed_border_color = misc.normalize_color(active_pressed_border_color)
+        self._selection_color = misc.normalize_color(selection_color)
+        self._disabled_selection_color = misc.normalize_color(disabled_selection_color)
         self._border_thickness = border_thickness
         self._hide_text = hide_text
         self._hide_background = hide_background
@@ -274,7 +293,7 @@ class Entry(Widget, Tooltipable):
 
     @active_unpressed_text_color.setter
     def active_unpressed_text_color(self, value):
-        self._active_unpressed_text_color = normalize_color(value)
+        self._active_unpressed_text_color = misc.normalize_color(value)
 
     @property
     def disabled_unpressed_text_color(self):
@@ -282,7 +301,7 @@ class Entry(Widget, Tooltipable):
 
     @disabled_unpressed_text_color.setter
     def disabled_unpressed_text_color(self, value):
-        self._disabled_unpressed_text_color = normalize_color(value)
+        self._disabled_unpressed_text_color = misc.normalize_color(value)
 
     @property
     def active_hover_text_color(self):
@@ -290,7 +309,7 @@ class Entry(Widget, Tooltipable):
 
     @active_hover_text_color.setter
     def active_hover_text_color(self, value):
-        self._active_hover_text_color = normalize_color(value)
+        self._active_hover_text_color = misc.normalize_color(value)
 
     @property
     def disabled_hover_text_color(self):
@@ -298,7 +317,7 @@ class Entry(Widget, Tooltipable):
 
     @disabled_hover_text_color.setter
     def disabled_hover_text_color(self, value):
-        self._disabled_hover_text_color = normalize_color(value)
+        self._disabled_hover_text_color = misc.normalize_color(value)
 
     @property
     def active_pressed_text_color(self):
@@ -306,7 +325,7 @@ class Entry(Widget, Tooltipable):
 
     @active_pressed_text_color.setter
     def active_pressed_text_color(self, value):
-        self._active_pressed_text_color = normalize_color(value)
+        self._active_pressed_text_color = misc.normalize_color(value)
 
     @property
     def active_unpressed_background_color(self):
@@ -314,7 +333,7 @@ class Entry(Widget, Tooltipable):
 
     @active_unpressed_background_color.setter
     def active_unpressed_background_color(self, value):
-        self._active_unpressed_background_color = normalize_color(value)
+        self._active_unpressed_background_color = misc.normalize_color(value)
 
     @property
     def disabled_unpressed_background_color(self):
@@ -322,7 +341,7 @@ class Entry(Widget, Tooltipable):
 
     @disabled_unpressed_background_color.setter
     def disabled_unpressed_background_color(self, value):
-        self._disabled_unpressed_background_color = normalize_color(value)
+        self._disabled_unpressed_background_color = misc.normalize_color(value)
 
     @property
     def active_hover_background_color(self):
@@ -330,7 +349,7 @@ class Entry(Widget, Tooltipable):
 
     @active_hover_background_color.setter
     def active_hover_background_color(self, value):
-        self._active_hover_background_color = normalize_color(value)
+        self._active_hover_background_color = misc.normalize_color(value)
 
     @property
     def disabled_hover_background_color(self):
@@ -338,7 +357,7 @@ class Entry(Widget, Tooltipable):
 
     @disabled_hover_background_color.setter
     def disabled_hover_background_color(self, value):
-        self._disabled_hover_background_color = normalize_color(value)
+        self._disabled_hover_background_color = misc.normalize_color(value)
 
     @property
     def active_pressed_background_color(self):
@@ -346,7 +365,7 @@ class Entry(Widget, Tooltipable):
 
     @active_pressed_background_color.setter
     def active_pressed_background_color(self, value):
-        self._active_pressed_background_color = normalize_color(value)
+        self._active_pressed_background_color = misc.normalize_color(value)
 
     @property
     def active_unpressed_border_color(self):
@@ -354,7 +373,7 @@ class Entry(Widget, Tooltipable):
 
     @active_unpressed_border_color.setter
     def active_unpressed_border_color(self, value):
-        self._active_unpressed_border_color = normalize_color(value)
+        self._active_unpressed_border_color = misc.normalize_color(value)
 
     @property
     def disabled_unpressed_border_color(self):
@@ -362,7 +381,7 @@ class Entry(Widget, Tooltipable):
 
     @disabled_unpressed_border_color.setter
     def disabled_unpressed_border_color(self, value):
-        self._disabled_unpressed_border_color = normalize_color(value)
+        self._disabled_unpressed_border_color = misc.normalize_color(value)
 
     @property
     def active_hover_border_color(self):
@@ -370,7 +389,7 @@ class Entry(Widget, Tooltipable):
 
     @active_hover_border_color.setter
     def active_hover_border_color(self, value):
-        self._active_hover_border_color = normalize_color(value)
+        self._active_hover_border_color = misc.normalize_color(value)
 
     @property
     def disabled_hover_border_color(self):
@@ -378,7 +397,7 @@ class Entry(Widget, Tooltipable):
 
     @disabled_hover_border_color.setter
     def disabled_hover_border_color(self, value):
-        self._disabled_hover_border_color = normalize_color(value)
+        self._disabled_hover_border_color = misc.normalize_color(value)
 
     @property
     def active_pressed_border_color(self):
@@ -386,7 +405,7 @@ class Entry(Widget, Tooltipable):
 
     @active_pressed_border_color.setter
     def active_pressed_border_color(self, value):
-        self._active_pressed_border_color = normalize_color(value)
+        self._active_pressed_border_color = misc.normalize_color(value)
 
     @property
     def selection_color(self):
@@ -394,7 +413,7 @@ class Entry(Widget, Tooltipable):
 
     @selection_color.setter
     def selection_color(self, value):
-        self._selection_color = normalize_color(value)
+        self._selection_color = misc.normalize_color(value)
 
     @property
     def disabled_selection_color(self):
@@ -402,7 +421,7 @@ class Entry(Widget, Tooltipable):
 
     @disabled_selection_color.setter
     def disabled_selection_color(self, value):
-        self._disabled_selection_color = normalize_color(value)
+        self._disabled_selection_color = misc.normalize_color(value)
 
     @property
     def border_thickness(self):
@@ -926,15 +945,37 @@ class Entry(Widget, Tooltipable):
             setattr(self, key, value)
         self._needs_redraw = True
         if any(k in kwargs for k in
-               ('auto_size', 'x', 'y', 'width', 'height', 'max_width', 'min_width', 'max_height', 'min_height')):
-            if self._max_width:
-                self._width = min(self._width, self._max_width)
-            if self._min_width:
-                self._width = max(self._width, self._min_width)
-            if self._max_height:
-                self._height = min(self._height, self._max_height)
-            if self._min_height:
-                self._height = max(self._height, self._min_height)
+               ('auto_size', 'x', 'y', 'width', 'height', 'max_width', 'min_width', 'max_height', 'min_height',
+                'anchor_x', 'anchor_y')):
+            self._width = self._width
+            self._height = self._height
+            if self._auto_size:
+                display_text = ""
+                if self._text:
+                    if self._show:
+                        display_text = self._show * len(self._text)
+                    else:
+                        display_text = self._text
+                elif self._placeholder_text and not self._focused:
+                    display_text = self._placeholder_text
+                lines = display_text.split("\n")
+                total_w = 0
+                text_h = self._font.size(display_text)[1]
+                for line in lines:
+                    text_w, text_h = self._font.size(line)
+                    if text_w > total_w:
+                        total_w = text_w
+                total_h = len(lines) * text_h
+                self._width = total_w + self._alignment_spacing * 2
+                if self._min_width:
+                    self._width = max(self._width, self._min_width)
+                if self._max_width:
+                    self._width = min(self._width, self._max_width)
+                self._height = total_h + 20
+                if self._min_height:
+                    self._height = max(self._height, self._min_height)
+                if self._max_height:
+                    self._height = min(self._height, self._max_height)
             self._rect = pygame.Rect(self._x, self._y, self._width, self._height)
         if 'screen' in kwargs:
             self.set_screen(kwargs["screen"])
@@ -1076,14 +1117,6 @@ def update_animation(entry):
         entry.needs_transform = True
 
 
-def normalize_color(color):
-    if color is None:
-        return 0, 0, 0, 0
-    if len(color) == 3:
-        return *color, 255
-    return color
-
-
 def process_key_action(entry, key, unicode_char):
     is_linux = sys.platform.startswith("linux")
     mods = pygame.key.get_mods()
@@ -1188,7 +1221,11 @@ def render_entry_surface(entry, is_hovering):
                          border_bottom_right_radius=entry.bottom_right_corner_radius)
     clip_rect = local_rect.inflate(-4, -4)
     cached.set_clip(clip_rect)
-    y_pos = local_rect.centery
+    ascent = entry.font.get_ascent()
+    descent = abs(entry.font.get_descent())
+    optical_centre_offset = ascent - (ascent - descent) // 2
+    surf_top = local_rect.centery - optical_centre_offset
+    surf_top = max(local_rect.top, min(local_rect.bottom - entry.font.get_height(), surf_top))
     display_text = entry.get_display_text()
     drawn_stretched = False
     if not entry.hide_text and entry.alignment == "stretched" and len(display_text) > 1 and not entry.auto_size:
@@ -1201,7 +1238,7 @@ def render_entry_surface(entry, is_hovering):
             for char in display_text:
                 char_surf = entry.font.render(char, True, text_color)
                 char_surf.set_alpha(text_color[3])
-                cached.blit(char_surf, char_surf.get_rect(midleft=(current_x, y_pos)))
+                cached.blit(char_surf, (current_x, surf_top))
                 current_x += char_surf.get_width() + spacing
     if not drawn_stretched:
         text_surf = entry.font.render(display_text, True, text_color)
@@ -1211,9 +1248,10 @@ def render_entry_surface(entry, is_hovering):
         visible_right = local_rect.right - entry.alignment_spacing
         visible_width = visible_right - visible_left
         cursor_x_rel = entry.font.size(display_text[:entry.cursor_position])[0]
-        if text_rect.width > visible_width:
-            text_rect.midleft = (visible_left, y_pos)
-            text_rect.x += entry.scroll_offset
+        if entry.auto_size:
+            entry.scroll_offset = 0
+        if text_rect.width > visible_width and not entry.auto_size:
+            text_rect.topleft = (visible_left + entry.scroll_offset, surf_top)
             cursor_screen_x = text_rect.x + cursor_x_rel
             if cursor_screen_x > visible_right:
                 entry.scroll_offset -= (cursor_screen_x - visible_right)
@@ -1226,11 +1264,11 @@ def render_entry_surface(entry, is_hovering):
         else:
             entry.scroll_offset = 0
             if entry.alignment == "left":
-                text_rect.midleft = (visible_left, y_pos)
+                text_rect.topleft = (visible_left, surf_top)
             elif entry.alignment == "right":
-                text_rect.midright = (visible_right, y_pos)
+                text_rect.topright = (visible_right, surf_top)
             else:
-                text_rect.center = local_rect.center
+                text_rect.topleft = (local_rect.centerx - text_rect.width // 2, surf_top)
         if entry.selected_text and entry.selected_text[0] != entry.selected_text[1]:
             start_idx = min(entry.selected_text)
             end_idx = max(entry.selected_text)
@@ -1285,18 +1323,25 @@ def draw(entry, surface: pygame.Surface):
 
     entry.font.set_linesize(entry.line_spacing)
     if entry.auto_size:
-        text_w, text_h = entry.font.size(display_text)
-        actual_height = max(text_h, entry.line_spacing)
-        required_width = max(entry.width, text_w + (entry.alignment_spacing * 2) + 10)
-        required_height = max(entry.height, actual_height + (entry.alignment_spacing * 2) + 10)
-        if entry.max_width:
-            required_width = min(required_width, entry.max_width)
+        lines = display_text.split("\n")
+        total_w = 0
+        text_h = entry.font.size(display_text)[1]
+        for line in lines:
+            text_w, text_h = entry.font.size(line)
+            if text_w > total_w:
+                total_w = text_w
+        total_h = len(lines) * text_h
+
+        required_width = total_w + entry.alignment_spacing * 2
         if entry.min_width:
             required_width = max(required_width, entry.min_width)
-        if entry.max_height:
-            required_height = min(required_height, entry.max_height)
+        if entry.max_width:
+            required_width = min(required_width, entry.max_width)
+        required_height = total_h + 20
         if entry.min_height:
             required_height = max(required_height, entry.min_height)
+        if entry.max_height:
+            required_height = min(required_height, entry.max_height)
 
         if entry.width != required_width:
             entry.width = required_width

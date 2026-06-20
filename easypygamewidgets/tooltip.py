@@ -51,9 +51,9 @@ class Tooltip(Widget):
         self._font = font
         self._line_spacing = line_spacing
         if not style:
-            self._active_unpressed_text_color = normalize_color((255, 255, 255, 255))
-            self._active_unpressed_background_color = normalize_color((50, 50, 50, 255))
-            self._active_unpressed_border_color = normalize_color((100, 100, 100, 255))
+            self._active_unpressed_text_color = misc.normalize_color((255, 255, 255, 255))
+            self._active_unpressed_background_color = misc.normalize_color((50, 50, 50, 255))
+            self._active_unpressed_border_color = misc.normalize_color((100, 100, 100, 255))
         if widget:
             widget.set_tooltip(self)
         self._auto_size = auto_size
@@ -82,32 +82,32 @@ class Tooltip(Widget):
             if not icon:
                 self._icon = pygame.image.load(os.path.join(pathlib.Path(__file__).resolve().parent,
                                                             "assets", "tooltip", "info.png"))
-            self._active_unpressed_text_color = normalize_color((255, 255, 255, 255))
-            self._active_unpressed_background_color = normalize_color((46, 55, 90, 255))
-            self._active_unpressed_border_color = normalize_color((39, 78, 194, 255))
+            self._active_unpressed_text_color = misc.normalize_color((255, 255, 255, 255))
+            self._active_unpressed_background_color = misc.normalize_color((46, 55, 90, 255))
+            self._active_unpressed_border_color = misc.normalize_color((39, 78, 194, 255))
         elif style == "warning":
             if not icon:
                 self._icon = pygame.image.load(os.path.join(pathlib.Path(__file__).resolve().parent,
                                                             "assets", "tooltip", "warning.png"))
-            self._active_unpressed_text_color = normalize_color((255, 255, 255, 255))
-            self._active_unpressed_background_color = normalize_color((111, 100, 34, 255))
-            self._active_unpressed_border_color = normalize_color((186, 167, 46, 255))
+            self._active_unpressed_text_color = misc.normalize_color((255, 255, 255, 255))
+            self._active_unpressed_background_color = misc.normalize_color((111, 100, 34, 255))
+            self._active_unpressed_border_color = misc.normalize_color((186, 167, 46, 255))
         elif style == "blocked":
             if not icon:
                 self._icon = pygame.image.load(os.path.join(pathlib.Path(__file__).resolve().parent,
                                                             "assets", "tooltip", "blocked.png"))
-            self._active_unpressed_text_color = normalize_color((255, 255, 255, 255))
-            self._active_unpressed_background_color = normalize_color((150, 63, 60, 255))
-            self._active_unpressed_border_color = normalize_color((188, 46, 41, 255))
+            self._active_unpressed_text_color = misc.normalize_color((255, 255, 255, 255))
+            self._active_unpressed_background_color = misc.normalize_color((150, 63, 60, 255))
+            self._active_unpressed_border_color = misc.normalize_color((188, 46, 41, 255))
 
         if active_unpressed_text_color:
-            self._active_unpressed_text_color = normalize_color(active_unpressed_text_color)
+            self._active_unpressed_text_color = misc.normalize_color(active_unpressed_text_color)
             self._style = "custom"
         if active_unpressed_background_color:
-            self._active_unpressed_background_color = normalize_color(active_unpressed_background_color)
+            self._active_unpressed_background_color = misc.normalize_color(active_unpressed_background_color)
             self._style = "custom"
         if active_unpressed_border_color:
-            self._active_unpressed_border_color = normalize_color(active_unpressed_border_color)
+            self._active_unpressed_border_color = misc.normalize_color(active_unpressed_border_color)
             self._style = "custom"
         cursor_input = {
             "active_hover": active_hover_cursor
@@ -165,21 +165,21 @@ class Tooltip(Widget):
         if value == "info":
             self._icon = pygame.image.load(os.path.join(pathlib.Path(__file__).resolve().parent,
                                                         "assets", "tooltip", "info.png"))
-            self._active_unpressed_text_color = normalize_color((255, 255, 255, 255))
-            self._active_unpressed_background_color = normalize_color((46, 55, 90, 255))
-            self._active_unpressed_border_color = normalize_color((39, 78, 194, 255))
+            self._active_unpressed_text_color = misc.normalize_color((255, 255, 255, 255))
+            self._active_unpressed_background_color = misc.normalize_color((46, 55, 90, 255))
+            self._active_unpressed_border_color = misc.normalize_color((39, 78, 194, 255))
         elif value == "warning":
             self._icon = pygame.image.load(os.path.join(pathlib.Path(__file__).resolve().parent,
                                                         "assets", "tooltip", "warning.png"))
-            self._active_unpressed_text_color = normalize_color((255, 255, 255, 255))
-            self._active_unpressed_background_color = normalize_color((111, 100, 34, 255))
-            self._active_unpressed_border_color = normalize_color((186, 167, 46, 255))
+            self._active_unpressed_text_color = misc.normalize_color((255, 255, 255, 255))
+            self._active_unpressed_background_color = misc.normalize_color((111, 100, 34, 255))
+            self._active_unpressed_border_color = misc.normalize_color((186, 167, 46, 255))
         elif value == "blocked":
             self._icon = pygame.image.load(os.path.join(pathlib.Path(__file__).resolve().parent,
                                                         "assets", "tooltip", "blocked.png"))
-            self._active_unpressed_text_color = normalize_color((255, 255, 255, 255))
-            self._active_unpressed_background_color = normalize_color((150, 63, 60, 255))
-            self._active_unpressed_border_color = normalize_color((188, 46, 41, 255))
+            self._active_unpressed_text_color = misc.normalize_color((255, 255, 255, 255))
+            self._active_unpressed_background_color = misc.normalize_color((150, 63, 60, 255))
+            self._active_unpressed_border_color = misc.normalize_color((188, 46, 41, 255))
 
     @property
     def icon(self):
@@ -220,7 +220,7 @@ class Tooltip(Widget):
 
     @active_unpressed_text_color.setter
     def active_unpressed_text_color(self, value):
-        self._active_unpressed_text_color = normalize_color(value)
+        self._active_unpressed_text_color = misc.normalize_color(value)
 
     @property
     def active_unpressed_background_color(self):
@@ -228,7 +228,7 @@ class Tooltip(Widget):
 
     @active_unpressed_background_color.setter
     def active_unpressed_background_color(self, value):
-        self._active_unpressed_background_color = normalize_color(value)
+        self._active_unpressed_background_color = misc.normalize_color(value)
 
     @property
     def active_unpressed_border_color(self):
@@ -236,7 +236,7 @@ class Tooltip(Widget):
 
     @active_unpressed_border_color.setter
     def active_unpressed_border_color(self, value):
-        self._active_unpressed_border_color = normalize_color(value)
+        self._active_unpressed_border_color = misc.normalize_color(value)
 
     @property
     def auto_size(self):
@@ -476,7 +476,7 @@ class Tooltip(Widget):
         self._needs_redraw = True
         if any(k in kwargs for k in
                ('auto_size', 'x', 'y', 'width', 'height', 'min_width', 'max_width', 'min_height', 'max_height', 'text',
-                'icon', 'suppress_icon', 'alignment_spacing', 'font')):
+                'icon', 'suppress_icon', 'alignment_spacing', 'font', 'anchor_x', 'anchor_y')):
             if self._auto_size:
                 temp_surf = self._font.render(self._text, True, (0, 0, 0))
                 text_w, text_h = temp_surf.get_size()
@@ -523,14 +523,6 @@ class Tooltip(Widget):
 def safe_set_linesize(font, line_spacing):
     descent = abs(font.get_descent())
     font.set_linesize(line_spacing + descent)
-
-
-def normalize_color(color):
-    if color is None:
-        return (0, 0, 0, 0)
-    if len(color) == 3:
-        return (*color, 255)
-    return color
 
 
 def render_tooltip_surface(tooltip):

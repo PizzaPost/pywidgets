@@ -22,7 +22,7 @@ def check_update():
         response.raise_for_status()
         data = response.json()
         latest_version = data["version"]
-        current_version = "26.28.3"
+        current_version = "26.28.4"
         if latest_version != current_version:
             print(f"An update is available. Download it now with 'pip install --upgrade easypygamewidgets'\n"
                   f"You are currently on: {current_version}\n"
@@ -245,3 +245,11 @@ def is_point_over_widget(widget, point):
         for cx, cy in centers:
             if ((x - cx) ** 2 + (y - cy) ** 2) <= r ** 2: return True
         return False
+
+
+def normalize_color(color):
+    if color is None:
+        return 0, 0, 0, 0
+    if len(color) == 3:
+        return *color, 255
+    return color

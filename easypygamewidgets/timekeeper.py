@@ -9,7 +9,7 @@ from typing import Any
 import pygame
 
 from easypygamewidgets import font, misc
-from easypygamewidgets.masterWidget import Widget, Tooltipable
+from easypygamewidgets.masterWidget import Widget, Tooltipable, Screenable
 
 pygame.init()
 
@@ -24,7 +24,7 @@ pygame.init()
 # rgba color ❌
 # four different corner radii ❌
 
-class Timekeeper(Widget, Tooltipable):
+class Timekeeper(Widget, Tooltipable, Screenable):
     def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
                  height: int = 80, start_at: float | int = 60, end_at: float | int | None = None,
                  show_milliseconds: bool = False, show_seconds: bool = True,
@@ -703,7 +703,8 @@ class Timekeeper(Widget, Tooltipable):
             setattr(self, key, value)
         update_size(self)
         if any(k in kwargs for k in
-               ('auto_size', 'x', 'y', 'width', 'height', 'min_width', 'max_width', 'min_height', 'max_height')):
+               ('auto_size', 'x', 'y', 'width', 'height', 'min_width', 'max_width', 'min_height', 'max_height',
+                'anchor_x', 'anchor_y')):
             if self._auto_size:
                 if self._min_width:
                     self._width = max(self._width, self._min_width)

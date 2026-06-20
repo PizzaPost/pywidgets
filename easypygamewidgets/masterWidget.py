@@ -6,9 +6,6 @@ from easypygamewidgets import misc
 
 
 class Widget:
-    def __init__(self):
-        pass
-
     def clone(self):
         copied_widget = copy.deepcopy(self)
         misc.all_widgets.append(copied_widget)
@@ -81,16 +78,6 @@ class Widget:
 
 
 class Tooltipable:
-    def __init__(self):
-        pass
-
-    def set_screen(self, screen):
-        if self in screen.widgets:
-            return self
-        self._screen = screen
-        screen.add_widget(self)
-        return self
-
     def set_tooltip(self, tooltip):
         self._tooltip = tooltip
         tooltip.configure(layer=self._layer + 1)
@@ -104,4 +91,13 @@ class Tooltipable:
         if self._tooltip:
             self._tooltip.visible = False
             self._tooltip = None
+        return self
+
+
+class Screenable:
+    def set_screen(self, screen):
+        if self in screen.widgets:
+            return self
+        self._screen = screen
+        screen.add_widget(self)
         return self

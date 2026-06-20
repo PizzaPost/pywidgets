@@ -8,7 +8,7 @@ import pygame
 
 from easypygamewidgets import font, misc
 from easypygamewidgets.assets import TypeHints
-from easypygamewidgets.masterWidget import Widget, Tooltipable
+from easypygamewidgets.masterWidget import Widget, Tooltipable, Screenable
 
 pygame.init()
 
@@ -16,7 +16,7 @@ pygame.init()
 # PERFECTION
 # four different corner radii ❌
 
-class Button(Widget, Tooltipable):
+class Button(Widget, Tooltipable, Screenable):
     def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
                  height: int = 80,
                  text: str = "easypygamewidgets Button",
@@ -44,7 +44,7 @@ class Button(Widget, Tooltipable):
                  disabled_hover_cursor: pygame.Cursor | None = None,
                  active_pressed_cursor: pygame.Cursor | None = None,
                  font: pygame.font.Font | pygame.font.SysFont = font.default_font, alignment: str = "center",
-                 command: Callable[[], None] | None = None, alignment_spacing: int = 40, corner_radius: int = 20,
+                 command: Callable[[], None] | None = None, alignment_spacing: int = 40, corner_radius: int = 25,
                  layer=1000,
                  line_spacing: int = 30,
                  tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
@@ -68,21 +68,23 @@ class Button(Widget, Tooltipable):
                 self._state = "enabled"
         self._auto_size = auto_size
         if self._auto_size:
-            safe_set_linesize(font, line_spacing)
+            font.set_linesize(font.get_linesize())
             lines = text.split("\n")
             total_w = 0
-            text_h = font.size(text)[1]
+            text_h = font.get_height()
+            effective_line_h = max(text_h, line_spacing)
             for line in lines:
-                text_w, text_h = font.size(line)
+                text_w = font.size(line)[0]
                 if text_w > total_w:
                     total_w = text_w
-            total_h = len(lines) * text_h
+            total_h = (len(lines) - 1) * effective_line_h + text_h
+            vertical_padding = max(20, min(40, text_h // 2))
             self._width = total_w + alignment_spacing
             if min_width:
                 self._width = max(self._width, min_width)
             if max_width:
                 self._width = min(self._width, max_width)
-            self._height = total_h + 20
+            self._height = total_h + vertical_padding
             if min_height:
                 self._height = max(self._height, min_height)
             if max_height:
@@ -91,21 +93,21 @@ class Button(Widget, Tooltipable):
             self._width = width
             self._height = height
         self._text = text
-        self._active_unpressed_text_color = normalize_color(active_unpressed_text_color)
-        self._disabled_unpressed_text_color = normalize_color(disabled_unpressed_text_color)
-        self._active_hover_text_color = normalize_color(active_hover_text_color)
-        self._disabled_hover_text_color = normalize_color(disabled_hover_text_color)
-        self._active_pressed_text_color = normalize_color(active_pressed_text_color)
-        self._active_unpressed_background_color = normalize_color(active_unpressed_background_color)
-        self._disabled_unpressed_background_color = normalize_color(disabled_unpressed_background_color)
-        self._active_hover_background_color = normalize_color(active_hover_background_color)
-        self._disabled_hover_background_color = normalize_color(disabled_hover_background_color)
-        self._active_pressed_background_color = normalize_color(active_pressed_background_color)
-        self._active_unpressed_border_color = normalize_color(active_unpressed_border_color)
-        self._disabled_unpressed_border_color = normalize_color(disabled_unpressed_border_color)
-        self._active_hover_border_color = normalize_color(active_hover_border_color)
-        self._disabled_hover_border_color = normalize_color(disabled_hover_border_color)
-        self._active_pressed_border_color = normalize_color(active_pressed_border_color)
+        self._active_unpressed_text_color = misc.normalize_color(active_unpressed_text_color)
+        self._disabled_unpressed_text_color = misc.normalize_color(disabled_unpressed_text_color)
+        self._active_hover_text_color = misc.normalize_color(active_hover_text_color)
+        self._disabled_hover_text_color = misc.normalize_color(disabled_hover_text_color)
+        self._active_pressed_text_color = misc.normalize_color(active_pressed_text_color)
+        self._active_unpressed_background_color = misc.normalize_color(active_unpressed_background_color)
+        self._disabled_unpressed_background_color = misc.normalize_color(disabled_unpressed_background_color)
+        self._active_hover_background_color = misc.normalize_color(active_hover_background_color)
+        self._disabled_hover_background_color = misc.normalize_color(disabled_hover_background_color)
+        self._active_pressed_background_color = misc.normalize_color(active_pressed_background_color)
+        self._active_unpressed_border_color = misc.normalize_color(active_unpressed_border_color)
+        self._disabled_unpressed_border_color = misc.normalize_color(disabled_unpressed_border_color)
+        self._active_hover_border_color = misc.normalize_color(active_hover_border_color)
+        self._disabled_hover_border_color = misc.normalize_color(disabled_hover_border_color)
+        self._active_pressed_border_color = misc.normalize_color(active_pressed_border_color)
         self._border_thickness = border_thickness
         self._hide_text = hide_text
         self._hide_background = hide_background
@@ -169,7 +171,7 @@ class Button(Widget, Tooltipable):
         self._offset_step = [0, 0]
         self._use_rotozoom = False
 
-        safe_set_linesize(font, line_spacing)
+        font.set_linesize(font.get_linesize())
 
         misc.add_widget(self)
 
@@ -243,7 +245,7 @@ class Button(Widget, Tooltipable):
 
     @active_unpressed_text_color.setter
     def active_unpressed_text_color(self, value):
-        self._active_unpressed_text_color = normalize_color(value)
+        self._active_unpressed_text_color = misc.normalize_color(value)
 
     @property
     def disabled_unpressed_text_color(self):
@@ -251,7 +253,7 @@ class Button(Widget, Tooltipable):
 
     @disabled_unpressed_text_color.setter
     def disabled_unpressed_text_color(self, value):
-        self._disabled_unpressed_text_color = normalize_color(value)
+        self._disabled_unpressed_text_color = misc.normalize_color(value)
 
     @property
     def active_hover_text_color(self):
@@ -259,7 +261,7 @@ class Button(Widget, Tooltipable):
 
     @active_hover_text_color.setter
     def active_hover_text_color(self, value):
-        self._active_hover_text_color = normalize_color(value)
+        self._active_hover_text_color = misc.normalize_color(value)
 
     @property
     def disabled_hover_text_color(self):
@@ -267,7 +269,7 @@ class Button(Widget, Tooltipable):
 
     @disabled_hover_text_color.setter
     def disabled_hover_text_color(self, value):
-        self._disabled_hover_text_color = normalize_color(value)
+        self._disabled_hover_text_color = misc.normalize_color(value)
 
     @property
     def active_pressed_text_color(self):
@@ -275,7 +277,7 @@ class Button(Widget, Tooltipable):
 
     @active_pressed_text_color.setter
     def active_pressed_text_color(self, value):
-        self._active_pressed_text_color = normalize_color(value)
+        self._active_pressed_text_color = misc.normalize_color(value)
 
     @property
     def active_unpressed_background_color(self):
@@ -283,7 +285,7 @@ class Button(Widget, Tooltipable):
 
     @active_unpressed_background_color.setter
     def active_unpressed_background_color(self, value):
-        self._active_unpressed_background_color = normalize_color(value)
+        self._active_unpressed_background_color = misc.normalize_color(value)
 
     @property
     def disabled_unpressed_background_color(self):
@@ -291,7 +293,7 @@ class Button(Widget, Tooltipable):
 
     @disabled_unpressed_background_color.setter
     def disabled_unpressed_background_color(self, value):
-        self._disabled_unpressed_background_color = normalize_color(value)
+        self._disabled_unpressed_background_color = misc.normalize_color(value)
 
     @property
     def active_hover_background_color(self):
@@ -299,7 +301,7 @@ class Button(Widget, Tooltipable):
 
     @active_hover_background_color.setter
     def active_hover_background_color(self, value):
-        self._active_hover_background_color = normalize_color(value)
+        self._active_hover_background_color = misc.normalize_color(value)
 
     @property
     def disabled_hover_background_color(self):
@@ -307,7 +309,7 @@ class Button(Widget, Tooltipable):
 
     @disabled_hover_background_color.setter
     def disabled_hover_background_color(self, value):
-        self._disabled_hover_background_color = normalize_color(value)
+        self._disabled_hover_background_color = misc.normalize_color(value)
 
     @property
     def active_pressed_background_color(self):
@@ -315,7 +317,7 @@ class Button(Widget, Tooltipable):
 
     @active_pressed_background_color.setter
     def active_pressed_background_color(self, value):
-        self._active_pressed_background_color = normalize_color(value)
+        self._active_pressed_background_color = misc.normalize_color(value)
 
     @property
     def active_unpressed_border_color(self):
@@ -323,7 +325,7 @@ class Button(Widget, Tooltipable):
 
     @active_unpressed_border_color.setter
     def active_unpressed_border_color(self, value):
-        self._active_unpressed_border_color = normalize_color(value)
+        self._active_unpressed_border_color = misc.normalize_color(value)
 
     @property
     def disabled_unpressed_border_color(self):
@@ -331,7 +333,7 @@ class Button(Widget, Tooltipable):
 
     @disabled_unpressed_border_color.setter
     def disabled_unpressed_border_color(self, value):
-        self._disabled_unpressed_border_color = normalize_color(value)
+        self._disabled_unpressed_border_color = misc.normalize_color(value)
 
     @property
     def active_hover_border_color(self):
@@ -339,7 +341,7 @@ class Button(Widget, Tooltipable):
 
     @active_hover_border_color.setter
     def active_hover_border_color(self, value):
-        self._active_hover_border_color = normalize_color(value)
+        self._active_hover_border_color = misc.normalize_color(value)
 
     @property
     def disabled_hover_border_color(self):
@@ -347,7 +349,7 @@ class Button(Widget, Tooltipable):
 
     @disabled_hover_border_color.setter
     def disabled_hover_border_color(self, value):
-        self._disabled_hover_border_color = normalize_color(value)
+        self._disabled_hover_border_color = misc.normalize_color(value)
 
     @property
     def active_pressed_border_color(self):
@@ -355,7 +357,7 @@ class Button(Widget, Tooltipable):
 
     @active_pressed_border_color.setter
     def active_pressed_border_color(self, value):
-        self._active_pressed_border_color = normalize_color(value)
+        self._active_pressed_border_color = misc.normalize_color(value)
 
     @property
     def border_thickness(self):
@@ -727,29 +729,32 @@ class Button(Widget, Tooltipable):
         self._needs_transform = True
         if any(k in kwargs for k in
                ('auto_size', 'x', 'y', 'width', 'height', 'text', 'font', 'max_width', 'min_width', 'max_height',
-                'min_height', 'line_spacing', "alignment_spacing")):
+                'min_height', 'line_spacing', 'alignment_spacing', 'anchor_x', 'anchor_y')):
             if self._auto_size:
-                safe_set_linesize(self.font, self.line_spacing)
+                self._font.set_linesize(self._font.get_linesize())
                 lines = self._text.split("\n")
                 total_w = 0
+                text_h = self._font.get_height()
+                effective_line_h = max(text_h, self._line_spacing)
                 for line in lines:
-                    text_w, text_h = self._font.size(line)
+                    text_w = self._font.size(line)[0]
                     if text_w > total_w:
                         total_w = text_w
-                total_h = len(lines) * self._line_spacing
+                total_h = (len(lines) - 1) * effective_line_h + text_h
+                vertical_padding = max(20, min(40, text_h // 2))
                 self._width = total_w + self._alignment_spacing
                 if self._min_width:
                     self._width = max(self._width, self._min_width)
                 if self._max_width:
                     self._width = min(self._width, self._max_width)
-                self._height = total_h + 20
+                self._height = total_h + vertical_padding
                 if self._min_height:
-                    self._height = max(total_h + 20, self._min_height)
+                    self._height = max(total_h + vertical_padding, self._min_height)
                 if self._max_height:
-                    self._height = min(total_h + 20, self._max_height)
+                    self._height = min(total_h + vertical_padding, self._max_height)
             self._rect = pygame.Rect(self._x, self._y, self._width, self._height)
         if 'line_spacing' in kwargs:
-            safe_set_linesize(self.font, self.line_spacing)
+            self._font.set_linesize(self._font.get_linesize())
         return self
 
     def config(self, **kwargs: Unpack[TypeHints.ButtonConfig]):
@@ -793,11 +798,6 @@ class Button(Widget, Tooltipable):
         return self
 
 
-def safe_set_linesize(font, line_spacing):
-    descent = abs(font.get_descent())
-    font.set_linesize(line_spacing + descent)
-
-
 def update_animation(button):
     scale_changed = False
     rotation_changed = False
@@ -821,14 +821,6 @@ def update_animation(button):
                 button.current_offset[x] += button.offset_step[x]
     if scale_changed or rotation_changed:
         button.needs_transform = True
-
-
-def normalize_color(color):
-    if color is None:
-        return 0, 0, 0, 0
-    if len(color) == 3:
-        return *color, 255
-    return color
 
 
 def render_button_surface(button, is_hovering):
@@ -866,39 +858,47 @@ def render_button_surface(button, is_hovering):
                          border_radius=button.corner_radius)
 
     if not button.hide_text:
-        descent_offset = abs(button.font.get_descent()) // 2
+        ascent = button.font.get_ascent()
+        descent = abs(button.font.get_descent())
+        optical_centre_offset = ascent - (ascent - descent) // 2
+        font_line_h = button.font.get_height()
+        effective_line_h = max(font_line_h, button.line_spacing)
         if button.alignment == "stretched" and len(button.text) > 1 and not button.auto_size:
             total_char_width = sum(button.font.render(char, True, text_color).get_width() for char in button.text)
             available_width = local_rect.width - button.alignment_spacing
             if available_width > total_char_width:
                 spacing = (available_width - total_char_width) / (len(button.text) - 1)
                 current_x = local_rect.left + button.alignment_spacing // 2
+                char_y = local_rect.centery - optical_centre_offset + ascent
                 for char in button.text:
                     char_surf = button.font.render(char, True, text_color)
                     char_surf.set_alpha(text_color[3])
-                    cached.blit(char_surf, char_surf.get_rect(midleft=(current_x, local_rect.centery + descent_offset)))
+                    surf_top = char_y - button.font.get_ascent()
+                    surf_top = max(local_rect.top, min(local_rect.bottom - char_surf.get_height(), surf_top))
+                    cached.blit(char_surf, (current_x, surf_top))
                     current_x += char_surf.get_width() + spacing
             else:
                 text_surf = button.font.render(button.text, True, text_color)
                 text_surf.set_alpha(text_color[3])
-                cached.blit(text_surf,
-                            text_surf.get_rect(center=(local_rect.centerx, local_rect.centery + descent_offset)))
+                surf_top = local_rect.centery - optical_centre_offset
+                surf_top = max(local_rect.top, min(local_rect.bottom - text_surf.get_height(), surf_top))
+                cached.blit(text_surf, text_surf.get_rect(centerx=local_rect.centerx, top=surf_top))
         else:
             lines = button.text.split("\n")
-            total_text_height = len(lines) * button.line_spacing
-            start_y = local_rect.centery - (total_text_height // 2)
+            total_text_height = (len(lines) - 1) * effective_line_h + font_line_h
+            block_top = local_rect.centery - total_text_height // 2
             for i, line in enumerate(lines):
                 text_surf = button.font.render(line, True, text_color)
                 text_surf.set_alpha(text_color[3])
-                text_rect = text_surf.get_rect()
-                line_centery = start_y + (i * button.line_spacing) + (button.line_spacing // 2) + descent_offset
+                surf_top = block_top + i * effective_line_h
+                surf_top = max(local_rect.top, min(local_rect.bottom - text_surf.get_height(), surf_top))
                 if button.alignment == "left":
-                    text_rect.midleft = (local_rect.left + button.alignment_spacing, line_centery)
+                    cached.blit(text_surf, (local_rect.left + button.alignment_spacing // 2, surf_top))
                 elif button.alignment == "right":
-                    text_rect.midright = (local_rect.right - button.alignment_spacing, line_centery)
+                    cached.blit(text_surf,
+                                (local_rect.right - button.alignment_spacing // 2 - text_surf.get_width(), surf_top))
                 else:
-                    text_rect.center = (local_rect.centerx, line_centery)
-                cached.blit(text_surf, text_rect)
+                    cached.blit(text_surf, text_surf.get_rect(centerx=local_rect.centerx, top=surf_top))
     button.original_surface = cached
     button.cached_surface = cached
 
@@ -912,7 +912,7 @@ def draw(button, surface: pygame.Surface):
     if button.needs_redraw or button.last_visual_state != current_visual_state:
         render_button_surface(button, is_hovering)
         button.last_visual_state = current_visual_state
-        button.needs_redraw = False
+        button.needs_redraw = True
         button.needs_transform = True
 
     if button.needs_transform:
