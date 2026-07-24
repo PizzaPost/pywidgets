@@ -22,7 +22,7 @@ def check_update():
         response.raise_for_status()
         data = response.json()
         latest_version = data["version"]
-        current_version = "26.28.4"
+        current_version = "26.29.0"
         if latest_version != current_version:
             print(f"An update is available. Download it now with 'pip install --upgrade easypygamewidgets'\n"
                   f"You are currently on: {current_version}\n"
@@ -93,16 +93,20 @@ def schedule(function, frames_to_execute):
     scheduled_functions.append([function, frames_to_execute])
 
 
-def get_screen_offset(widget):
+def get_offset(widget):
+    offset_x = offset_y = 0
     if widget.screen:
-        return widget.screen.x, widget.screen.y
-    return 0, 0
+        offset_x, offset_y = widget.screen.x, widget.screen.y
+    if getattr(widget, "parent", None):
+        offset_x += widget.parent.x
+        offset_y += widget.parent.y
+    return offset_x, offset_y
 
 
 def is_point_over_widget(widget, point):
     class_name = widget.__class__.__name__
     if class_name == "Entry" or class_name == "Label":
-        offset_x, offset_y = get_screen_offset(widget)
+        offset_x, offset_y = get_offset(widget)
         total_offset_x = offset_x + round(widget.current_offset[0])
         total_offset_y = offset_y + round(widget.current_offset[1])
         rect = widget.rect.move(total_offset_x, total_offset_y)
@@ -146,7 +150,7 @@ def is_point_over_widget(widget, point):
             return (x - cx) ** 2 + (y - cy) ** 2 <= br_r ** 2
         return True
     elif class_name == "Button":
-        offset_x, offset_y = get_screen_offset(widget)
+        offset_x, offset_y = get_offset(widget)
         total_offset_x = offset_x + round(widget.current_offset[0])
         total_offset_y = offset_y + round(widget.current_offset[1])
         rect = widget.rect.move(total_offset_x, total_offset_y)
@@ -184,8 +188,43 @@ def is_point_over_widget(widget, point):
             if ((x - cx) ** 2 + (y - cy) ** 2) <= r ** 2:
                 return True
         return False
+    elif class_name == "Dialog":
+        offset_x, offset_y = get_offset(widget)
+        total_offset_x = offset_x + round(widget.current_offset[0])
+        total_offset_y = offset_y + round(widget.current_offset[1])
+        rect = widget.rect.move(total_offset_x, total_offset_y)
+        if not rect.collidepoint(point):
+            return False
+        x, y = point
+        geom_rect = rect
+        scale = widget.current_scale
+        rotation = widget.current_rotation
+        if scale != 1 or rotation != 0:
+            cx, cy = rect.center
+            if rotation != 0:
+                v = pygame.math.Vector2(x - cx, y - cy)
+                v = v.rotate(rotation)
+                x, y = cx + v.x, cy + v.y
+            base_w = widget.width * scale
+            base_h = widget.height * scale
+            geom_rect = pygame.Rect(0, 0, base_w, base_h)
+            geom_rect.center = (cx, cy)
+            if not geom_rect.collidepoint((x, y)):
+                return False
+        r = widget.corner_radius * scale
+        r = min(r, geom_rect.width // 2, geom_rect.height // 2)
+        if r <= 0:
+            return True
+        if (geom_rect.left + r <= x <= geom_rect.right - r) or (geom_rect.top + r <= y <= geom_rect.bottom - r):
+            return True
+        centers = [(geom_rect.left + r, geom_rect.top + r), (geom_rect.right - r, geom_rect.top + r),
+                   (geom_rect.left + r, geom_rect.bottom - r), (geom_rect.right - r, geom_rect.bottom - r)]
+        for cx, cy in centers:
+            if ((x - cx) ** 2 + (y - cy) ** 2) <= r ** 2:
+                return True
+        return False
     elif class_name == "Slider":
-        offset_x, offset_y = get_screen_offset(widget)
+        offset_x, offset_y = get_offset(widget)
         draw_rect = widget.rect.move(offset_x, offset_y)
         temp_surf = widget.font.render(widget.text, True, (0, 0, 0))
         text_height = temp_surf.get_height()
@@ -231,7 +270,7 @@ def is_point_over_widget(widget, point):
             if ((x - cx) ** 2 + (y - cy) ** 2) <= r ** 2: return True
         return False
     elif class_name == "Timekeeper":
-        offset_x, offset_y = get_screen_offset(widget)
+        offset_x, offset_y = get_offset(widget)
         rect = widget.rect.move(offset_x, offset_y)
         if not rect.collidepoint(point): return False
         r = widget.corner_radius

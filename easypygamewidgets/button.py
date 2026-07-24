@@ -68,7 +68,7 @@ class Button(Widget, Tooltipable, Screenable):
                 self._state = "enabled"
         self._auto_size = auto_size
         if self._auto_size:
-            font.set_linesize(font.get_linesize())
+            font.set_linesize(line_spacing)
             lines = text.split("\n")
             total_w = 0
             text_h = font.get_height()
@@ -170,8 +170,9 @@ class Button(Widget, Tooltipable, Screenable):
         self._current_offset = [0, 0]
         self._offset_step = [0, 0]
         self._use_rotozoom = False
+        self._dialog = None
 
-        font.set_linesize(font.get_linesize())
+        font.set_linesize(line_spacing)
 
         misc.add_widget(self)
 
@@ -430,6 +431,7 @@ class Button(Widget, Tooltipable, Screenable):
     @font.setter
     def font(self, value):
         self._font = value
+        self._font.set_linesize(self._line_spacing)
 
     @property
     def alignment(self):
@@ -489,6 +491,7 @@ class Button(Widget, Tooltipable, Screenable):
     @line_spacing.setter
     def line_spacing(self, value):
         self._line_spacing = value
+        self._font.set_linesize(value)
 
     @property
     def min_width(self):
@@ -722,6 +725,14 @@ class Button(Widget, Tooltipable, Screenable):
     def use_rotozoom(self, value):
         self._use_rotozoom = value
 
+    @property
+    def dialog(self):
+        return self._dialog
+
+    @dialog.setter
+    def dialog(self, value):
+        self._dialog = value
+
     def configure(self, **kwargs: Unpack[TypeHints.ButtonConfig]):
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -731,7 +742,7 @@ class Button(Widget, Tooltipable, Screenable):
                ('auto_size', 'x', 'y', 'width', 'height', 'text', 'font', 'max_width', 'min_width', 'max_height',
                 'min_height', 'line_spacing', 'alignment_spacing', 'anchor_x', 'anchor_y')):
             if self._auto_size:
-                self._font.set_linesize(self._font.get_linesize())
+                self._font.set_linesize(self._line_spacing)
                 lines = self._text.split("\n")
                 total_w = 0
                 text_h = self._font.get_height()
@@ -754,7 +765,7 @@ class Button(Widget, Tooltipable, Screenable):
                     self._height = min(total_h + vertical_padding, self._max_height)
             self._rect = pygame.Rect(self._x, self._y, self._width, self._height)
         if 'line_spacing' in kwargs:
-            self._font.set_linesize(self._font.get_linesize())
+            self._font.set_linesize(self._line_spacing)
         return self
 
     def config(self, **kwargs: Unpack[TypeHints.ButtonConfig]):
@@ -766,7 +777,7 @@ class Button(Widget, Tooltipable, Screenable):
             frames_to_finish = 1
         self._target_scale = 1 if value is None else value
         self._scale_step = (self._target_scale - self._current_scale) / frames_to_finish
-        update_animation(self)
+        self.update_animation()
         return self
 
     def rotate(self, value=None, frames_to_finish=1):
@@ -774,7 +785,7 @@ class Button(Widget, Tooltipable, Screenable):
             frames_to_finish = 1
         self._target_rotation = 0 if value is None else value
         self._rotation_step = (self._target_rotation - self._current_rotation) / frames_to_finish
-        update_animation(self)
+        self.update_animation()
         return self
 
     def rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
@@ -785,7 +796,7 @@ class Button(Widget, Tooltipable, Screenable):
         self._target_rotation = 0 if rotation is None else rotation
         self._rotation_step = (self._target_rotation - self._current_rotation) / frames_to_finish
         self._use_rotozoom = True
-        update_animation(self)
+        self.update_animation()
         return self
 
     def offset(self, value: tuple[int, int], frames_to_finish=1):
@@ -794,33 +805,136 @@ class Button(Widget, Tooltipable, Screenable):
         self._target_offset = (0, 0) if value is None else value
         self._offset_step[0] = (self._target_offset[0] - self._current_offset[0]) / frames_to_finish
         self._offset_step[1] = (self._target_offset[1] - self._current_offset[1]) / frames_to_finish
-        update_animation(self)
+        self.update_animation()
         return self
 
-
-def update_animation(button):
-    scale_changed = False
-    rotation_changed = False
-    if button.current_scale != button.target_scale:
-        if abs(button.current_scale - button.target_scale) <= abs(button.scale_step):
-            button.current_scale = button.target_scale
-        else:
-            button.current_scale += button.scale_step
-        scale_changed = True
-    if button.current_rotation != button.target_rotation:
-        if abs(button.current_rotation - button.target_rotation) <= abs(button.rotation_step):
-            button.current_rotation = button.target_rotation
-        else:
-            button.current_rotation += button.rotation_step
-        rotation_changed = True
-    for x in range(2):
-        if button.current_offset[x] != button.target_offset[x]:
-            if abs(button.current_offset[x] - button.target_offset[x]) <= abs(button.offset_step[x]):
-                button.current_offset[x] = float(button.target_offset[x])
+    def update_animation(self):
+        scale_changed = False
+        rotation_changed = False
+        if self._current_scale != self._target_scale:
+            if abs(self._current_scale - self._target_scale) <= abs(self._scale_step):
+                self._current_scale = self._target_scale
             else:
-                button.current_offset[x] += button.offset_step[x]
-    if scale_changed or rotation_changed:
-        button.needs_transform = True
+                self._current_scale += self._scale_step
+            scale_changed = True
+        if self._current_rotation != self._target_rotation:
+            if abs(self._current_rotation - self._target_rotation) <= abs(self._rotation_step):
+                self._current_rotation = self._target_rotation
+            else:
+                self._current_rotation += self._rotation_step
+            rotation_changed = True
+        for x in range(2):
+            if self._current_offset[x] != self._target_offset[x]:
+                if abs(self._current_offset[x] - self._target_offset[x]) <= abs(self._offset_step[x]):
+                    self._current_offset[x] = float(self._target_offset[x])
+                else:
+                    self._current_offset[x] += self._offset_step[x]
+        if scale_changed or rotation_changed:
+            self._needs_transform = True
+
+    def draw(self, surface: pygame.Surface):
+        if not self._alive or not self._visible:
+            return
+        mouse_pos = pygame.mouse.get_pos()
+        is_hovering = misc.is_point_over_widget(self, mouse_pos)
+        current_visual_state = (self._pressed, is_hovering)
+        if self._needs_redraw or self._last_visual_state != current_visual_state:
+            render_button_surface(self, is_hovering)
+            self._last_visual_state = current_visual_state
+            self._needs_redraw = True
+            self._needs_transform = True
+
+        if self._needs_transform:
+            if self._current_scale != 1 or self._current_rotation != 0:
+                new_width = int(self._original_surface.get_width() * self._current_scale)
+                new_height = int(self._original_surface.get_height() * self._current_scale)
+                if new_width > 0 and new_height > 0:
+                    if self._use_rotozoom:
+                        self._cached_surface = pygame.transform.rotozoom(self._original_surface,
+                                                                         self._current_rotation,
+                                                                         self._current_scale)
+                    else:
+                        scaled_surface = pygame.transform.smoothscale(self._original_surface, (new_width, new_height))
+                        self._cached_surface = pygame.transform.rotate(scaled_surface, self._current_rotation)
+                else:
+                    self._cached_surface = pygame.Surface((0, 0), pygame.SRCALPHA)
+            else:
+                self._cached_surface = self._original_surface.copy()
+            old_center = self._rect.center
+            self._rect = self._cached_surface.get_rect()
+            self._rect.center = old_center
+            self._needs_transform = False
+        offset_x, offset_y = misc.get_offset(self)
+        total_offset_x = offset_x + round(self._current_offset[0])
+        total_offset_y = offset_y + round(self._current_offset[1])
+        draw_rect = self._rect.move(total_offset_x, total_offset_y)
+        surface.blit(self._cached_surface, draw_rect)
+
+        if is_hovering:
+            if self._state == "enabled":
+                if self._pressed:
+                    cursor_key = "active_pressed"
+                else:
+                    cursor_key = "active_hover"
+            else:
+                cursor_key = "disabled_hover"
+            target_cursor = self._cursors.get(cursor_key)
+            if target_cursor:
+                current_cursor = pygame.mouse.get_cursor()
+                if current_cursor != target_cursor:
+                    if self._original_cursor is None:
+                        self._original_cursor = current_cursor
+                    pygame.mouse.set_cursor(target_cursor)
+        else:
+            if self._original_cursor:
+                pygame.mouse.set_cursor(self._original_cursor)
+                self._original_cursor = None
+
+        if is_hovering and not self._is_hovered:
+            self._is_hovered = True
+            self.trigger_event("<MOUSE-IN>")
+            if self._tooltip:
+                self._tooltip.show()
+        elif is_hovering and self._is_hovered:
+            self._is_hovered = True
+            self.trigger_event("<HOVER>")
+        elif not is_hovering and self._is_hovered:
+            self._is_hovered = False
+            self.trigger_event("<MOUSE-OUT>")
+            if self._tooltip:
+                self._tooltip.hide()
+
+    def react(self, event=None):
+        if self._state != "enabled" or not self._visible:
+            self._pressed = False
+            return
+        mouse_pos = pygame.mouse.get_pos()
+        is_inside = misc.is_point_over_widget(self, mouse_pos)
+        if not event:
+            if pygame.mouse.get_pressed()[0]:
+                self.trigger_event("<HOLD>")
+                if is_inside:
+                    self._pressed = True
+            elif not pygame.mouse.get_pressed()[0]:
+                if self._pressed:
+                    self.trigger_event("<RELEASE>")
+                    self._pressed = False
+        else:
+            if event.type == pygame.KEYDOWN:
+                self.trigger_event("<KEY>")
+                if event.unicode:
+                    self.trigger_event(event.unicode)
+                keyname = pygame.key.name(event.key)
+                self.trigger_event(f"<{keyname.upper()}>")
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    self.trigger_event("<PRESS>")
+                    if is_inside:
+                        self._pressed = True
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    self.trigger_event("<RELEASE>")
+                    self._pressed = False
 
 
 def render_button_surface(button, is_hovering):
@@ -901,108 +1015,3 @@ def render_button_surface(button, is_hovering):
                     cached.blit(text_surf, text_surf.get_rect(centerx=local_rect.centerx, top=surf_top))
     button.original_surface = cached
     button.cached_surface = cached
-
-
-def draw(button, surface: pygame.Surface):
-    if not button.alive or not button.visible:
-        return
-    mouse_pos = pygame.mouse.get_pos()
-    is_hovering = misc.is_point_over_widget(button, mouse_pos)
-    current_visual_state = (button.pressed, is_hovering)
-    if button.needs_redraw or button.last_visual_state != current_visual_state:
-        render_button_surface(button, is_hovering)
-        button.last_visual_state = current_visual_state
-        button.needs_redraw = True
-        button.needs_transform = True
-
-    if button.needs_transform:
-        if button.current_scale != 1 or button.current_rotation != 0:
-            new_width = int(button.original_surface.get_width() * button.current_scale)
-            new_height = int(button.original_surface.get_height() * button.current_scale)
-            if new_width > 0 and new_height > 0:
-                if button.use_rotozoom:
-                    button.cached_surface = pygame.transform.rotozoom(button.original_surface, button.current_rotation,
-                                                                      button.current_scale)
-                else:
-                    scaled_surface = pygame.transform.smoothscale(button.original_surface, (new_width, new_height))
-                    button.cached_surface = pygame.transform.rotate(scaled_surface, button.current_rotation)
-            else:
-                button.cached_surface = pygame.Surface((0, 0), pygame.SRCALPHA)
-        else:
-            button.cached_surface = button.original_surface.copy()
-        old_center = button.rect.center
-        button.rect = button.cached_surface.get_rect()
-        button.rect.center = old_center
-        button.needs_transform = False
-    offset_x, offset_y = misc.get_screen_offset(button)
-    total_offset_x = offset_x + round(button.current_offset[0])
-    total_offset_y = offset_y + round(button.current_offset[1])
-    draw_rect = button.rect.move(total_offset_x, total_offset_y)
-    surface.blit(button.cached_surface, draw_rect)
-
-    if is_hovering:
-        if button.state == "enabled":
-            if button.pressed:
-                cursor_key = "active_pressed"
-            else:
-                cursor_key = "active_hover"
-        else:
-            cursor_key = "disabled_hover"
-        target_cursor = button.cursors.get(cursor_key)
-        if target_cursor:
-            current_cursor = pygame.mouse.get_cursor()
-            if current_cursor != target_cursor:
-                if button.original_cursor is None:
-                    button.original_cursor = current_cursor
-                pygame.mouse.set_cursor(target_cursor)
-    else:
-        if button.original_cursor:
-            pygame.mouse.set_cursor(button.original_cursor)
-            button.original_cursor = None
-
-    if is_hovering and not button.is_hovered:
-        button.is_hovered = True
-        button.trigger_event("<MOUSE-IN>")
-        if button.tooltip:
-            button.tooltip.show()
-    elif is_hovering and button.is_hovered:
-        button.is_hovered = True
-        button.trigger_event("<HOVER>")
-    elif not is_hovering and button.is_hovered:
-        button.is_hovered = False
-        button.trigger_event("<MOUSE-OUT>")
-        if button.tooltip:
-            button.tooltip.hide()
-
-
-def react(button, event=None):
-    if button.state != "enabled" or not button.visible:
-        button.pressed = False
-        return
-    mouse_pos = pygame.mouse.get_pos()
-    is_inside = misc.is_point_over_widget(button, mouse_pos)
-    if not event:
-        if pygame.mouse.get_pressed()[0]:
-            button.trigger_event("<HOLD>")
-            if is_inside:
-                button.pressed = True
-        elif not pygame.mouse.get_pressed()[0]:
-            if button.pressed:
-                button.trigger_event("<RELEASE>")
-                button.pressed = False
-    else:
-        if event.type == pygame.KEYDOWN:
-            button.trigger_event("<KEY>")
-            if event.unicode:
-                button.trigger_event(event.unicode)
-            keyname = pygame.key.name(event.key)
-            button.trigger_event(f"<{keyname.upper()}>")
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:
-                button.trigger_event("<PRESS>")
-                if is_inside:
-                    button.pressed = True
-        elif event.type == pygame.MOUSEBUTTONUP:
-            if event.button == 1:
-                button.trigger_event("<RELEASE>")
-                button.pressed = False

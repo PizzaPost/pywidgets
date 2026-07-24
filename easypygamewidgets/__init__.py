@@ -7,9 +7,11 @@ from typing import Callable
 import pygame
 
 from .button import Button
+from .dialog import Dialog
 from .entry import Entry
 from .font import Font, SysFont, default_font, tooltip_font, emoji_font
 from .label import Label
+from .masterWidget import Widget
 from .misc import disable_update_check, link_pygame_window, create_pygame_layer, set_appearance_mode, schedule
 from .screen import Screen
 from .slider import Slider
@@ -29,47 +31,16 @@ def flip():
                 except TypeError:
                     pass
         else:
-            if isinstance(widget, Screen):
-                screen.draw(widget, misc.pg)
-            elif isinstance(widget, Button):
-                button.update_animation(widget)
-                button.draw(widget, misc.pg)
-            elif isinstance(widget, Slider):
-                slider.draw(widget, misc.pg)
-            elif isinstance(widget, Entry):
-                entry.update_animation(widget)
-                entry.draw(widget, misc.pg)
-            elif isinstance(widget, Label):
-                label.update_animation(widget)
-                label.draw(widget, misc.pg)
-            elif isinstance(widget, Surface):
-                surface.update_animation(widget)
-                surface.draw(widget, misc.pg)
-            elif isinstance(widget, Timekeeper):
-                timekeeper.draw(widget, misc.pg)
-            elif isinstance(widget, Tooltip):
-                tooltip.draw(widget, misc.pg)
+            if hasattr(widget, "update_animation"):
+                widget.update_animation()
+            widget.draw(misc.pg)
     pygame.display.flip()
 
 
 def handle_event(event):
     for widget in misc.all_widgets:
-        if isinstance(widget, Screen):
-            screen.react(widget, event)
-        if isinstance(widget, Button):
-            button.react(widget, event)
-        elif isinstance(widget, Slider):
-            slider.react(widget, event)
-        elif isinstance(widget, Entry):
-            entry.react(widget, event)
-        elif isinstance(widget, Label):
-            label.react(widget, event)
-        elif isinstance(widget, Surface):
-            surface.react(widget, event)
-        elif isinstance(widget, Timekeeper):
-            timekeeper.react(widget, event)
-        elif isinstance(widget, Tooltip):
-            tooltip.react(widget, event)
+        if hasattr(widget, "react"):
+            widget.react(event)
 
 
 def handle_special_events():
@@ -79,19 +50,5 @@ def handle_special_events():
             func[0]()
             misc.scheduled_functions.remove(func)
     for widget in misc.all_widgets:
-        if isinstance(widget, Screen):
-            screen.react(widget)
-        if isinstance(widget, Button):
-            button.react(widget)
-        elif isinstance(widget, Slider):
-            slider.react(widget)
-        elif isinstance(widget, Entry):
-            entry.react(widget)
-        elif isinstance(widget, Label):
-            label.react(widget)
-        elif isinstance(widget, Surface):
-            surface.react(widget)
-        elif isinstance(widget, Timekeeper):
-            timekeeper.react(widget)
-        elif isinstance(widget, Tooltip):
-            tooltip.react(widget)
+        if hasattr(widget, "react"):
+            widget.react()

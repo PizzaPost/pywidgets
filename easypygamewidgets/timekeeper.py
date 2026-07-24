@@ -158,6 +158,7 @@ class Timekeeper(Widget, Tooltipable, Screenable):
         self._last_updated = None
         self._is_negative = False
         self._bindings = {}
+        self._dialog = None
 
         self._milliseconds = None
         self._seconds = None
@@ -698,6 +699,14 @@ class Timekeeper(Widget, Tooltipable, Screenable):
     def hours(self, value):
         self._hours = value
 
+    @property
+    def dialog(self):
+        return self._dialog
+
+    @dialog.setter
+    def dialog(self, value):
+        self._dialog = value
+
     def configure(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -790,6 +799,148 @@ class Timekeeper(Widget, Tooltipable, Screenable):
         split_to_values(self, curr)
         return self
 
+    def draw(self, surface: pygame.Surface):
+        if not self._alive or not self._visible:
+            return
+        offset_x, offset_y = misc.get_offset(self)
+        mouse_pos = pygame.mouse.get_pos()
+        is_hovering = misc.is_point_over_widget(self, mouse_pos)
+        if self._state == "enabled":
+            if self._pressed and is_hovering:
+                text_color = self._active_pressed_text_color
+                bg_color = self._active_pressed_background_color
+                brd_color = self._active_pressed_border_color
+            elif is_hovering:
+                text_color = self._active_hover_text_color
+                bg_color = self._active_hover_background_color
+                brd_color = self._active_hover_border_color
+            else:
+                text_color = self._active_unpressed_text_color
+                bg_color = self._active_unpressed_background_color
+                brd_color = self._active_unpressed_border_color
+        else:
+            if is_hovering:
+                text_color = self._disabled_hover_text_color
+                bg_color = self._disabled_hover_background_color
+                brd_color = self._disabled_hover_border_color
+            else:
+                text_color = self._disabled_unpressed_text_color
+                bg_color = self._disabled_unpressed_background_color
+                brd_color = self._disabled_unpressed_border_color
+
+        if is_hovering:
+            if self._state == "enabled":
+                if self._pressed:
+                    cursor_key = "active_pressed"
+                else:
+                    cursor_key = "active_hover"
+            else:
+                cursor_key = "disabled_hover"
+            target_cursor = self._cursors.get(cursor_key)
+            if target_cursor:
+                current_cursor = pygame.mouse.get_cursor()
+                if current_cursor != target_cursor:
+                    if self._original_cursor is None:
+                        self._original_cursor = current_cursor
+                    pygame.mouse.set_cursor(target_cursor)
+        else:
+            if self._original_cursor:
+                pygame.mouse.set_cursor(self._original_cursor)
+                self._original_cursor = None
+
+        if is_hovering and not getattr(self, "is_hovered", False):
+            self._is_hovered = True
+            self.trigger_event("<MOUSE-IN>")
+            if self._tooltip:
+                self._tooltip.show()
+        elif is_hovering and getattr(self, "is_hovered", False):
+            self._is_hovered = True
+            self.trigger_event("<HOVER>")
+        elif not is_hovering and getattr(self, "is_hovered", False):
+            self._is_hovered = False
+            self.trigger_event("<MOUSE-OUT>")
+            if self._tooltip:
+                self._tooltip.hide()
+
+        display_text = self.get_display_text()
+        draw_rect = self._rect.move(offset_x, offset_y)
+        if not self._hide_background:
+            pygame.draw.rect(surface, bg_color, draw_rect, border_radius=self._corner_radius)
+        if self._border_thickness > 0 and not self._hide_border:
+            pygame.draw.rect(surface, brd_color, draw_rect, width=self._border_thickness,
+                             border_radius=self._corner_radius)
+        old_clip = surface.get_clip()
+        clip_rect = draw_rect.inflate(-4, -4)
+        surface.set_clip(clip_rect)
+        y_pos = draw_rect.centery
+        drawn_stretched = False
+        if not self._hide_text:
+            descent_offset = abs(self._font.get_descent()) // 2
+            if self._alignment == "stretched" and len(display_text) > 1 and not self._auto_size:
+                total_char_width = sum(
+                    self._font.render(char, True, text_color).get_width() for char in display_text)
+                available_width = draw_rect.width - (self._alignment_spacing * 2)
+                if available_width > total_char_width:
+                    drawn_stretched = True
+                    spacing = (available_width - total_char_width) / (len(display_text) - 1)
+                    current_x = draw_rect.left + self._alignment_spacing
+                    for char in display_text:
+                        char_surf = self._font.render(char, True, text_color)
+                        surface.blit(char_surf, char_surf.get_rect(midleft=(current_x, y_pos + descent_offset)))
+                        current_x += char_surf.get_width() + spacing
+            if not drawn_stretched:
+                text_surf = self._font.render(display_text, True, text_color)
+                text_rect = text_surf.get_rect()
+                if self._alignment == "left":
+                    text_rect.midleft = (draw_rect.left + self._alignment_spacing, y_pos)
+                elif self._alignment == "right":
+                    text_rect.midright = (draw_rect.right - self._alignment_spacing, y_pos)
+                else:
+                    text_rect.center = draw_rect.center
+                surface.blit(text_surf, (text_rect.x, text_rect.y + descent_offset))
+                self._last_text_x = text_rect.x
+                surface.set_clip(old_clip)
+
+    def react(self, event=None):
+        if self._state != "enabled" or not self._visible:
+            return
+        is_inside = misc.is_point_over_widget(self, pygame.mouse.get_pos())
+        if event:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and is_inside:
+                self.trigger_event("<PRESS>")
+            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1 and is_inside:
+                self.trigger_event("<RELEASE>")
+            elif event.type == pygame.KEYDOWN:
+                self.trigger_event("<KEY>")
+                if event.unicode:
+                    self.trigger_event(event.unicode)
+                keyname = pygame.key.name(event.key)
+                self.trigger_event(f"<{keyname.upper()}>")
+        else:
+            if self._ticking:
+                now = time.time()
+                if not self._last_updated:
+                    self._last_updated = now
+                dt = now - self._last_updated
+                self._last_updated = now
+                sign = -1 if self._is_negative else 1
+                curr = ((self._hours * 3600) + (
+                        self._minutes * 60) + self._seconds + self._milliseconds) * sign
+                change = -dt if self._reversed else dt
+                next_value = curr + change
+                if self._end_at is not None:
+                    reached_limit = False
+                    if not self._reversed and next_value >= self._end_at:
+                        reached_limit = True
+                    elif self._reversed and next_value <= self._end_at:
+                        reached_limit = True
+                    if reached_limit:
+                        split_to_values(self, self._end_at)
+                        self.stop()
+                        self.trigger_event("<FINISHED>")
+                        return
+                split_to_values(self, next_value)
+
 
 def update_size(timekeeper):
     if timekeeper.auto_size:
@@ -818,146 +969,3 @@ def split_to_values(widget, total_seconds):
     widget.seconds = int(abs_secs % 60)
     widget.milliseconds = abs(total_seconds) - int(abs(abs_secs))
     update_size(widget)
-
-
-def draw(timekeeper, surface: pygame.Surface):
-    if not timekeeper.alive or not timekeeper.visible:
-        return
-    offset_x, offset_y = misc.get_screen_offset(timekeeper)
-    mouse_pos = pygame.mouse.get_pos()
-    is_hovering = misc.is_point_over_widget(timekeeper, mouse_pos)
-    if timekeeper.state == "enabled":
-        if timekeeper.pressed and is_hovering:
-            text_color = timekeeper.active_pressed_text_color
-            bg_color = timekeeper.active_pressed_background_color
-            brd_color = timekeeper.active_pressed_border_color
-        elif is_hovering:
-            text_color = timekeeper.active_hover_text_color
-            bg_color = timekeeper.active_hover_background_color
-            brd_color = timekeeper.active_hover_border_color
-        else:
-            text_color = timekeeper.active_unpressed_text_color
-            bg_color = timekeeper.active_unpressed_background_color
-            brd_color = timekeeper.active_unpressed_border_color
-    else:
-        if is_hovering:
-            text_color = timekeeper.disabled_hover_text_color
-            bg_color = timekeeper.disabled_hover_background_color
-            brd_color = timekeeper.disabled_hover_border_color
-        else:
-            text_color = timekeeper.disabled_unpressed_text_color
-            bg_color = timekeeper.disabled_unpressed_background_color
-            brd_color = timekeeper.disabled_unpressed_border_color
-
-    if is_hovering:
-        if timekeeper.state == "enabled":
-            if timekeeper.pressed:
-                cursor_key = "active_pressed"
-            else:
-                cursor_key = "active_hover"
-        else:
-            cursor_key = "disabled_hover"
-        target_cursor = timekeeper.cursors.get(cursor_key)
-        if target_cursor:
-            current_cursor = pygame.mouse.get_cursor()
-            if current_cursor != target_cursor:
-                if timekeeper.original_cursor is None:
-                    timekeeper.original_cursor = current_cursor
-                pygame.mouse.set_cursor(target_cursor)
-    else:
-        if timekeeper.original_cursor:
-            pygame.mouse.set_cursor(timekeeper.original_cursor)
-            timekeeper.original_cursor = None
-
-    if is_hovering and not getattr(timekeeper, "is_hovered", False):
-        timekeeper.is_hovered = True
-        timekeeper.trigger_event("<MOUSE-IN>")
-        if timekeeper.tooltip:
-            timekeeper.tooltip.show()
-    elif is_hovering and getattr(timekeeper, "is_hovered", False):
-        timekeeper.is_hovered = True
-        timekeeper.trigger_event("<HOVER>")
-    elif not is_hovering and getattr(timekeeper, "is_hovered", False):
-        timekeeper.is_hovered = False
-        timekeeper.trigger_event("<MOUSE-OUT>")
-        if timekeeper.tooltip:
-            timekeeper.tooltip.hide()
-
-    display_text = timekeeper.get_display_text()
-    draw_rect = timekeeper.rect.move(offset_x, offset_y)
-    if not timekeeper.hide_background:
-        pygame.draw.rect(surface, bg_color, draw_rect, border_radius=timekeeper.corner_radius)
-    if timekeeper.border_thickness > 0 and not timekeeper.hide_border:
-        pygame.draw.rect(surface, brd_color, draw_rect, width=timekeeper.border_thickness,
-                         border_radius=timekeeper.corner_radius)
-    old_clip = surface.get_clip()
-    clip_rect = draw_rect.inflate(-4, -4)
-    surface.set_clip(clip_rect)
-    y_pos = draw_rect.centery
-    drawn_stretched = False
-    if not timekeeper.hide_text:
-        descent_offset = abs(timekeeper.font.get_descent()) // 2
-        if timekeeper.alignment == "stretched" and len(display_text) > 1 and not timekeeper.auto_size:
-            total_char_width = sum(timekeeper.font.render(char, True, text_color).get_width() for char in display_text)
-            available_width = draw_rect.width - (timekeeper.alignment_spacing * 2)
-            if available_width > total_char_width:
-                drawn_stretched = True
-                spacing = (available_width - total_char_width) / (len(display_text) - 1)
-                current_x = draw_rect.left + timekeeper.alignment_spacing
-                for char in display_text:
-                    char_surf = timekeeper.font.render(char, True, text_color)
-                    surface.blit(char_surf, char_surf.get_rect(midleft=(current_x, y_pos + descent_offset)))
-                    current_x += char_surf.get_width() + spacing
-        if not drawn_stretched:
-            text_surf = timekeeper.font.render(display_text, True, text_color)
-            text_rect = text_surf.get_rect()
-            if timekeeper.alignment == "left":
-                text_rect.midleft = (draw_rect.left + timekeeper.alignment_spacing, y_pos)
-            elif timekeeper.alignment == "right":
-                text_rect.midright = (draw_rect.right - timekeeper.alignment_spacing, y_pos)
-            else:
-                text_rect.center = draw_rect.center
-            surface.blit(text_surf, (text_rect.x, text_rect.y + descent_offset))
-            timekeeper.last_text_x = text_rect.x
-            surface.set_clip(old_clip)
-
-
-def react(timekeeper, event=None):
-    if timekeeper.state != "enabled" or not timekeeper.visible:
-        return
-    is_inside = misc.is_point_over_widget(timekeeper, pygame.mouse.get_pos())
-    if event:
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and is_inside:
-            timekeeper.trigger_event("<PRESS>")
-        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1 and is_inside:
-            timekeeper.trigger_event("<RELEASE>")
-        elif event.type == pygame.KEYDOWN:
-            timekeeper.trigger_event("<KEY>")
-            if event.unicode:
-                timekeeper.trigger_event(event.unicode)
-            keyname = pygame.key.name(event.key)
-            timekeeper.trigger_event(f"<{keyname.upper()}>")
-    else:
-        if timekeeper.ticking:
-            now = time.time()
-            if not timekeeper.last_updated:
-                timekeeper.last_updated = now
-            dt = now - timekeeper.last_updated
-            timekeeper.last_updated = now
-            sign = -1 if timekeeper.is_negative else 1
-            curr = ((timekeeper.hours * 3600) + (
-                    timekeeper.minutes * 60) + timekeeper.seconds + timekeeper.milliseconds) * sign
-            change = -dt if timekeeper.reversed else dt
-            next_value = curr + change
-            if timekeeper.end_at is not None:
-                reached_limit = False
-                if not timekeeper.reversed and next_value >= timekeeper.end_at:
-                    reached_limit = True
-                elif timekeeper.reversed and next_value <= timekeeper.end_at:
-                    reached_limit = True
-                if reached_limit:
-                    split_to_values(timekeeper, timekeeper.end_at)
-                    timekeeper.stop()
-                    timekeeper.trigger_event("<FINISHED>")
-                    return
-            split_to_values(timekeeper, next_value)

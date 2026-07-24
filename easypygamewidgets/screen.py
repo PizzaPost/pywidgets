@@ -95,13 +95,9 @@ class Screen:
             print(f"Invalid Mode: {mode}\nFallback: px")
         return self
 
-
-def draw(screen, surface: pygame.Surface):
-    if screen.darken_background_with_alpha and screen.visible:
-        background_surf = pygame.Surface(surface.get_size())
-        background_surf.fill((0, 0, 0))
-        background_surf.set_alpha(screen.darken_background_with_alpha)
-        surface.blit(background_surf, (0, 0))
-
-
-def react(screen, event=None): pass
+    def draw(self, surface: pygame.Surface):
+        if self.darken_background_with_alpha and self.visible:
+            background_surf = pygame.Surface(surface.get_size())
+            background_surf.fill((0, 0, 0))
+            background_surf.set_alpha(self.darken_background_with_alpha)
+            surface.blit(background_surf, (0, 0))

@@ -202,6 +202,7 @@ class Entry(Widget, Tooltipable, Screenable):
         self._current_offset = [0, 0]
         self._offset_step = [0, 0]
         self._use_rotozoom = False
+        self._dialog = None
 
         self._font.set_linesize(line_spacing)
 
@@ -940,6 +941,14 @@ class Entry(Widget, Tooltipable, Screenable):
     def use_rotozoom(self, value):
         self._use_rotozoom = value
 
+    @property
+    def dialog(self):
+        return self._dialog
+
+    @dialog.setter
+    def dialog(self, value):
+        self._dialog = value
+
     def configure(self, **kwargs: Unpack[TypeHints.EntryConfig]):
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -1060,7 +1069,7 @@ class Entry(Widget, Tooltipable, Screenable):
             frames_to_finish = 1
         self._target_scale = 1 if value is None else value
         self._scale_step = (self._target_scale - self._current_scale) / frames_to_finish
-        update_animation(self)
+        self.update_animation()
         return self
 
     def rotate(self, value=None, frames_to_finish=1):
@@ -1068,7 +1077,7 @@ class Entry(Widget, Tooltipable, Screenable):
             frames_to_finish = 1
         self._target_rotation = 0 if value is None else value
         self._rotation_step = (self._target_rotation - self._current_rotation) / frames_to_finish
-        update_animation(self)
+        self.update_animation()
         return self
 
     def rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
@@ -1079,7 +1088,7 @@ class Entry(Widget, Tooltipable, Screenable):
         self._target_rotation = 0 if rotation is None else rotation
         self._rotation_step = (self._target_rotation - self._current_rotation) / frames_to_finish
         self._use_rotozoom = True
-        update_animation(self)
+        self.update_animation()
         return self
 
     def offset(self, value: tuple[int, int], frames_to_finish=1):
@@ -1088,33 +1097,215 @@ class Entry(Widget, Tooltipable, Screenable):
         self._target_offset = (0, 0) if value is None else value
         self._offset_step[0] = (self._target_offset[0] - self._current_offset[0]) / frames_to_finish
         self._offset_step[1] = (self._target_offset[1] - self._current_offset[1]) / frames_to_finish
-        update_animation(self)
+        self.update_animation()
         return self
 
-
-def update_animation(entry):
-    scale_changed = False
-    rotation_changed = False
-    if entry.current_scale != entry.target_scale:
-        if abs(entry.current_scale - entry.target_scale) <= abs(entry.scale_step):
-            entry.current_scale = entry.target_scale
-        else:
-            entry.current_scale += entry.scale_step
-        scale_changed = True
-    if entry.current_rotation != entry.target_rotation:
-        if abs(entry.current_rotation - entry.target_rotation) <= abs(entry.rotation_step):
-            entry.current_rotation = entry.target_rotation
-        else:
-            entry.current_rotation += entry.rotation_step
-        rotation_changed = True
-    for x in range(2):
-        if entry.current_offset[x] != entry.target_offset[x]:
-            if abs(entry.current_offset[x] - entry.target_offset[x]) <= abs(entry.offset_step[x]):
-                entry.current_offset[x] = float(entry.target_offset[x])
+    def update_animation(self):
+        scale_changed = False
+        rotation_changed = False
+        if self._current_scale != self._target_scale:
+            if abs(self._current_scale - self._target_scale) <= abs(self._scale_step):
+                self._current_scale = self._target_scale
             else:
-                entry.current_offset[x] += entry.offset_step[x]
-    if scale_changed or rotation_changed:
-        entry.needs_transform = True
+                self._current_scale += self._scale_step
+            scale_changed = True
+        if self._current_rotation != self._target_rotation:
+            if abs(self._current_rotation - self._target_rotation) <= abs(self._rotation_step):
+                self._current_rotation = self._target_rotation
+            else:
+                self._current_rotation += self._rotation_step
+            rotation_changed = True
+        for x in range(2):
+            if self._current_offset[x] != self._target_offset[x]:
+                if abs(self._current_offset[x] - self._target_offset[x]) <= abs(self._offset_step[x]):
+                    self._current_offset[x] = float(self._target_offset[x])
+                else:
+                    self._current_offset[x] += self._offset_step[x]
+        if scale_changed or rotation_changed:
+            self._needs_transform = True
+
+    def draw(self, surface: pygame.Surface):
+        if not self._alive or not self._visible:
+            return
+        if self._focused and self._held_key_info:
+            current_time = pygame.time.get_ticks()
+            if current_time >= self._next_repeat_time:
+                key, unicode_char = self._held_key_info
+                process_key_action(self, key, unicode_char)
+                self._next_repeat_time = current_time + self._repeat_interval
+
+        if not pygame.scrap.get_init():
+            pygame.scrap.init()
+
+        mouse_pos = pygame.mouse.get_pos()
+        is_hovering = misc.is_point_over_widget(self, mouse_pos)
+        now = pygame.time.get_ticks()
+        display_text = self.get_display_text()
+
+        has_selection = self._selected_text and self._selected_text[0] != self._selected_text[1]
+        if self._focused and self._state == "enabled" and not has_selection:
+            if now - self._last_blink_time > self._blinking_speed:
+                self._cursor_visible = not self._cursor_visible
+                self._last_blink_time = now
+
+        self._font.set_linesize(self._line_spacing)
+        if self._auto_size:
+            lines = display_text.split("\n")
+            total_w = 0
+            text_h = self._font.size(display_text)[1]
+            for line in lines:
+                text_w, text_h = self._font.size(line)
+                if text_w > total_w:
+                    total_w = text_w
+            total_h = len(lines) * text_h
+
+            required_width = total_w + self._alignment_spacing * 2
+            if self._min_width:
+                required_width = max(required_width, self._min_width)
+            if self._max_width:
+                required_width = min(required_width, self._max_width)
+            required_height = total_h + 20
+            if self._min_height:
+                required_height = max(required_height, self._min_height)
+            if self._max_height:
+                required_height = min(required_height, self._max_height)
+
+            if self._width != required_width:
+                self._width = required_width
+                self._needs_redraw = True
+            if self._height != required_height:
+                self._height = required_height
+                self._needs_redraw = True
+
+        current_visual_state = (self._pressed, is_hovering, self._cursor_visible)
+        if self._needs_redraw or self._last_visual_state != current_visual_state:
+            temp_topleft = self._rect.topleft
+            self._rect.size = (self._width, self._height)
+            self._rect.topleft = temp_topleft
+            render_entry_surface(self, is_hovering)
+            self._last_visual_state = current_visual_state
+            self._needs_redraw = True
+            self._needs_transform = True
+
+        if self._needs_transform:
+            if self._current_scale != 1 or self._current_rotation != 0:
+                new_width = int(self._original_surface.get_width() * self._current_scale)
+                new_height = int(self._original_surface.get_height() * self._current_scale)
+                if new_width > 0 and new_height > 0:
+                    if self._use_rotozoom:
+                        self._cached_surface = pygame.transform.rotozoom(self._original_surface, self._current_rotation,
+                                                                         self._current_scale)
+                    else:
+                        scaled_surface = pygame.transform.smoothscale(self._original_surface, (new_width, new_height))
+                        self._cached_surface = pygame.transform.rotate(scaled_surface, self._current_rotation)
+                else:
+                    self._cached_surface = pygame.Surface((0, 0), pygame.SRCALPHA)
+            else:
+                self._cached_surface = self._original_surface.copy()
+            old_topleft = self._rect.topleft
+            self._rect = self._cached_surface.get_rect()
+            self._rect.topleft = old_topleft
+            self._needs_transform = False
+        offset_x, offset_y = misc.get_offset(self)
+        total_offset_x = offset_x + round(self._current_offset[0])
+        total_offset_y = offset_y + round(self._current_offset[1])
+        draw_rect = self._rect.move(total_offset_x, total_offset_y)
+        surface.blit(self._cached_surface, draw_rect)
+
+        self._last_text_x = self._local_text_x + draw_rect.x
+
+        if is_hovering:
+            if self._state == "enabled":
+                if self._pressed:
+                    cursor_key = "active_pressed"
+                else:
+                    cursor_key = "active_hover"
+            else:
+                cursor_key = "disabled_hover"
+            target_cursor = self._cursors.get(cursor_key)
+            if target_cursor:
+                current_cursor = pygame.mouse.get_cursor()
+                if current_cursor != target_cursor:
+                    if self._original_cursor is None:
+                        self._original_cursor = current_cursor
+                    pygame.mouse.set_cursor(target_cursor)
+        else:
+            if self._original_cursor:
+                pygame.mouse.set_cursor(self._original_cursor)
+                self._original_cursor = None
+
+        if is_hovering and not getattr(self, "is_hovered", False):
+            self._is_hovered = True
+            self.trigger_event("<MOUSE-IN>")
+            if self._tooltip:
+                self._tooltip.show()
+        elif is_hovering and getattr(self, "is_hovered", False):
+            self._is_hovered = True
+            self.trigger_event("<HOVER>")
+        elif not is_hovering and getattr(self, "is_hovered", False):
+            self._is_hovered = False
+            self.trigger_event("<MOUSE-OUT>")
+            if self._tooltip:
+                self._tooltip.hide()
+
+    def react(self, event=None):
+        if self._state != "enabled" or not self._visible:
+            self._pressed = False
+            self._focused = False
+            return
+        display_text = self.get_display_text()
+        is_inside = misc.is_point_over_widget(self, pygame.mouse.get_pos())
+
+        def get_idx_at_mouse(mouse_x):
+            curr_x = self._last_text_x
+            for i, char in enumerate(display_text):
+                char_w = self._font.size(char)[0]
+                if mouse_x < curr_x + char_w / 2: return i
+                curr_x += char_w
+            return min(len(display_text), len(self._text))
+
+        if event:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if is_inside:
+                    self.trigger_event("<PRESS>")
+                if not self._focused:
+                    self.trigger_event("<FOCUS-IN>")
+                if is_inside:
+                    self._pressed = True
+                    idx = get_idx_at_mouse(event.pos[0])
+                    # This somehow has to be redone because """return min(len(display_text), len(self._text))""" doesn't work
+                    self._cursor_position = min(len(self._text), idx)
+                    self._selection_anchor = idx
+                    self._selected_text = None
+                    if not self._focused:
+                        self._focused = True
+                    self.reset_cursor_blink()
+                else:
+                    if self._focused:
+                        self.trigger_event("<FOCUS-OUT>")
+                    self._focused = False
+            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                self.trigger_event("<RELEASE>")
+                self._pressed = False
+                self._selection_anchor = None
+            elif event.type == pygame.MOUSEMOTION and self._pressed:
+                if self._selection_anchor is not None:
+                    self._cursor_position = get_idx_at_mouse(event.pos[0])
+                    self.text_select(self._selection_anchor, self._cursor_position)
+                    self.reset_cursor_blink()
+            elif event.type == pygame.KEYDOWN:
+                if self._focused:
+                    process_key_action(self, event.key, event.unicode)
+                    self._held_key_info = (event.key, event.unicode)
+                    self._next_repeat_time = pygame.time.get_ticks() + self._repeat_delay
+                self.trigger_event("<KEY>")
+                if event.unicode:
+                    self.trigger_event(event.unicode)
+                keyname = pygame.key.name(event.key)
+                self.trigger_event(f"<{keyname.upper()}>")
+            elif event.type == pygame.KEYUP:
+                if self._held_key_info and event.key == self._held_key_info[0]:
+                    self._held_key_info = None
 
 
 def process_key_action(entry, key, unicode_char):
@@ -1295,188 +1486,3 @@ def render_entry_surface(entry, is_hovering):
         entry.local_text_x = text_rect.x
     cached.set_clip(None)
     entry.original_surface = cached
-
-
-def draw(entry, surface: pygame.Surface):
-    if not entry.alive or not entry.visible:
-        return
-    if entry.focused and entry.held_key_info:
-        current_time = pygame.time.get_ticks()
-        if current_time >= entry.next_repeat_time:
-            key, unicode_char = entry.held_key_info
-            process_key_action(entry, key, unicode_char)
-            entry.next_repeat_time = current_time + entry.repeat_interval
-
-    if not pygame.scrap.get_init():
-        pygame.scrap.init()
-
-    mouse_pos = pygame.mouse.get_pos()
-    is_hovering = misc.is_point_over_widget(entry, mouse_pos)
-    now = pygame.time.get_ticks()
-    display_text = entry.get_display_text()
-
-    has_selection = entry.selected_text and entry.selected_text[0] != entry.selected_text[1]
-    if entry.focused and entry.state == "enabled" and not has_selection:
-        if now - entry.last_blink_time > entry.blinking_speed:
-            entry.cursor_visible = not entry.cursor_visible
-            entry.last_blink_time = now
-
-    entry.font.set_linesize(entry.line_spacing)
-    if entry.auto_size:
-        lines = display_text.split("\n")
-        total_w = 0
-        text_h = entry.font.size(display_text)[1]
-        for line in lines:
-            text_w, text_h = entry.font.size(line)
-            if text_w > total_w:
-                total_w = text_w
-        total_h = len(lines) * text_h
-
-        required_width = total_w + entry.alignment_spacing * 2
-        if entry.min_width:
-            required_width = max(required_width, entry.min_width)
-        if entry.max_width:
-            required_width = min(required_width, entry.max_width)
-        required_height = total_h + 20
-        if entry.min_height:
-            required_height = max(required_height, entry.min_height)
-        if entry.max_height:
-            required_height = min(required_height, entry.max_height)
-
-        if entry.width != required_width:
-            entry.width = required_width
-            entry.needs_redraw = True
-        if entry.height != required_height:
-            entry.height = required_height
-            entry.needs_redraw = True
-
-    current_visual_state = (entry.pressed, is_hovering, entry.cursor_visible)
-    if entry.needs_redraw or entry.last_visual_state != current_visual_state:
-        temp_topleft = entry.rect.topleft
-        entry.rect.size = (entry.width, entry.height)
-        entry.rect.topleft = temp_topleft
-        render_entry_surface(entry, is_hovering)
-        entry.last_visual_state = current_visual_state
-        entry.needs_redraw = True
-        entry.needs_transform = True
-
-    if entry.needs_transform:
-        if entry.current_scale != 1 or entry.current_rotation != 0:
-            new_width = int(entry.original_surface.get_width() * entry.current_scale)
-            new_height = int(entry.original_surface.get_height() * entry.current_scale)
-            if new_width > 0 and new_height > 0:
-                if entry.use_rotozoom:
-                    entry.cached_surface = pygame.transform.rotozoom(entry.original_surface, entry.current_rotation,
-                                                                     entry.current_scale)
-                else:
-                    scaled_surface = pygame.transform.smoothscale(entry.original_surface, (new_width, new_height))
-                    entry.cached_surface = pygame.transform.rotate(scaled_surface, entry.current_rotation)
-            else:
-                entry.cached_surface = pygame.Surface((0, 0), pygame.SRCALPHA)
-        else:
-            entry.cached_surface = entry.original_surface.copy()
-        old_topleft = entry.rect.topleft
-        entry.rect = entry.cached_surface.get_rect()
-        entry.rect.topleft = old_topleft
-        entry.needs_transform = False
-    offset_x, offset_y = misc.get_screen_offset(entry)
-    total_offset_x = offset_x + round(entry.current_offset[0])
-    total_offset_y = offset_y + round(entry.current_offset[1])
-    draw_rect = entry.rect.move(total_offset_x, total_offset_y)
-    surface.blit(entry.cached_surface, draw_rect)
-
-    entry.last_text_x = entry.local_text_x + draw_rect.x
-
-    if is_hovering:
-        if entry.state == "enabled":
-            if entry.pressed:
-                cursor_key = "active_pressed"
-            else:
-                cursor_key = "active_hover"
-        else:
-            cursor_key = "disabled_hover"
-        target_cursor = entry.cursors.get(cursor_key)
-        if target_cursor:
-            current_cursor = pygame.mouse.get_cursor()
-            if current_cursor != target_cursor:
-                if entry.original_cursor is None:
-                    entry.original_cursor = current_cursor
-                pygame.mouse.set_cursor(target_cursor)
-    else:
-        if entry.original_cursor:
-            pygame.mouse.set_cursor(entry.original_cursor)
-            entry.original_cursor = None
-
-    if is_hovering and not getattr(entry, "is_hovered", False):
-        entry.is_hovered = True
-        entry.trigger_event("<MOUSE-IN>")
-        if entry.tooltip:
-            entry.tooltip.show()
-    elif is_hovering and getattr(entry, "is_hovered", False):
-        entry.is_hovered = True
-        entry.trigger_event("<HOVER>")
-    elif not is_hovering and getattr(entry, "is_hovered", False):
-        entry.is_hovered = False
-        entry.trigger_event("<MOUSE-OUT>")
-        if entry.tooltip:
-            entry.tooltip.hide()
-
-
-def react(entry, event=None):
-    if entry.state != "enabled" or not entry.visible:
-        entry.pressed = False
-        entry.focused = False
-        return
-    display_text = entry.get_display_text()
-    is_inside = misc.is_point_over_widget(entry, pygame.mouse.get_pos())
-
-    def get_idx_at_mouse(mouse_x):
-        curr_x = entry.last_text_x
-        for i, char in enumerate(display_text):
-            char_w = entry.font.size(char)[0]
-            if mouse_x < curr_x + char_w / 2: return i
-            curr_x += char_w
-        return min(len(display_text), len(entry.text))
-
-    if event:
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            if is_inside:
-                entry.trigger_event("<PRESS>")
-            if not entry.focused:
-                entry.trigger_event("<FOCUS-IN>")
-            if is_inside:
-                entry.pressed = True
-                idx = get_idx_at_mouse(event.pos[0])
-                # This somehow has to be redone because """return min(len(display_text), len(entry.text))""" doesn't work
-                entry.cursor_position = min(len(entry.text), idx)
-                entry.selection_anchor = idx
-                entry.selected_text = None
-                if not entry.focused:
-                    entry.focused = True
-                entry.reset_cursor_blink()
-            else:
-                if entry.focused:
-                    entry.trigger_event("<FOCUS-OUT>")
-                entry.focused = False
-        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-            entry.trigger_event("<RELEASE>")
-            entry.pressed = False
-            entry.selection_anchor = None
-        elif event.type == pygame.MOUSEMOTION and entry.pressed:
-            if entry.selection_anchor is not None:
-                entry.cursor_position = get_idx_at_mouse(event.pos[0])
-                entry.text_select(entry.selection_anchor, entry.cursor_position)
-                entry.reset_cursor_blink()
-        elif event.type == pygame.KEYDOWN:
-            if entry.focused:
-                process_key_action(entry, event.key, event.unicode)
-                entry.held_key_info = (event.key, event.unicode)
-                entry.next_repeat_time = pygame.time.get_ticks() + entry.repeat_delay
-            entry.trigger_event("<KEY>")
-            if event.unicode:
-                entry.trigger_event(event.unicode)
-            keyname = pygame.key.name(event.key)
-            entry.trigger_event(f"<{keyname.upper()}>")
-        elif event.type == pygame.KEYUP:
-            if entry.held_key_info and event.key == entry.held_key_info[0]:
-                entry.held_key_info = None

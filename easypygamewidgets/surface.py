@@ -93,6 +93,7 @@ class Surface(Widget, Tooltipable, Screenable):
         self._current_offset = [0, 0]
         self._offset_step = [0, 0]
         self._use_rotozoom = False
+        self._dialog = None
 
         misc.add_widget(self)
 
@@ -395,6 +396,14 @@ class Surface(Widget, Tooltipable, Screenable):
     def use_rotozoom(self, value):
         self._use_rotozoom = value
 
+    @property
+    def dialog(self):
+        return self._dialog
+
+    @dialog.setter
+    def dialog(self, value):
+        self._dialog = value
+
     def configure(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -430,7 +439,7 @@ class Surface(Widget, Tooltipable, Screenable):
             binding_data = self._bindings[event]
             command = binding_data["command"]
             require_hover = binding_data["require_hover"]
-            offset_x, offset_y = misc.get_screen_offset(self)
+            offset_x, offset_y = misc.get_offset(self)
             total_offset_x = offset_x + round(self._current_offset[0])
             total_offset_y = offset_y + round(self._current_offset[1])
             if not require_hover or self._rect.move(total_offset_x, total_offset_y).collidepoint(
@@ -454,7 +463,7 @@ class Surface(Widget, Tooltipable, Screenable):
         else:
             self._target_scale = value
         self._scale_step = (self._target_scale - self._current_scale) / frames_to_finish
-        update_animation(self)
+        self.update_animation()
         return self
 
     def rotate(self, value=None, frames_to_finish=1):
@@ -465,7 +474,7 @@ class Surface(Widget, Tooltipable, Screenable):
         else:
             self._target_rotation = value
         self._rotation_step = (self._target_rotation - self._current_rotation) / frames_to_finish
-        update_animation(self)
+        self.update_animation()
         return self
 
     def rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
@@ -476,7 +485,7 @@ class Surface(Widget, Tooltipable, Screenable):
         self._target_rotation = 0 if rotation is None else rotation
         self._rotation_step = (self._target_rotation - self._current_rotation) / frames_to_finish
         self._use_rotozoom = True
-        update_animation(self)
+        self.update_animation()
         return self
 
     def offset(self, value: tuple[int, int], frames_to_finish=1):
@@ -485,150 +494,147 @@ class Surface(Widget, Tooltipable, Screenable):
         self._target_offset = (0, 0) if value is None else value
         self._offset_step[0] = (self._target_offset[0] - self._current_offset[0]) / frames_to_finish
         self._offset_step[1] = (self._target_offset[1] - self._current_offset[1]) / frames_to_finish
-        update_animation(self)
+        self.update_animation()
         return self
 
-
-def update_animation(surface):
-    needs_transform = False
-    if surface.current_scale != surface.target_scale:
-        if abs(surface.current_scale - surface.target_scale) <= abs(surface.scale_step):
-            surface.current_scale = surface.target_scale
-        else:
-            surface.current_scale += surface.scale_step
-        needs_transform = True
-    if surface.current_rotation != surface.target_rotation:
-        if abs(surface.current_rotation - surface.target_rotation) <= abs(surface.rotation_step):
-            surface.current_rotation = surface.target_rotation
-        else:
-            surface.current_rotation += surface.rotation_step
-        needs_transform = True
-    for x in range(2):
-        if surface.current_offset[x] != surface.target_offset[x]:
-            if abs(surface.current_offset[x] - surface.target_offset[x]) <= abs(surface.offset_step[x]):
-                surface.current_offset[x] = float(surface.target_offset[x])
+    def update_animation(self):
+        needs_transform = False
+        if self._current_scale != self._target_scale:
+            if abs(self._current_scale - self._target_scale) <= abs(self._scale_step):
+                self._current_scale = self._target_scale
             else:
-                surface.current_offset[x] += surface.offset_step[x]
-    if needs_transform:
-        if surface.current_scale != 1 or surface.current_rotation != 0:
-            new_width = int(surface.original_surface.get_width() * surface.current_scale)
-            new_height = int(surface.original_surface.get_height() * surface.current_scale)
-            if new_width > 0 and new_height > 0:
-                if surface.use_rotozoom:
-                    surface.surface = pygame.transform.rotozoom(surface.original_surface, surface.current_rotation,
-                                                                surface.current_scale)
+                self._current_scale += self._scale_step
+            needs_transform = True
+        if self._current_rotation != self._target_rotation:
+            if abs(self._current_rotation - self._target_rotation) <= abs(self._rotation_step):
+                self._current_rotation = self._target_rotation
+            else:
+                self._current_rotation += self._rotation_step
+            needs_transform = True
+        for x in range(2):
+            if self._current_offset[x] != self._target_offset[x]:
+                if abs(self._current_offset[x] - self._target_offset[x]) <= abs(self._offset_step[x]):
+                    self._current_offset[x] = float(self._target_offset[x])
                 else:
-                    scaled_surface = pygame.transform.smoothscale(surface.original_surface, (new_width, new_height))
-                    surface.surface = pygame.transform.rotate(scaled_surface, surface.current_rotation)
-        else:
-            surface.surface = surface.original_surface.copy()
-        old_center = surface.rect.center
-        surface.rect = surface.surface.get_rect()
-        surface.rect.center = old_center
-        surface.x = surface.rect.x
-        surface.y = surface.rect.y
-
-
-def draw(surface, window: pygame.Surface):
-    if not surface.alive or not surface.visible:
-        return
-    mouse_pos = pygame.mouse.get_pos()
-    offset_x, offset_y = misc.get_screen_offset(surface)
-    total_offset_x = offset_x + round(surface.current_offset[0])
-    total_offset_y = offset_y + round(surface.current_offset[1])
-    interaction_rect = surface.rect.move(total_offset_x, total_offset_y)
-    is_hovering = interaction_rect.collidepoint(mouse_pos)
-    if is_hovering:
-        if surface.state == "enabled":
-            if surface.pressed:
-                cursor_key = "active_pressed"
+                    self._current_offset[x] += self._offset_step[x]
+        if needs_transform:
+            if self._current_scale != 1 or self._current_rotation != 0:
+                new_width = int(self._original_surface.get_width() * self._current_scale)
+                new_height = int(self._original_surface.get_height() * self._current_scale)
+                if new_width > 0 and new_height > 0:
+                    if self._use_rotozoom:
+                        self._surface = pygame.transform.rotozoom(self._original_surface, self._current_rotation,
+                                                                  self._current_scale)
+                    else:
+                        scaled_surface = pygame.transform.smoothscale(self._original_surface, (new_width, new_height))
+                        self._surface = pygame.transform.rotate(scaled_surface, self._current_rotation)
             else:
-                cursor_key = "active_hover"
+                self._surface = self._original_surface.copy()
+            old_center = self._rect.center
+            self._rect = self._surface.get_rect()
+            self._rect.center = old_center
+            self._x = self._rect.x
+            self._y = self._rect.y
+
+    def draw(self, window: pygame.Surface):
+        if not self._alive or not self._visible:
+            return
+        mouse_pos = pygame.mouse.get_pos()
+        offset_x, offset_y = misc.get_offset(self)
+        total_offset_x = offset_x + round(self._current_offset[0])
+        total_offset_y = offset_y + round(self._current_offset[1])
+        interaction_rect = self._rect.move(total_offset_x, total_offset_y)
+        is_hovering = interaction_rect.collidepoint(mouse_pos)
+        if is_hovering:
+            if self._state == "enabled":
+                if self._pressed:
+                    cursor_key = "active_pressed"
+                else:
+                    cursor_key = "active_hover"
+            else:
+                cursor_key = "disabled_hover"
+            target_cursor = self._cursors.get(cursor_key)
+            if target_cursor:
+                current_cursor = pygame.mouse.get_cursor()
+                if current_cursor != target_cursor:
+                    if self._original_cursor is None:
+                        self._original_cursor = current_cursor
+                    pygame.mouse.set_cursor(target_cursor)
         else:
-            cursor_key = "disabled_hover"
-        target_cursor = surface.cursors.get(cursor_key)
-        if target_cursor:
-            current_cursor = pygame.mouse.get_cursor()
-            if current_cursor != target_cursor:
-                if surface.original_cursor is None:
-                    surface.original_cursor = current_cursor
-                pygame.mouse.set_cursor(target_cursor)
-    else:
-        if surface.original_cursor:
-            pygame.mouse.set_cursor(surface.original_cursor)
-            surface.original_cursor = None
+            if self._original_cursor:
+                pygame.mouse.set_cursor(self._original_cursor)
+                self._original_cursor = None
 
-    if is_hovering and not getattr(surface, "is_hovered", False):
-        surface.is_hovered = True
-        surface.trigger_event("<MOUSE-IN>")
-        if surface.tooltip:
-            surface.tooltip.show()
-    elif is_hovering and getattr(surface, "is_hovered", False):
-        surface.is_hovered = True
-        surface.trigger_event("<HOVER>")
-    elif not is_hovering and getattr(surface, "is_hovered", False):
-        surface.is_hovered = False
-        surface.trigger_event("<MOUSE-OUT>")
-        if surface.tooltip:
-            surface.tooltip.hide()
+        if is_hovering and not getattr(self, "is_hovered", False):
+            self._is_hovered = True
+            self.trigger_event("<MOUSE-IN>")
+            if self._tooltip:
+                self._tooltip.show()
+        elif is_hovering and getattr(self, "is_hovered", False):
+            self._is_hovered = True
+            self.trigger_event("<HOVER>")
+        elif not is_hovering and getattr(self, "is_hovered", False):
+            self._is_hovered = False
+            self.trigger_event("<MOUSE-OUT>")
+            if self._tooltip:
+                self._tooltip.hide()
 
-    draw_rect = surface.rect.move(total_offset_x, total_offset_y)
-    window.blit(surface.surface, draw_rect)
+        draw_rect = self._rect.move(total_offset_x, total_offset_y)
+        window.blit(self._surface, draw_rect)
 
-
-def react(surface, event=None):
-    if surface.state != "enabled" or not surface.visible:
-        surface.pressed = False
-        return
-    mouse_pos = pygame.mouse.get_pos()
-    offset_x, offset_y = misc.get_screen_offset(surface)
-    total_offset_x = offset_x + round(surface.current_offset[0])
-    total_offset_y = offset_y + round(surface.current_offset[1])
-    interaction_rect = surface.rect.move(total_offset_x, total_offset_y)
-    is_inside = interaction_rect.collidepoint(mouse_pos)
-    current_time = time.time()
-    if not event:
-        if pygame.mouse.get_pressed()[0] and is_inside:
-            surface.pressed = True
-            surface.trigger_event("<HOLD>")
-        elif not pygame.mouse.get_pressed()[0] and is_inside:
-            if surface.pressed:
-                surface.pressed = False
-                surface.trigger_event("<RELEASE>")
-        elif not pygame.mouse.get_pressed()[0] and not is_inside:
-            surface.pressed = False
-    else:
-        if event.type == pygame.MOUSEMOTION:
-            if surface.pressed and surface.dragable:
-                if is_inside or surface.is_dragging:
-                    surface.is_dragging = True
-                    surface.last_checked_dragging = current_time
-                    if surface.drag_offset:
-                        new_x = mouse_pos[0] - surface.drag_offset[0] - total_offset_x
-                        new_y = mouse_pos[1] - surface.drag_offset[1] - total_offset_y
-                        surface.place(new_x, new_y)
-        if event.type == pygame.KEYDOWN:
-            surface.trigger_event("<KEY>")
-            if event.unicode:
-                surface.trigger_event(event.unicode)
-            keyname = pygame.key.name(event.key)
-            surface.trigger_event(f"<{keyname.upper()}>")
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:
-                surface.trigger_event("<PRESS>")
-                if is_inside:
-                    surface.pressed = True
-                    surface.drag_offset = (mouse_pos[0] - (surface.rect.x + total_offset_x),
-                                           mouse_pos[1] - (surface.rect.y + total_offset_y))
-        elif event.type == pygame.MOUSEBUTTONUP:
-            if event.button == 1 and surface.pressed:
-                surface.trigger_event("<RELEASE>")
-                surface.pressed = False
-                surface.is_dragging = False
-    if surface.last_checked_dragging:
-        if current_time - surface.last_checked_dragging > 0.2:
-            surface.is_dragging = False
-    if surface.pressed and not surface.is_dragging:
-        surface.trigger_event("<HOLD>")
-    if surface.pressed and surface.is_dragging:
-        surface.trigger_event("<DRAG>")
+    def react(self, event=None):
+        if self._state != "enabled" or not self._visible:
+            self._pressed = False
+            return
+        mouse_pos = pygame.mouse.get_pos()
+        offset_x, offset_y = misc.get_offset(self)
+        total_offset_x = offset_x + round(self._current_offset[0])
+        total_offset_y = offset_y + round(self._current_offset[1])
+        interaction_rect = self._rect.move(total_offset_x, total_offset_y)
+        is_inside = interaction_rect.collidepoint(mouse_pos)
+        current_time = time.time()
+        if not event:
+            if pygame.mouse.get_pressed()[0] and is_inside:
+                self._pressed = True
+                self.trigger_event("<HOLD>")
+            elif not pygame.mouse.get_pressed()[0] and is_inside:
+                if self._pressed:
+                    self._pressed = False
+                    self.trigger_event("<RELEASE>")
+            elif not pygame.mouse.get_pressed()[0] and not is_inside:
+                self._pressed = False
+        else:
+            if event.type == pygame.MOUSEMOTION:
+                if self._pressed and self._dragable:
+                    if is_inside or self._is_dragging:
+                        self._is_dragging = True
+                        self._last_checked_dragging = current_time
+                        if self._drag_offset:
+                            new_x = mouse_pos[0] - self._drag_offset[0] - total_offset_x
+                            new_y = mouse_pos[1] - self._drag_offset[1] - total_offset_y
+                            self.place(new_x, new_y)
+            if event.type == pygame.KEYDOWN:
+                self.trigger_event("<KEY>")
+                if event.unicode:
+                    self.trigger_event(event.unicode)
+                keyname = pygame.key.name(event.key)
+                self.trigger_event(f"<{keyname.upper()}>")
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    self.trigger_event("<PRESS>")
+                    if is_inside:
+                        self._pressed = True
+                        self._drag_offset = (mouse_pos[0] - (self._rect.x + total_offset_x),
+                                             mouse_pos[1] - (self._rect.y + total_offset_y))
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1 and self._pressed:
+                    self.trigger_event("<RELEASE>")
+                    self._pressed = False
+                    self._is_dragging = False
+        if self._last_checked_dragging:
+            if current_time - self._last_checked_dragging > 0.2:
+                self._is_dragging = False
+        if self._pressed and not self._is_dragging:
+            self.trigger_event("<HOLD>")
+        if self._pressed and self._is_dragging:
+            self.trigger_event("<DRAG>")

@@ -38,20 +38,7 @@ class Widget:
         self._bindings.clear()
         return self
 
-    def place(self, x: int, y: int, mode: str = "px"):
-        anchor_offset = [0, 0]
-        if self._anchor_x == "left":
-            anchor_offset[0] = 0
-        elif self._anchor_x == "center":
-            anchor_offset[0] = self._width // 2
-        elif self._anchor_x == "right":
-            anchor_offset[0] = self._width
-        if self._anchor_y == "top":
-            anchor_offset[1] = 0
-        elif self._anchor_y == "center":
-            anchor_offset[1] = self._height // 2
-        elif self._anchor_y == "bottom":
-            anchor_offset[1] = self._height
+    def place(self, x: int, y: int, mode: str = "px", suppress_anchor: bool = False):
         if mode == "px":
             self._x = x
             self._y = y
@@ -64,8 +51,22 @@ class Widget:
             self._x = x
             self._y = y
             print(f"Invalid Mode: {mode}\nFallback: px")
-        self.x -= anchor_offset[0]
-        self.y -= anchor_offset[1]
+        if not suppress_anchor:
+            anchor_offset = [0, 0]
+            if self._anchor_x == "left":
+                anchor_offset[0] = 0
+            elif self._anchor_x == "center":
+                anchor_offset[0] = self._width // 2
+            elif self._anchor_x == "right":
+                anchor_offset[0] = self._width
+            if self._anchor_y == "top":
+                anchor_offset[1] = 0
+            elif self._anchor_y == "center":
+                anchor_offset[1] = self._height // 2
+            elif self._anchor_y == "bottom":
+                anchor_offset[1] = self._height
+            self.x -= anchor_offset[0]
+            self.y -= anchor_offset[1]
         self._rect = pygame.Rect(self._x, self._y, self._width, self._height)
         self._needs_transform = True
         return self
@@ -75,6 +76,15 @@ class Widget:
         self._anchor_y = anchor_y
         self.place(self._x, self._y)
         return self
+
+    def update_animation(self):
+        pass
+
+    def draw(self, surface: pygame.Surface):
+        pass
+
+    def react(self, event=None):
+        pass
 
 
 class Tooltipable:

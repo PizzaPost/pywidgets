@@ -1,4 +1,4 @@
-# label.py
+# button.py
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
 
@@ -11,10 +11,12 @@ window = pygame.display.set_mode((800, 600))
 clock = pygame.time.Clock()
 epw.link_pygame_window(window)
 epw.set_appearance_mode(2)
-
-label1 = epw.Label(text="Hello World").place(0, 10)
-label2 = epw.Label(text="You can\ndrag me!", dragable=True, font=epw.SysFont(font="Calibri", font_size=70),
-                   anchor_x="center", anchor_y="center").place(50, 50, mode="%")
+yes_button = epw.Button(text='Yes')
+no_button = epw.Button(text='No')
+entry = epw.Entry()
+dialog = epw.Dialog(title="Info ", description=".", widgets=[yes_button, no_button, entry],
+                    widget_alignment="center", title_alignment="stretched", anchor_x="center", anchor_y="center")
+dialog.place(50, 50, mode="%")
 
 
 def draw():

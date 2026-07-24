@@ -262,6 +262,7 @@ class Label(Widget, Tooltipable, Screenable):
         self._offset_step = [0, 0]
         self._use_rotozoom = False
         self._is_hovered = False
+        self._dialog = None
 
         misc.add_widget(self)
 
@@ -672,6 +673,7 @@ class Label(Widget, Tooltipable, Screenable):
     @font.setter
     def font(self, value):
         self._font = value
+        self._font.set_linesize(self._line_spacing)
 
     @property
     def alignment(self):
@@ -755,6 +757,7 @@ class Label(Widget, Tooltipable, Screenable):
     @line_spacing.setter
     def line_spacing(self, value):
         self._line_spacing = value
+        self._font.set_linesize(value)
 
     @property
     def min_width(self):
@@ -1020,6 +1023,14 @@ class Label(Widget, Tooltipable, Screenable):
     def is_hovered(self, value):
         self._is_hovered = value
 
+    @property
+    def dialog(self):
+        return self._dialog
+
+    @dialog.setter
+    def dialog(self, value):
+        self._dialog = value
+
     def configure(self, **kwargs: Unpack[TypeHints.LabelConfig]):
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -1087,7 +1098,7 @@ class Label(Widget, Tooltipable, Screenable):
         else:
             self._target_scale = value
         self._scale_step = (self._target_scale - self._current_scale) / frames_to_finish
-        update_animation(self)
+        self.update_animation()
         return self
 
     def rotate(self, value=None, frames_to_finish=1):
@@ -1098,7 +1109,7 @@ class Label(Widget, Tooltipable, Screenable):
         else:
             self._target_rotation = value
         self._rotation_step = (self._target_rotation - self._current_rotation) / frames_to_finish
-        update_animation(self)
+        self.update_animation()
         return self
 
     def rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
@@ -1109,7 +1120,7 @@ class Label(Widget, Tooltipable, Screenable):
         self._target_rotation = 0 if rotation is None else rotation
         self._rotation_step = (self._target_rotation - self._current_rotation) / frames_to_finish
         self._use_rotozoom = True
-        update_animation(self)
+        self.update_animation()
         return self
 
     def offset(self, value: tuple[int, int], frames_to_finish=1):
@@ -1121,34 +1132,144 @@ class Label(Widget, Tooltipable, Screenable):
             self._target_offset = value
         self._offset_step[0] = (self._target_offset[0] - self._current_offset[0]) / frames_to_finish
         self._offset_step[1] = (self._target_offset[1] - self._current_offset[1]) / frames_to_finish
-        update_animation(self)
+        self.update_animation()
         return self
 
-
-def update_animation(label):
-    scale_changed = False
-    rotation_changed = False
-    if label.current_scale != label.target_scale:
-        if abs(label.current_scale - label.target_scale) <= abs(label.scale_step):
-            label.current_scale = label.target_scale
-        else:
-            label.current_scale += label.scale_step
-        scale_changed = True
-    if label.current_rotation != label.target_rotation:
-        if abs(label.current_rotation - label.target_rotation) <= abs(label.rotation_step):
-            label.current_rotation = label.target_rotation
-        else:
-            label.current_rotation += label.rotation_step
-        rotation_changed = True
-    for x in range(2):
-        if label.current_offset[x] != label.target_offset[x]:
-            if abs(label.current_offset[x] - label.target_offset[x]) <= abs(label.offset_step[x]):
-                label.current_offset[x] = float(label.target_offset[x])
+    def update_animation(self):
+        scale_changed = False
+        rotation_changed = False
+        if self._current_scale != self._target_scale:
+            if abs(self._current_scale - self._target_scale) <= abs(self._scale_step):
+                self._current_scale = self._target_scale
             else:
-                label.current_offset[x] += label.offset_step[x]
+                self._current_scale += self._scale_step
+            scale_changed = True
+        if self._current_rotation != self._target_rotation:
+            if abs(self._current_rotation - self._target_rotation) <= abs(self._rotation_step):
+                self._current_rotation = self._target_rotation
+            else:
+                self._current_rotation += self._rotation_step
+            rotation_changed = True
+        for x in range(2):
+            if self._current_offset[x] != self._target_offset[x]:
+                if abs(self._current_offset[x] - self._target_offset[x]) <= abs(self._offset_step[x]):
+                    self._current_offset[x] = float(self._target_offset[x])
+                else:
+                    self._current_offset[x] += self._offset_step[x]
 
-    if scale_changed or rotation_changed:
-        label.needs_transform = True
+        if scale_changed or rotation_changed:
+            self._needs_transform = True
+
+    def draw(self, surface: pygame.Surface):
+        if not self._alive or not self._visible:
+            return
+        offset_x, offset_y = misc.get_offset(self)
+        total_offset_x = offset_x + round(self._current_offset[0])
+        total_offset_y = offset_y + round(self._current_offset[1])
+        mouse_pos = pygame.mouse.get_pos()
+        is_hovering = misc.is_point_over_widget(self, mouse_pos)
+        current_visual_state = (is_hovering)
+        if self._needs_redraw or current_visual_state != self._last_visual_state:
+            render_base_surface(self, is_hovering)
+        if self._needs_transform:
+            if self._current_scale != 1 or self._current_rotation != 0:
+                new_width = int(self._original_surface.get_width() * self._current_scale)
+                new_height = int(self._original_surface.get_height() * self._current_scale)
+                if new_width > 0 and new_height > 0:
+                    if self._use_rotozoom:
+                        self._cached_surface = pygame.transform.rotozoom(self._original_surface, self._current_rotation,
+                                                                         self._current_scale)
+                    else:
+                        scaled_surface = pygame.transform.smoothscale(self._original_surface, (new_width, new_height))
+                        self._cached_surface = pygame.transform.rotate(scaled_surface, self._current_rotation)
+                else:
+                    self._cached_surface = pygame.Surface((0, 0), pygame.SRCALPHA)
+            else:
+                self._cached_surface = self._original_surface.copy()
+            base_rect = pygame.Rect(self._x, self._y, self._width, self._height)
+            old_center = base_rect.center
+            self._rect = self._cached_surface.get_rect()
+            self._rect.center = old_center
+            self._needs_transform = False
+        draw_rect = self._rect.move(total_offset_x, total_offset_y)
+        surface.blit(self._cached_surface, draw_rect)
+        if is_hovering:
+            if self._state == "enabled":
+                if self._pressed:
+                    cursor_key = "active_pressed"
+                else:
+                    cursor_key = "active_hover"
+            else:
+                cursor_key = "disabled_hover"
+            target_cursor = self._cursors.get(cursor_key)
+            if target_cursor:
+                current_cursor = pygame.mouse.get_cursor()
+                if current_cursor != target_cursor:
+                    if self._original_cursor is None:
+                        self._original_cursor = current_cursor
+                    pygame.mouse.set_cursor(target_cursor)
+        else:
+            if self._original_cursor:
+                pygame.mouse.set_cursor(self._original_cursor)
+                self._original_cursor = None
+        if is_hovering and not self._is_hovered:
+            self._is_hovered = True
+            self.trigger_event("<MOUSE-IN>")
+            if self._tooltip:
+                self._tooltip.show()
+        elif is_hovering and self._is_hovered:
+            self._is_hovered = True
+            self.trigger_event("<HOVER>")
+        elif not is_hovering and self._is_hovered:
+            self._is_hovered = False
+            self.trigger_event("<MOUSE-OUT>")
+            if self._tooltip:
+                self._tooltip.hide()
+
+    def react(self, event=None):
+        if self._state != "enabled" or not self._visible:
+            self._pressed = False
+            return
+        current_time = time.time()
+        mouse_pos = pygame.mouse.get_pos()
+        is_inside = misc.is_point_over_widget(self, mouse_pos)
+        screen_off_x, screen_off_y = misc.get_offset(self)
+        total_offset_x = screen_off_x + round(self._current_offset[0])
+        total_offset_y = screen_off_y + round(self._current_offset[1])
+        if event:
+            if event.type == pygame.KEYDOWN:
+                self.trigger_event("<KEY>")
+                if event.unicode:
+                    self.trigger_event(event.unicode)
+                keyname = pygame.key.name(event.key)
+                self.trigger_event(f"<{keyname.upper()}>")
+            if event.type == pygame.MOUSEMOTION:
+                if self._pressed and self._dragable:
+                    if is_inside or self._is_dragging:
+                        self._is_dragging = True
+                        self._last_checked_dragging = current_time
+                        if self._drag_offset:
+                            new_x = mouse_pos[0] - self._drag_offset[0] - total_offset_x
+                            new_y = mouse_pos[1] - self._drag_offset[1] - total_offset_y
+                            self.place(new_x, new_y, suppress_anchor=True)
+            elif event.type == pygame.MOUSEBUTTONDOWN and is_inside:
+                if event.button == 1:
+                    self._pressed = True
+                    self._drag_offset = (mouse_pos[0] - (self._x + total_offset_x),
+                                         mouse_pos[1] - (self._y + total_offset_y))
+                    self.trigger_event("<PRESS>")
+            elif event.type == pygame.MOUSEBUTTONUP and is_inside:
+                if event.button == 1:
+                    self._pressed = False
+                    self._is_dragging = False
+                    self.trigger_event("<RELEASE>")
+        if self._last_checked_dragging:
+            if current_time - self._last_checked_dragging > 0.2:
+                self._is_dragging = False
+        if self._pressed and not self._is_dragging:
+            self.trigger_event("<HOLD>")
+        if self._pressed and self._is_dragging:
+            self.trigger_event("<DRAG>")
 
 
 def safe_set_linesize(font, line_spacing):
@@ -1312,116 +1433,3 @@ def render_base_surface(label, is_hovering):
     label.needs_redraw = False
     label.needs_transform = True
     label.cached_surface = label.original_surface
-
-
-def draw(label, surface: pygame.Surface):
-    if not label.alive or not label.visible:
-        return
-    offset_x, offset_y = misc.get_screen_offset(label)
-    total_offset_x = offset_x + round(label.current_offset[0])
-    total_offset_y = offset_y + round(label.current_offset[1])
-    mouse_pos = pygame.mouse.get_pos()
-    is_hovering = misc.is_point_over_widget(label, mouse_pos)
-    current_visual_state = (is_hovering)
-    if label.needs_redraw or current_visual_state != label.last_visual_state:
-        render_base_surface(label, is_hovering)
-    if label.needs_transform:
-        if label.current_scale != 1 or label.current_rotation != 0:
-            new_width = int(label.original_surface.get_width() * label.current_scale)
-            new_height = int(label.original_surface.get_height() * label.current_scale)
-            if new_width > 0 and new_height > 0:
-                if label.use_rotozoom:
-                    label.cached_surface = pygame.transform.rotozoom(label.original_surface, label.current_rotation,
-                                                                     label.current_scale)
-                else:
-                    scaled_surface = pygame.transform.smoothscale(label.original_surface, (new_width, new_height))
-                    label.cached_surface = pygame.transform.rotate(scaled_surface, label.current_rotation)
-            else:
-                label.cached_surface = pygame.Surface((0, 0), pygame.SRCALPHA)
-        else:
-            label.cached_surface = label.original_surface.copy()
-        base_rect = pygame.Rect(label.x, label.y, label._width, label._height)
-        old_center = base_rect.center
-        label.rect = label.cached_surface.get_rect()
-        label.rect.center = old_center
-        label.needs_transform = False
-    draw_rect = label.rect.move(total_offset_x, total_offset_y)
-    surface.blit(label.cached_surface, draw_rect)
-    if is_hovering:
-        if label.state == "enabled":
-            if label.pressed:
-                cursor_key = "active_pressed"
-            else:
-                cursor_key = "active_hover"
-        else:
-            cursor_key = "disabled_hover"
-        target_cursor = label.cursors.get(cursor_key)
-        if target_cursor:
-            current_cursor = pygame.mouse.get_cursor()
-            if current_cursor != target_cursor:
-                if label.original_cursor is None:
-                    label.original_cursor = current_cursor
-                pygame.mouse.set_cursor(target_cursor)
-    else:
-        if label.original_cursor:
-            pygame.mouse.set_cursor(label.original_cursor)
-            label.original_cursor = None
-    if is_hovering and not label.is_hovered:
-        label.is_hovered = True
-        label.trigger_event("<MOUSE-IN>")
-        if label.tooltip:
-            label.tooltip.show()
-    elif is_hovering and label.is_hovered:
-        label.is_hovered = True
-        label.trigger_event("<HOVER>")
-    elif not is_hovering and label.is_hovered:
-        label.is_hovered = False
-        label.trigger_event("<MOUSE-OUT>")
-        if label.tooltip:
-            label.tooltip.hide()
-
-
-def react(label, event=None):
-    if label.state != "enabled" or not label.visible:
-        label.pressed = False
-        return
-    current_time = time.time()
-    mouse_pos = pygame.mouse.get_pos()
-    is_inside = misc.is_point_over_widget(label, mouse_pos)
-    screen_off_x, screen_off_y = misc.get_screen_offset(label)
-    total_offset_x = screen_off_x + round(label.current_offset[0])
-    total_offset_y = screen_off_y + round(label.current_offset[1])
-    if event:
-        if event.type == pygame.KEYDOWN:
-            label.trigger_event("<KEY>")
-            if event.unicode:
-                label.trigger_event(event.unicode)
-            keyname = pygame.key.name(event.key)
-            label.trigger_event(f"<{keyname.upper()}>")
-        if event.type == pygame.MOUSEMOTION:
-            if label.pressed and label.dragable:
-                if is_inside or label.is_dragging:
-                    label.is_dragging = True
-                    label.last_checked_dragging = current_time
-                    if label.drag_offset:
-                        new_x = mouse_pos[0] - label.drag_offset[0] - total_offset_x
-                        new_y = mouse_pos[1] - label.drag_offset[1] - total_offset_y
-                        label.place(new_x, new_y)
-        elif event.type == pygame.MOUSEBUTTONDOWN and is_inside:
-            if event.button == 1:
-                label.pressed = True
-                label.drag_offset = (mouse_pos[0] - (label.x + total_offset_x),
-                                     mouse_pos[1] - (label.y + total_offset_y))
-                label.trigger_event("<PRESS>")
-        elif event.type == pygame.MOUSEBUTTONUP and is_inside:
-            if event.button == 1:
-                label.pressed = False
-                label.is_dragging = False
-                label.trigger_event("<RELEASE>")
-    if label.last_checked_dragging:
-        if current_time - label.last_checked_dragging > 0.2:
-            label.is_dragging = False
-    if label.pressed and not label.is_dragging:
-        label.trigger_event("<HOLD>")
-    if label.pressed and label.is_dragging:
-        label.trigger_event("<DRAG>")

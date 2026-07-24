@@ -51,6 +51,8 @@ class ButtonConfig(TypedDict, total=False):
     max_width: int
     min_height: int
     max_height: int
+    anchor_x: str
+    anchor_y: str
     visible: bool | None
     data: Any
     x: int
@@ -59,7 +61,6 @@ class ButtonConfig(TypedDict, total=False):
     pressed: bool
     rect: pygame.Rect
     original_cursor: pygame.Cursor
-    scheduled_functions: dict[Callable, int]
     is_hovered: bool
     last_visual_state: tuple[bool, bool]
     needs_redraw: bool
@@ -76,6 +77,91 @@ class ButtonConfig(TypedDict, total=False):
     current_offset: tuple[int, int]
     offset_step: tuple[int, int]
     use_rotozoom: bool
+    dialog: "easypygamewidgets.Dialog | None"
+
+
+class DialogConfig(TypedDict, total=False):
+    screen: "easypygamewidgets.Screen"
+    state: str
+    auto_size: bool
+    width: int
+    height: int
+    title: str
+    description: str
+    require_value: bool
+    widgets: "list[easypygamewidgets.Button]"
+    widgets_spacing: int
+    widget_alignment: str
+    active_unpressed_title_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    disabled_unpressed_title_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    active_hover_title_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    disabled_hover_title_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    active_pressed_title_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    active_unpressed_description_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    disabled_unpressed_description_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    active_hover_description_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    disabled_hover_description_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    active_pressed_description_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    active_unpressed_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    disabled_unpressed_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    active_hover_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    disabled_hover_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    active_pressed_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    active_unpressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    disabled_unpressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    active_hover_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    disabled_hover_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    active_pressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+    border_thickness: int
+    hide_text: bool
+    hide_background: bool
+    hide_border: bool
+    active_hover_cursor: pygame.Cursor
+    disabled_hover_cursor: pygame.Cursor
+    active_pressed_cursor: pygame.Cursor
+    cursors: dict[str, pygame.Cursor]
+    title_font: pygame.font.Font | pygame.font.SysFont
+    title_alignment: str
+    title_alignment_spacing: int
+    description_font: pygame.font.Font | pygame.font.SysFont
+    description_alignment: str
+    description_alignment_spacing: int
+    corner_radius: int
+    layer: int
+    title_line_spacing: int
+    description_line_spacing: int
+    widget_area_padding: int
+    min_width: int
+    max_width: int
+    min_height: int
+    max_height: int
+    anchor_x: str
+    anchor_y: str
+    visible: bool | None
+    data: Any
+    x: int
+    y: int
+    alive: bool
+    pressed: bool
+    rect: pygame.Rect
+    original_cursor: pygame.Cursor
+    is_hovered: bool
+    last_visual_state: tuple[bool, bool]
+    needs_redraw: bool
+    cached_surface: pygame.Surface
+    needs_transform: bool
+    original_surface: pygame.Surface
+    target_scale: float | int
+    current_scale: float | int
+    scale_step: float | int
+    target_rotation: float | int
+    current_rotation: float | int
+    rotation_step: float | int
+    target_offset: tuple[int, int]
+    current_offset: tuple[int, int]
+    offset_step: tuple[int, int]
+    use_rotozoom: bool
+    bindings: dict[str, BindingConfig]
 
 
 class EntryConfig(TypedDict, total=False):
@@ -132,6 +218,8 @@ class EntryConfig(TypedDict, total=False):
     max_width: int
     min_height: int
     max_height: int
+    anchor_x: str
+    anchor_y: str
     visible: bool | None
     data: Any
     x: int
@@ -152,7 +240,6 @@ class EntryConfig(TypedDict, total=False):
     cursor_visible: bool
     last_blink_time: int
     bindings: dict[str, BindingConfig]
-    scheduled_functions: dict[Callable, int]
     is_hovered: bool
     last_visual_state: tuple[bool, bool]
     needs_redraw: bool
@@ -237,6 +324,8 @@ class LabelConfig(TypedDict, total=False):
     max_width: int
     min_height: int
     max_height: int
+    anchor_x: str
+    anchor_y: str
     visible: bool | None
     data: Any
     x: int
@@ -264,5 +353,4 @@ class LabelConfig(TypedDict, total=False):
     current_offset: tuple[int, int]
     offset_step: tuple[int, int]
     use_rotozoom: bool
-    scheduled_functions: dict[Callable, int]
     is_hovered: bool

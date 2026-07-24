@@ -22,6 +22,7 @@ pygame.init()
 # config suggestions ❌
 # rgba color ❌
 # four different corner radii ❌
+# disappear correctly when added to a widget that is placed in a Dialog ❌
 
 class Tooltip(Widget):
     def __init__(self,
@@ -90,8 +91,8 @@ class Tooltip(Widget):
                 self._icon = pygame.image.load(os.path.join(pathlib.Path(__file__).resolve().parent,
                                                             "assets", "tooltip", "warning.png"))
             self._active_unpressed_text_color = misc.normalize_color((255, 255, 255, 255))
-            self._active_unpressed_background_color = misc.normalize_color((111, 100, 34, 255))
-            self._active_unpressed_border_color = misc.normalize_color((186, 167, 46, 255))
+            self._active_unpressed_background_color = misc.normalize_color((178, 91, 53, 255))
+            self._active_unpressed_border_color = misc.normalize_color((222, 108, 56, 255))
         elif style == "blocked":
             if not icon:
                 self._icon = pygame.image.load(os.path.join(pathlib.Path(__file__).resolve().parent,
@@ -172,8 +173,8 @@ class Tooltip(Widget):
             self._icon = pygame.image.load(os.path.join(pathlib.Path(__file__).resolve().parent,
                                                         "assets", "tooltip", "warning.png"))
             self._active_unpressed_text_color = misc.normalize_color((255, 255, 255, 255))
-            self._active_unpressed_background_color = misc.normalize_color((111, 100, 34, 255))
-            self._active_unpressed_border_color = misc.normalize_color((186, 167, 46, 255))
+            self._active_unpressed_background_color = misc.normalize_color((178, 91, 53, 255))
+            self._active_unpressed_border_color = misc.normalize_color((222, 108, 56, 255))
         elif value == "blocked":
             self._icon = pygame.image.load(os.path.join(pathlib.Path(__file__).resolve().parent,
                                                         "assets", "tooltip", "blocked.png"))
@@ -205,6 +206,7 @@ class Tooltip(Widget):
     @font.setter
     def font(self, value):
         self._font = value
+        self._font.set_linesize(self._line_spacing)
 
     @property
     def line_spacing(self):
@@ -213,6 +215,7 @@ class Tooltip(Widget):
     @line_spacing.setter
     def line_spacing(self, value):
         self._line_spacing = value
+        self._font.set_linesize(value)
 
     @property
     def active_unpressed_text_color(self):
@@ -519,6 +522,42 @@ class Tooltip(Widget):
         widget.remove_tooltip()
         return self
 
+    def draw(self, surface: pygame.Surface):
+        if not self._visible:
+            return
+        safe_set_linesize(self._font, self._line_spacing)
+        mouse_pos = pygame.mouse.get_pos()
+        is_hovering = misc.is_point_over_widget(self, mouse_pos)
+        if self._needs_redraw or self._cached_surface is None:
+            render_tooltip_surface(self)
+        if is_hovering:
+            cursor_key = "active_hover"
+            target_cursor = self._cursors.get(cursor_key)
+            if target_cursor:
+                current_cursor = pygame.mouse.get_cursor()
+                if current_cursor != target_cursor:
+                    if self._original_cursor is None:
+                        self._original_cursor = current_cursor
+                    pygame.mouse.set_cursor(target_cursor)
+        else:
+            if self._original_cursor:
+                pygame.mouse.set_cursor(self._original_cursor)
+                self._original_cursor = None
+
+        if is_hovering and not getattr(self, "is_hovered", False):
+            self._is_hovered = True
+            self.trigger_event("<SHOW>")
+        elif is_hovering and getattr(self, "is_hovered", False):
+            self._is_hovered = True
+            self.trigger_event("<HOVER>")
+        elif not is_hovering and getattr(self, "is_hovered", False):
+            self._is_hovered = False
+            self.trigger_event("<HIDE>")
+
+        draw_rect = self._rect.move(mouse_pos[0], mouse_pos[1])
+        if self._visible:
+            surface.blit(self._cached_surface, draw_rect)
+
 
 def safe_set_linesize(font, line_spacing):
     descent = abs(font.get_descent())
@@ -596,43 +635,3 @@ def render_tooltip_surface(tooltip):
             cached.blit(text_surf, text_rect)
     tooltip.cached_surface = cached
     tooltip.needs_redraw = False
-
-
-def draw(tooltip, surface: pygame.Surface):
-    if not tooltip._visible:
-        return
-    safe_set_linesize(tooltip.font, tooltip.line_spacing)
-    mouse_pos = pygame.mouse.get_pos()
-    is_hovering = misc.is_point_over_widget(tooltip, mouse_pos)
-    if tooltip.needs_redraw or tooltip.cached_surface is None:
-        render_tooltip_surface(tooltip)
-    if is_hovering:
-        cursor_key = "active_hover"
-        target_cursor = tooltip.cursors.get(cursor_key)
-        if target_cursor:
-            current_cursor = pygame.mouse.get_cursor()
-            if current_cursor != target_cursor:
-                if tooltip.original_cursor is None:
-                    tooltip.original_cursor = current_cursor
-                pygame.mouse.set_cursor(target_cursor)
-    else:
-        if tooltip.original_cursor:
-            pygame.mouse.set_cursor(tooltip.original_cursor)
-            tooltip.original_cursor = None
-
-    if is_hovering and not getattr(tooltip, "is_hovered", False):
-        tooltip.is_hovered = True
-        tooltip.trigger_event("<SHOW>")
-    elif is_hovering and getattr(tooltip, "is_hovered", False):
-        tooltip.is_hovered = True
-        tooltip.trigger_event("<HOVER>")
-    elif not is_hovering and getattr(tooltip, "is_hovered", False):
-        tooltip.is_hovered = False
-        tooltip.trigger_event("<HIDE>")
-
-    draw_rect = tooltip.rect.move(mouse_pos[0], mouse_pos[1])
-    if tooltip.visible:
-        surface.blit(tooltip.cached_surface, draw_rect)
-
-
-def react(tooltip, event=None): pass
