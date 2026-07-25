@@ -612,7 +612,7 @@ class Surface(Widget, Tooltipable, Screenable):
                         if self._drag_offset:
                             new_x = mouse_pos[0] - self._drag_offset[0] - total_offset_x
                             new_y = mouse_pos[1] - self._drag_offset[1] - total_offset_y
-                            self.place(new_x, new_y)
+                            self.place(new_x, new_y, suppress_anchor=True)
             if event.type == pygame.KEYDOWN:
                 self.trigger_event("<KEY>")
                 if event.unicode:
