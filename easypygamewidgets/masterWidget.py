@@ -112,6 +112,9 @@ class Tooltipable:
 
 class Screenable:
     def set_screen(self, screen):
+        if screen is None:
+            self._screen = None
+            return self
         if self in screen.widgets:
             return self
         self._screen = screen
@@ -124,3 +127,7 @@ class Deletable:
         self._alive = False
         if self in misc.all_widgets:
             misc.all_widgets.remove(self)
+        if getattr(self, "screen", None) is not None:
+            if self in self._screen._widgets:
+                self._screen._widgets.remove(self)
+            self.set_screen(None)
