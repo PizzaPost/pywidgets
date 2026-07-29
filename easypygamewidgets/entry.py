@@ -9,12 +9,12 @@ import pygame
 
 from easypygamewidgets import font, misc
 from easypygamewidgets.assets import TypeHints
-from easypygamewidgets.masterWidget import Widget, Tooltipable, Screenable
+from easypygamewidgets.masterWidget import Widget, Tooltipable, Screenable, Deletable
 
 pygame.init()
 
 
-class Entry(Widget, Tooltipable, Screenable):
+class Entry(Widget, Tooltipable, Screenable, Deletable):
     def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
                  height: int = 80, placeholder_text: str = "",
                  text: str = "", char_limit: int | None = None,

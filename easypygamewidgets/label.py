@@ -9,7 +9,7 @@ import pygame
 
 from easypygamewidgets import font, misc
 from easypygamewidgets.assets import TypeHints
-from easypygamewidgets.masterWidget import Widget, Tooltipable, Screenable
+from easypygamewidgets.masterWidget import Widget, Tooltipable, Screenable, Deletable
 
 pygame.init()
 
@@ -24,7 +24,7 @@ pygame.init()
 # rgba color ✅
 # four different corner radius ✅
 
-class Label(Widget, Tooltipable, Screenable):
+class Label(Widget, Tooltipable, Screenable, Deletable):
     def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
                  height: int = 80,
                  text: str = "easypygamewidgets Label", state="enabled",

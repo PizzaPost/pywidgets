@@ -8,7 +8,7 @@ from typing import Any
 import pygame
 
 from easypygamewidgets import misc
-from easypygamewidgets.masterWidget import Widget, Tooltipable, Screenable
+from easypygamewidgets.masterWidget import Widget, Tooltipable, Screenable, Deletable
 
 pygame.init()
 
@@ -20,7 +20,7 @@ pygame.init()
 # config suggestions ❌
 # optimized set_screen function ❌
 
-class Surface(Widget, Tooltipable, Screenable):
+class Surface(Widget, Tooltipable, Screenable, Deletable):
     def __init__(self, surface: pygame.Surface, screen: "easypygamewidgets.Screen | None" = None,
                  state: str | None = None,
                  active_hover_cursor: pygame.Cursor | None = None,

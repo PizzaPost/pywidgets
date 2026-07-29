@@ -8,7 +8,7 @@ from typing import Any
 import pygame
 
 from easypygamewidgets import font, misc
-from easypygamewidgets.masterWidget import Widget, Tooltipable, Screenable
+from easypygamewidgets.masterWidget import Widget, Tooltipable, Screenable, Deletable
 
 pygame.init()
 
@@ -22,7 +22,7 @@ pygame.init()
 # rgba color ❌
 # better 'width' and 'height' calculations ❌
 
-class Slider(Widget, Tooltipable, Screenable):
+class Slider(Widget, Tooltipable, Screenable, Deletable):
     def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
                  height: int = 16,
                  text: str = "easypygamewidgets Slider", start: int | float = 0,

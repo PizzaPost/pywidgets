@@ -9,7 +9,7 @@ from typing import Any
 import pygame
 
 from easypygamewidgets import font, misc
-from easypygamewidgets.masterWidget import Widget
+from easypygamewidgets.masterWidget import Widget, Deletable
 
 pygame.init()
 
@@ -24,7 +24,7 @@ pygame.init()
 # four different corner radii ❌
 # disappear correctly when added to a widget that is placed in a Dialog ❌
 
-class Tooltip(Widget):
+class Tooltip(Widget, Deletable):
     def __init__(self,
                  widget: "easypygamewidgets.Button | easypygamewidgets.Entry | easypygamewidgets.Label | easypygamewidgets.Slider | easypygamewidgets.Surface | easypygamewidgets.Timekeeper | None" = None,
                  auto_size: bool = True, width: int = 180,

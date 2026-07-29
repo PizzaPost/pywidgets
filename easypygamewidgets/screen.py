@@ -7,6 +7,7 @@ from typing import Any
 import pygame
 
 from easypygamewidgets import misc
+from easypygamewidgets.masterWidget import Deletable
 
 pygame.init()
 
@@ -15,11 +16,12 @@ pygame.init()
 # everything private/properties ❌
 # animations ❌
 
-class Screen:
+class Screen(Deletable):
     def __init__(self,
                  widgets: "list[easypygamewidgets.Button | easypygamewidgets.Entry | easypygamewidget.Label | easypygamewidgets.Slider | easypygamewidgets.Surface | easypygamewidgets.Timekeeper | easypygamewidgets.Tooltip]" = None,
                  darken_background_with_alpha: int = 0, visible: bool = False, enabled: bool = True, x: int = 0,
                  y: int = 0, layer=1000, data: Any = None):
+        super().__init__()
         self.widgets = widgets if widgets is not None else []
         self.darken_background_with_alpha = max(min(darken_background_with_alpha, 255), 0)
         self.visible = visible

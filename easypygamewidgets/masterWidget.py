@@ -1,4 +1,5 @@
 import copy
+from typing import Any
 
 import pygame
 
@@ -12,13 +13,14 @@ class Widget:
         misc.resort_layers()
         return copied_widget
 
-    def delete(self):
-        self._alive = False
-        if self in misc.all_widgets:
-            misc.all_widgets.remove(self)
-
-    def bind(self, event: str, command, require_hover: bool = True):
-        self._bindings[event] = {"command": command, "require_hover": require_hover}
+    def bind(self, event: str, command, require_hover: bool = True, widget_boolean_value=None,
+             required_value_for_widget_boolean_value: Any = True):
+        if widget_boolean_value and not callable(widget_boolean_value):
+            print('Please use this bind function as follows: '
+                  'entry.bind("<TAB>", lambda: print(1), widget_boolean_value=lambda: entry.focused)')
+        self._bindings[event] = {"command": command, "require_hover": require_hover,
+                                 "widget_boolean_value": widget_boolean_value,
+                                 "required_value_for_widget_boolean_value": required_value_for_widget_boolean_value}
         return self
 
     def trigger_event(self, event: str, *args, **kwargs):
@@ -26,8 +28,12 @@ class Widget:
             binding_data = self._bindings[event]
             command = binding_data["command"]
             require_hover = binding_data["require_hover"]
+            widget_boolean_value = binding_data["widget_boolean_value"]
+            required_value_for_widget_boolean_value = binding_data["required_value_for_widget_boolean_value"]
             if not require_hover or misc.is_point_over_widget(self, pygame.mouse.get_pos()):
-                command(*args, **kwargs)
+                value = widget_boolean_value() if callable(widget_boolean_value) else widget_boolean_value
+                if value is None or value == required_value_for_widget_boolean_value:
+                    command(*args, **kwargs)
 
     def unbind(self, event: str):
         if event in self._bindings:
@@ -111,3 +117,10 @@ class Screenable:
         self._screen = screen
         screen.add_widget(self)
         return self
+
+
+class Deletable:
+    def delete(self):
+        self._alive = False
+        if self in misc.all_widgets:
+            misc.all_widgets.remove(self)
