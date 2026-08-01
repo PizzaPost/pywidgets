@@ -3,23 +3,18 @@
 # https://github.com/PizzaPost/easypygamewidgets
 
 import math
-from typing import Any
+from typing import Any, Unpack
 
 import pygame
 
 from easypygamewidgets import font, misc
+from easypygamewidgets.assets import TypeHints
 from easypygamewidgets.masterWidget import Widget, Tooltipable, Screenable, Deletable
 
 pygame.init()
 
 
 # PERFECTION
-# everything private/properties ❌
-# basic animations ❌
-# cache system ❌
-# config suggestions ❌
-# optimized set_screen function ❌
-# rgba color ❌
 # better 'width' and 'height' calculations ❌
 
 class Slider(Widget, Tooltipable, Screenable, Deletable):
@@ -34,36 +29,36 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
                  dot_radius: int | None = None,
                  max_extra_dot_radius: int | None = None,
                  move_text_with_dot_radius: bool = False,
-                 active_unpressed_text_color: tuple = (255, 255, 255),
-                 disabled_unpressed_text_color: tuple = (150, 150, 150),
-                 active_hover_text_color: tuple = (255, 255, 255),
-                 disabled_hover_text_color: tuple = (150, 150, 150),
-                 active_pressed_text_color: tuple = (255, 255, 255),
-                 active_unpressed_used_background_color: tuple = (30, 30, 30),
-                 disabled_unpressed_used_background_color: tuple = (20, 20, 20),
-                 active_hover_used_background_color: tuple = (30, 30, 30),
-                 disabled_hover_used_background_color: tuple = (20, 20, 20),
-                 active_pressed_used_background_color: tuple = (30, 30, 30),
-                 active_unpressed_unused_background_color: tuple = (60, 60, 60),
-                 disabled_unpressed_unused_background_color: tuple = (30, 30, 30),
-                 active_hover_unused_background_color: tuple = (60, 60, 60),
-                 disabled_hover_unused_background_color: tuple = (30, 30, 30),
-                 active_pressed_unused_background_color: tuple = (60, 60, 60),
-                 active_unpressed_dot_color: tuple = (255, 255, 255),
-                 disabled_unpressed_dot_color: tuple = (150, 150, 150),
-                 active_hover_dot_color: tuple = (255, 255, 255),
-                 disabled_hover_dot_color: tuple = (150, 150, 150),
-                 active_pressed_dot_color: tuple = (200, 200, 200),
-                 active_unpressed_border_color: tuple = (100, 100, 100),
-                 disabled_unpressed_border_color: tuple = (60, 60, 60),
-                 active_hover_border_color: tuple = (150, 150, 150),
-                 disabled_hover_border_color: tuple = (60, 60, 60),
-                 active_pressed_border_color: tuple = (150, 150, 150),
-                 active_pressed_display_color: tuple = (190, 190, 190),
-                 active_hover_display_color: tuple = (190, 190, 190),
-                 active_unpressed_display_color: tuple = (190, 190, 190),
-                 disabled_hover_display_color: tuple = (150, 150, 150),
-                 disabled_unpressed_display_color: tuple = (150, 150, 150),
+                 active_unpressed_text_color: tuple | None = (255, 255, 255, 255),
+                 disabled_unpressed_text_color: tuple | None = (150, 150, 150, 255),
+                 active_hover_text_color: tuple | None = (255, 255, 255, 255),
+                 disabled_hover_text_color: tuple | None = (150, 150, 150, 255),
+                 active_pressed_text_color: tuple | None = (255, 255, 255, 255),
+                 active_unpressed_used_background_color: tuple | None = (30, 30, 30, 255),
+                 disabled_unpressed_used_background_color: tuple | None = (20, 20, 20, 255),
+                 active_hover_used_background_color: tuple | None = (30, 30, 30, 255),
+                 disabled_hover_used_background_color: tuple | None = (20, 20, 20, 255),
+                 active_pressed_used_background_color: tuple | None = (30, 30, 30, 255),
+                 active_unpressed_unused_background_color: tuple | None = (60, 60, 60, 255),
+                 disabled_unpressed_unused_background_color: tuple | None = (30, 30, 30, 255),
+                 active_hover_unused_background_color: tuple | None = (60, 60, 60, 255),
+                 disabled_hover_unused_background_color: tuple | None = (30, 30, 30, 255),
+                 active_pressed_unused_background_color: tuple | None = (60, 60, 60, 255),
+                 active_unpressed_dot_color: tuple | None = (255, 255, 255, 255),
+                 disabled_unpressed_dot_color: tuple | None = (150, 150, 150, 255),
+                 active_hover_dot_color: tuple | None = (255, 255, 255, 255),
+                 disabled_hover_dot_color: tuple | None = (150, 150, 150, 255),
+                 active_pressed_dot_color: tuple | None = (200, 200, 200, 255),
+                 active_unpressed_border_color: tuple | None = (100, 100, 100, 255),
+                 disabled_unpressed_border_color: tuple | None = (60, 60, 60, 255),
+                 active_hover_border_color: tuple | None = (150, 150, 150, 255),
+                 disabled_hover_border_color: tuple | None = (60, 60, 60, 255),
+                 active_pressed_border_color: tuple | None = (150, 150, 150, 255),
+                 active_pressed_display_color: tuple | None = (190, 190, 190, 255),
+                 active_hover_display_color: tuple | None = (190, 190, 190, 255),
+                 active_unpressed_display_color: tuple | None = (190, 190, 190, 255),
+                 disabled_hover_display_color: tuple | None = (150, 150, 150, 255),
+                 disabled_unpressed_display_color: tuple | None = (150, 150, 150, 255),
                  border_width: int = 2,
                  hide_text: bool = False,
                  hide_used_background: bool = False,
@@ -128,36 +123,37 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
         else:
             self._max_extra_dot_radius = max_extra_dot_radius
         self._move_text_with_dot_radius = move_text_with_dot_radius
-        self._active_unpressed_text_color = active_unpressed_text_color
-        self._disabled_unpressed_text_color = disabled_unpressed_text_color
-        self._active_hover_text_color = active_hover_text_color
-        self._disabled_hover_text_color = disabled_hover_text_color
-        self._active_pressed_text_color = active_pressed_text_color
-        self._active_unpressed_used_background_color = active_unpressed_used_background_color
-        self._disabled_unpressed_used_background_color = disabled_unpressed_used_background_color
-        self._active_hover_used_background_color = active_hover_used_background_color
-        self._disabled_hover_used_background_color = disabled_hover_used_background_color
-        self._active_pressed_used_background_color = active_pressed_used_background_color
-        self._active_unpressed_unused_background_color = active_unpressed_unused_background_color
-        self._disabled_unpressed_unused_background_color = disabled_unpressed_unused_background_color
-        self._active_hover_unused_background_color = active_hover_unused_background_color
-        self._disabled_hover_unused_background_color = disabled_hover_unused_background_color
-        self._active_pressed_unused_background_color = active_pressed_unused_background_color
-        self._active_unpressed_dot_color = active_unpressed_dot_color
-        self._disabled_unpressed_dot_color = disabled_unpressed_dot_color
-        self._active_hover_dot_color = active_hover_dot_color
-        self._disabled_hover_dot_color = disabled_hover_dot_color
-        self._active_pressed_dot_color = active_pressed_dot_color
-        self._active_unpressed_border_color = active_unpressed_border_color
-        self._disabled_unpressed_border_color = disabled_unpressed_border_color
-        self._active_hover_border_color = active_hover_border_color
-        self._disabled_hover_border_color = disabled_hover_border_color
-        self._active_pressed_border_color = active_pressed_border_color
-        self._active_pressed_display_color = active_pressed_display_color
-        self._active_hover_display_color = active_hover_display_color
-        self._active_unpressed_display_color = active_unpressed_display_color
-        self._disabled_hover_display_color = disabled_hover_display_color
-        self._disabled_unpressed_display_color = disabled_unpressed_display_color
+        self._active_unpressed_text_color = misc.normalize_color(active_unpressed_text_color)
+        self._disabled_unpressed_text_color = misc.normalize_color(disabled_unpressed_text_color)
+        self._active_hover_text_color = misc.normalize_color(active_hover_text_color)
+        self._disabled_hover_text_color = misc.normalize_color(disabled_hover_text_color)
+        self._active_pressed_text_color = misc.normalize_color(active_pressed_text_color)
+        self._active_unpressed_used_background_color = misc.normalize_color(active_unpressed_used_background_color)
+        self._disabled_unpressed_used_background_color = misc.normalize_color(disabled_unpressed_used_background_color)
+        self._active_hover_used_background_color = misc.normalize_color(active_hover_used_background_color)
+        self._disabled_hover_used_background_color = misc.normalize_color(disabled_hover_used_background_color)
+        self._active_pressed_used_background_color = misc.normalize_color(active_pressed_used_background_color)
+        self._active_unpressed_unused_background_color = misc.normalize_color(active_unpressed_unused_background_color)
+        self._disabled_unpressed_unused_background_color = misc.normalize_color(
+            disabled_unpressed_unused_background_color)
+        self._active_hover_unused_background_color = misc.normalize_color(active_hover_unused_background_color)
+        self._disabled_hover_unused_background_color = misc.normalize_color(disabled_hover_unused_background_color)
+        self._active_pressed_unused_background_color = misc.normalize_color(active_pressed_unused_background_color)
+        self._active_unpressed_dot_color = misc.normalize_color(active_unpressed_dot_color)
+        self._disabled_unpressed_dot_color = misc.normalize_color(disabled_unpressed_dot_color)
+        self._active_hover_dot_color = misc.normalize_color(active_hover_dot_color)
+        self._disabled_hover_dot_color = misc.normalize_color(disabled_hover_dot_color)
+        self._active_pressed_dot_color = misc.normalize_color(active_pressed_dot_color)
+        self._active_unpressed_border_color = misc.normalize_color(active_unpressed_border_color)
+        self._disabled_unpressed_border_color = misc.normalize_color(disabled_unpressed_border_color)
+        self._active_hover_border_color = misc.normalize_color(active_hover_border_color)
+        self._disabled_hover_border_color = misc.normalize_color(disabled_hover_border_color)
+        self._active_pressed_border_color = misc.normalize_color(active_pressed_border_color)
+        self._active_pressed_display_color = misc.normalize_color(active_pressed_display_color)
+        self._active_hover_display_color = misc.normalize_color(active_hover_display_color)
+        self._active_unpressed_display_color = misc.normalize_color(active_unpressed_display_color)
+        self._disabled_hover_display_color = misc.normalize_color(disabled_hover_display_color)
+        self._disabled_unpressed_display_color = misc.normalize_color(disabled_unpressed_display_color)
         self._border_width = border_width
         self._hide_text = hide_text
         self._hide_used_background = hide_used_background
@@ -216,6 +212,22 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
         self._last_value_update_time = 0
         self._bindings = {}
         self._dialog = None
+        self._is_hovered = False
+        self._last_visual_state = None
+        self._needs_redraw = True
+        self._cached_surface = None
+        self._needs_transform = True
+        self._original_surface = pygame.Surface((1, 1))
+        self._target_scale = 1
+        self._current_scale = 1
+        self._scale_step = 0
+        self._target_rotation = 0
+        self._current_rotation = 0
+        self._rotation_step = 0
+        self._target_offset = (0, 0)
+        self._current_offset = [0, 0]
+        self._offset_step = [0, 0]
+        self._use_rotozoom = False
 
         safe_set_linesize(font, line_spacing)
 
@@ -255,7 +267,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @property
     def width(self):
-        return self._width
+        return int(self._width * self._current_scale)
 
     @width.setter
     def width(self, value):
@@ -263,7 +275,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @property
     def height(self):
-        return self._height
+        return int(self._height * self._current_scale)
 
     @height.setter
     def height(self, value):
@@ -363,7 +375,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @active_unpressed_text_color.setter
     def active_unpressed_text_color(self, value):
-        self._active_unpressed_text_color = value
+        self._active_unpressed_text_color = misc.normalize_color(value)
 
     @property
     def disabled_unpressed_text_color(self):
@@ -371,7 +383,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @disabled_unpressed_text_color.setter
     def disabled_unpressed_text_color(self, value):
-        self._disabled_unpressed_text_color = value
+        self._disabled_unpressed_text_color = misc.normalize_color(value)
 
     @property
     def active_hover_text_color(self):
@@ -379,7 +391,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @active_hover_text_color.setter
     def active_hover_text_color(self, value):
-        self._active_hover_text_color = value
+        self._active_hover_text_color = misc.normalize_color(value)
 
     @property
     def disabled_hover_text_color(self):
@@ -387,7 +399,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @disabled_hover_text_color.setter
     def disabled_hover_text_color(self, value):
-        self._disabled_hover_text_color = value
+        self._disabled_hover_text_color = misc.normalize_color(value)
 
     @property
     def active_pressed_text_color(self):
@@ -395,7 +407,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @active_pressed_text_color.setter
     def active_pressed_text_color(self, value):
-        self._active_pressed_text_color = value
+        self._active_pressed_text_color = misc.normalize_color(value)
 
     @property
     def active_unpressed_used_background_color(self):
@@ -403,7 +415,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @active_unpressed_used_background_color.setter
     def active_unpressed_used_background_color(self, value):
-        self._active_unpressed_used_background_color = value
+        self._active_unpressed_used_background_color = misc.normalize_color(value)
 
     @property
     def disabled_unpressed_used_background_color(self):
@@ -411,7 +423,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @disabled_unpressed_used_background_color.setter
     def disabled_unpressed_used_background_color(self, value):
-        self._disabled_unpressed_used_background_color = value
+        self._disabled_unpressed_used_background_color = misc.normalize_color(value)
 
     @property
     def active_hover_used_background_color(self):
@@ -419,7 +431,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @active_hover_used_background_color.setter
     def active_hover_used_background_color(self, value):
-        self._active_hover_used_background_color = value
+        self._active_hover_used_background_color = misc.normalize_color(value)
 
     @property
     def disabled_hover_used_background_color(self):
@@ -427,7 +439,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @disabled_hover_used_background_color.setter
     def disabled_hover_used_background_color(self, value):
-        self._disabled_hover_used_background_color = value
+        self._disabled_hover_used_background_color = misc.normalize_color(value)
 
     @property
     def active_pressed_used_background_color(self):
@@ -435,7 +447,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @active_pressed_used_background_color.setter
     def active_pressed_used_background_color(self, value):
-        self._active_pressed_used_background_color = value
+        self._active_pressed_used_background_color = misc.normalize_color(value)
 
     @property
     def active_unpressed_unused_background_color(self):
@@ -443,7 +455,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @active_unpressed_unused_background_color.setter
     def active_unpressed_unused_background_color(self, value):
-        self._active_unpressed_unused_background_color = value
+        self._active_unpressed_unused_background_color = misc.normalize_color(value)
 
     @property
     def disabled_unpressed_unused_background_color(self):
@@ -451,7 +463,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @disabled_unpressed_unused_background_color.setter
     def disabled_unpressed_unused_background_color(self, value):
-        self._disabled_unpressed_unused_background_color = value
+        self._disabled_unpressed_unused_background_color = misc.normalize_color(value)
 
     @property
     def active_hover_unused_background_color(self):
@@ -459,7 +471,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @active_hover_unused_background_color.setter
     def active_hover_unused_background_color(self, value):
-        self._active_hover_unused_background_color = value
+        self._active_hover_unused_background_color = misc.normalize_color(value)
 
     @property
     def disabled_hover_unused_background_color(self):
@@ -467,7 +479,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @disabled_hover_unused_background_color.setter
     def disabled_hover_unused_background_color(self, value):
-        self._disabled_hover_unused_background_color = value
+        self._disabled_hover_unused_background_color = misc.normalize_color(value)
 
     @property
     def active_pressed_unused_background_color(self):
@@ -475,7 +487,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @active_pressed_unused_background_color.setter
     def active_pressed_unused_background_color(self, value):
-        self._active_pressed_unused_background_color = value
+        self._active_pressed_unused_background_color = misc.normalize_color(value)
 
     @property
     def active_unpressed_dot_color(self):
@@ -483,7 +495,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @active_unpressed_dot_color.setter
     def active_unpressed_dot_color(self, value):
-        self._active_unpressed_dot_color = value
+        self._active_unpressed_dot_color = misc.normalize_color(value)
 
     @property
     def disabled_unpressed_dot_color(self):
@@ -491,7 +503,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @disabled_unpressed_dot_color.setter
     def disabled_unpressed_dot_color(self, value):
-        self._disabled_unpressed_dot_color = value
+        self._disabled_unpressed_dot_color = misc.normalize_color(value)
 
     @property
     def active_hover_dot_color(self):
@@ -499,7 +511,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @active_hover_dot_color.setter
     def active_hover_dot_color(self, value):
-        self._active_hover_dot_color = value
+        self._active_hover_dot_color = misc.normalize_color(value)
 
     @property
     def disabled_hover_dot_color(self):
@@ -507,7 +519,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @disabled_hover_dot_color.setter
     def disabled_hover_dot_color(self, value):
-        self._disabled_hover_dot_color = value
+        self._disabled_hover_dot_color = misc.normalize_color(value)
 
     @property
     def active_pressed_dot_color(self):
@@ -515,7 +527,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @active_pressed_dot_color.setter
     def active_pressed_dot_color(self, value):
-        self._active_pressed_dot_color = value
+        self._active_pressed_dot_color = misc.normalize_color(value)
 
     @property
     def active_unpressed_border_color(self):
@@ -523,7 +535,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @active_unpressed_border_color.setter
     def active_unpressed_border_color(self, value):
-        self._active_unpressed_border_color = value
+        self._active_unpressed_border_color = misc.normalize_color(value)
 
     @property
     def disabled_unpressed_border_color(self):
@@ -531,7 +543,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @disabled_unpressed_border_color.setter
     def disabled_unpressed_border_color(self, value):
-        self._disabled_unpressed_border_color = value
+        self._disabled_unpressed_border_color = misc.normalize_color(value)
 
     @property
     def active_hover_border_color(self):
@@ -539,7 +551,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @active_hover_border_color.setter
     def active_hover_border_color(self, value):
-        self._active_hover_border_color = value
+        self._active_hover_border_color = misc.normalize_color(value)
 
     @property
     def disabled_hover_border_color(self):
@@ -547,7 +559,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @disabled_hover_border_color.setter
     def disabled_hover_border_color(self, value):
-        self._disabled_hover_border_color = value
+        self._disabled_hover_border_color = misc.normalize_color(value)
 
     @property
     def active_pressed_border_color(self):
@@ -555,7 +567,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @active_pressed_border_color.setter
     def active_pressed_border_color(self, value):
-        self._active_pressed_border_color = value
+        self._active_pressed_border_color = misc.normalize_color(value)
 
     @property
     def active_pressed_display_color(self):
@@ -563,7 +575,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @active_pressed_display_color.setter
     def active_pressed_display_color(self, value):
-        self._active_pressed_display_color = value
+        self._active_pressed_display_color = misc.normalize_color(value)
 
     @property
     def active_hover_display_color(self):
@@ -571,7 +583,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @active_hover_display_color.setter
     def active_hover_display_color(self, value):
-        self._active_hover_display_color = value
+        self._active_hover_display_color = misc.normalize_color(value)
 
     @property
     def active_unpressed_display_color(self):
@@ -579,7 +591,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @active_unpressed_display_color.setter
     def active_unpressed_display_color(self, value):
-        self._active_unpressed_display_color = value
+        self._active_unpressed_display_color = misc.normalize_color(value)
 
     @property
     def disabled_hover_display_color(self):
@@ -587,7 +599,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @disabled_hover_display_color.setter
     def disabled_hover_display_color(self, value):
-        self._disabled_hover_display_color = value
+        self._disabled_hover_display_color = misc.normalize_color(value)
 
     @property
     def disabled_unpressed_display_color(self):
@@ -595,7 +607,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
     @disabled_unpressed_display_color.setter
     def disabled_unpressed_display_color(self, value):
-        self._disabled_unpressed_display_color = value
+        self._disabled_unpressed_display_color = misc.normalize_color(value)
 
     @property
     def border_width(self):
@@ -938,9 +950,139 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
     def dialog(self, value):
         self._dialog = value
 
-    def configure(self, **kwargs):
+    @property
+    def is_hovered(self):
+        return self._is_hovered
+
+    @is_hovered.setter
+    def is_hovered(self, value):
+        self._is_hovered = value
+
+    @property
+    def last_visual_state(self):
+        return self._last_visual_state
+
+    @last_visual_state.setter
+    def last_visual_state(self, value):
+        self._last_visual_state = value
+
+    @property
+    def needs_redraw(self):
+        return self._needs_redraw
+
+    @needs_redraw.setter
+    def needs_redraw(self, value):
+        self._needs_redraw = value
+
+    @property
+    def cached_surface(self):
+        return self._cached_surface
+
+    @cached_surface.setter
+    def cached_surface(self, value):
+        self._cached_surface = value
+
+    @property
+    def needs_transform(self):
+        return self._needs_transform
+
+    @needs_transform.setter
+    def needs_transform(self, value):
+        self._needs_transform = value
+
+    @property
+    def original_surface(self):
+        return self._original_surface
+
+    @original_surface.setter
+    def original_surface(self, value):
+        self._original_surface = value
+
+    @property
+    def target_scale(self):
+        return self._target_scale
+
+    @target_scale.setter
+    def target_scale(self, value):
+        self._target_scale = value
+
+    @property
+    def current_scale(self):
+        return self._current_scale
+
+    @current_scale.setter
+    def current_scale(self, value):
+        self._current_scale = value
+
+    @property
+    def scale_step(self):
+        return self._scale_step
+
+    @scale_step.setter
+    def scale_step(self, value):
+        self._scale_step = value
+
+    @property
+    def target_rotation(self):
+        return self._target_rotation
+
+    @target_rotation.setter
+    def target_rotation(self, value):
+        self._target_rotation = value
+
+    @property
+    def current_rotation(self):
+        return self._current_rotation
+
+    @current_rotation.setter
+    def current_rotation(self, value):
+        self._current_rotation = value
+
+    @property
+    def rotation_step(self):
+        return self._rotation_step
+
+    @rotation_step.setter
+    def rotation_step(self, value):
+        self._rotation_step = value
+
+    @property
+    def target_offset(self):
+        return self._target_offset
+
+    @target_offset.setter
+    def target_offset(self, value):
+        self._target_offset = value
+
+    @property
+    def current_offset(self):
+        return self._current_offset
+
+    @current_offset.setter
+    def current_offset(self, value):
+        self._current_offset = value
+
+    @property
+    def offset_step(self):
+        return self._offset_step
+
+    @offset_step.setter
+    def offset_step(self, value):
+        self._offset_step = value
+
+    @property
+    def use_rotozoom(self):
+        return self._use_rotozoom
+
+    @use_rotozoom.setter
+    def use_rotozoom(self, value):
+        self._use_rotozoom = value
+
+    def configure(self, **kwargs: Unpack[TypeHints.SliderConfig]):
         for key, value in kwargs.items():
             setattr(self, key, value)
+        self._needs_redraw = True
+        self._needs_transform = True
         if any(k in kwargs for k in
                ('auto_size', 'x', 'y', 'width', 'height', 'min_width', 'max_width', 'min_height', 'max_height',
                 'anchor_x', 'anchor_y')):
@@ -962,57 +1104,126 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
             safe_set_linesize(self._font, self._line_spacing)
         return self
 
-    def config(self, **kwargs):
-        self.configure(**kwargs)
+    def config(self, **kwargs: Unpack[TypeHints.SliderConfig]):
+        return self.configure(**kwargs)
 
     def get(self):
         return self._value
 
     def set(self, value):
         self._value = min(max(value, self._start), self._end)
+        self._needs_redraw = True
+
+    def scale(self, value=None, frames_to_finish=1):
+        if frames_to_finish <= 0:
+            frames_to_finish = 1
+        self._target_scale = 1 if value is None else value
+        self._scale_step = (self._target_scale - self._current_scale) / frames_to_finish
+        self.update_animation()
+        return self
+
+    def rotate(self, value=None, frames_to_finish=1):
+        if frames_to_finish <= 0:
+            frames_to_finish = 1
+        self._target_rotation = 0 if value is None else value
+        self._rotation_step = (self._target_rotation - self._current_rotation) / frames_to_finish
+        self.update_animation()
+        return self
+
+    def rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
+        if frames_to_finish <= 0:
+            frames_to_finish = 1
+        self._target_scale = 1 if scale is None else scale
+        self._scale_step = (self._target_scale - self._current_scale) / frames_to_finish
+        self._target_rotation = 0 if rotation is None else rotation
+        self._rotation_step = (self._target_rotation - self._current_rotation) / frames_to_finish
+        self._use_rotozoom = True
+        self.update_animation()
+        return self
+
+    def offset(self, value: tuple[int, int], frames_to_finish=1):
+        if frames_to_finish <= 0:
+            frames_to_finish = 1
+        self._target_offset = (0, 0) if value is None else value
+        self._offset_step[0] = (self._target_offset[0] - self._current_offset[0]) / frames_to_finish
+        self._offset_step[1] = (self._target_offset[1] - self._current_offset[1]) / frames_to_finish
+        self.update_animation()
+        return self
+
+    def update_animation(self):
+        scale_changed = False
+        rotation_changed = False
+        if self._current_scale != self._target_scale:
+            if abs(self._current_scale - self._target_scale) <= abs(self._scale_step):
+                self._current_scale = self._target_scale
+            else:
+                self._current_scale += self._scale_step
+            scale_changed = True
+        if self._current_rotation != self._target_rotation:
+            if abs(self._current_rotation - self._target_rotation) <= abs(self._rotation_step):
+                self._current_rotation = self._target_rotation
+            else:
+                self._current_rotation += self._rotation_step
+            rotation_changed = True
+        for x in range(2):
+            if self._current_offset[x] != self._target_offset[x]:
+                if abs(self._current_offset[x] - self._target_offset[x]) <= abs(self._offset_step[x]):
+                    self._current_offset[x] = float(self._target_offset[x])
+                else:
+                    self._current_offset[x] += self._offset_step[x]
+        if scale_changed or rotation_changed:
+            self._needs_transform = True
 
     def draw(self, surface: pygame.Surface):
         if not self._alive or not self._visible:
             return
         mouse_pos = pygame.mouse.get_pos()
         is_hovering = misc.is_point_over_widget(self, mouse_pos)
-        if self._state == "enabled":
-            if self._pressed:
-                text_color = self._active_pressed_text_color
-                bg_color_used = self._active_pressed_used_background_color
-                bg_color_unused = self._active_pressed_unused_background_color
-                brd_color = self._active_pressed_border_color
-                dot_color = self._active_pressed_dot_color
-                display_color = self._active_pressed_display_color
-            elif is_hovering:
-                text_color = self._active_hover_text_color
-                bg_color_used = self._active_hover_used_background_color
-                bg_color_unused = self._active_hover_unused_background_color
-                brd_color = self._active_hover_border_color
-                dot_color = self._active_hover_dot_color
-                display_color = self._active_hover_display_color
+
+        if self._auto_size:
+            temp_surf = self._font.render(self._text, True, (0, 0, 0))
+            self._width = temp_surf.get_width() + 40 + (self._alignment_spacing - 20)
+            if self._min_width:
+                self._width = max(self._width, self._min_width)
+            if self._max_width:
+                self._width = min(self._width, self._max_width)
+            if self._min_height:
+                self._height = max(self._height, self._min_height)
+            if self._max_height:
+                self._height = min(self._height, self._max_height)
+            self._rect = pygame.Rect(self._x, self._y, self._width, self._height)
+        current_visual_state = (self._pressed, is_hovering)
+        if self._needs_redraw or self._last_visual_state != current_visual_state:
+            render_slider_surface(self, is_hovering)
+            self._last_visual_state = current_visual_state
+            self._needs_redraw = True
+            self._needs_transform = True
+
+        if self._needs_transform:
+            if self._current_scale != 1 or self._current_rotation != 0:
+                new_width = int(self._original_surface.get_width() * self._current_scale)
+                new_height = int(self._original_surface.get_height() * self._current_scale)
+                if new_width > 0 and new_height > 0:
+                    if self._use_rotozoom:
+                        self._cached_surface = pygame.transform.rotozoom(self._original_surface,
+                                                                         self._current_rotation,
+                                                                         self._current_scale)
+                    else:
+                        scaled_surface = pygame.transform.smoothscale(self._original_surface, (new_width, new_height))
+                        self._cached_surface = pygame.transform.rotate(scaled_surface, self._current_rotation)
+                else:
+                    self._cached_surface = pygame.Surface((0, 0), pygame.SRCALPHA)
             else:
-                text_color = self._active_unpressed_text_color
-                bg_color_used = self._active_unpressed_used_background_color
-                bg_color_unused = self._active_unpressed_unused_background_color
-                brd_color = self._active_unpressed_border_color
-                dot_color = self._active_unpressed_dot_color
-                display_color = self._active_unpressed_display_color
-        else:
-            if is_hovering:
-                text_color = self._disabled_hover_text_color
-                bg_color_used = self._disabled_hover_used_background_color
-                bg_color_unused = self._disabled_hover_unused_background_color
-                brd_color = self._disabled_hover_border_color
-                dot_color = self._disabled_hover_dot_color
-                display_color = self._disabled_hover_display_color
-            else:
-                text_color = self._disabled_unpressed_text_color
-                bg_color_used = self._disabled_unpressed_used_background_color
-                bg_color_unused = self._disabled_unpressed_unused_background_color
-                brd_color = self._disabled_unpressed_border_color
-                dot_color = self._disabled_unpressed_dot_color
-                display_color = self._disabled_unpressed_display_color
+                self._cached_surface = self._original_surface.copy()
+            old_center = self._rect.center
+            self._rect = self._cached_surface.get_rect()
+            self._rect.center = old_center
+            self._needs_transform = False
+        offset_x, offset_y = misc.get_offset(self)
+        total_offset_x = offset_x + round(self._current_offset[0])
+        total_offset_y = offset_y + round(self._current_offset[1])
+        draw_rect = self._rect.move(total_offset_x, total_offset_y)
+        surface.blit(self._cached_surface, draw_rect)
 
         if is_hovering:
             if self._state == "enabled":
@@ -1034,15 +1245,15 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
                 pygame.mouse.set_cursor(self._original_cursor)
                 self._original_cursor = None
 
-        if is_hovering and not getattr(self, "is_hovered", False):
+        if is_hovering and not self._is_hovered:
             self._is_hovered = True
             self.trigger_event("<MOUSE-IN>")
             if self._tooltip:
                 self._tooltip.show()
-        elif is_hovering and getattr(self, "is_hovered", False):
+        elif is_hovering and self._is_hovered:
             self._is_hovered = True
             self.trigger_event("<HOVER>")
-        elif not is_hovering and getattr(self, "is_hovered", False):
+        elif not is_hovering and self._is_hovered:
             self._is_hovered = False
             self.trigger_event("<MOUSE-OUT>")
             if self._tooltip:
@@ -1052,108 +1263,6 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
                 if not self._pressed and not is_hovering:
                     self._tooltip.hide()
 
-        temp_surf = self._font.render(self._text, True, text_color)
-        if self._auto_size:
-            self._width = temp_surf.get_width() + 40 + (self._alignment_spacing - 20)
-            if self._min_width:
-                self._width = max(self._width, self._min_width)
-            if self._max_width:
-                self._width = min(self._width, self._max_width)
-            if self._min_height:
-                self._height = max(self._height, self._min_height)
-            if self._max_height:
-                self._height = min(self._height, self._max_height)
-            self._rect = pygame.Rect(self._x, self._y, self._width, self._height)
-
-        offset_x, offset_y = misc.get_offset(self)
-        draw_rect = self._rect.move(offset_x, offset_y)
-
-        text_height = temp_surf.get_height()
-        track_y = draw_rect.top + text_height + 10 + self._height // 2
-        track_rect = pygame.Rect(draw_rect.x, track_y - (self._height // 2), draw_rect.width, self._height)
-        max_radius = min(track_rect.width, track_rect.height) // 2
-        tl = min(self._top_left_corner_radius, max_radius)
-        tr = min(self._top_right_corner_radius, max_radius)
-        bl = min(self._bottom_left_corner_radius, max_radius)
-        br = min(self._bottom_right_corner_radius, max_radius)
-        if not self._hide_unused_background:
-            pygame.draw.rect(surface, bg_color_unused, track_rect, border_top_left_radius=tl,
-                             border_top_right_radius=tr,
-                             border_bottom_left_radius=bl, border_bottom_right_radius=br)
-        if self._end - self._start != 0:
-            pct = (self._value - self._start) / (self._end - self._start)
-        else:
-            pct = 0
-        pct = max(0, min(1, pct))
-        used_width = int(track_rect.width * pct)
-        if used_width > 0 and not self._hide_used_background:
-            clip_surf = pygame.Surface(track_rect.size, pygame.SRCALPHA)
-            mask_rect = pygame.Rect(0, 0, track_rect.width, track_rect.height)
-            pygame.draw.rect(clip_surf, (255, 255, 255), mask_rect, border_top_left_radius=tl,
-                             border_bottom_left_radius=bl, border_top_right_radius=tr, border_bottom_right_radius=br)
-            used_fill_rect = pygame.Rect(0, 0, used_width, track_rect.height)
-            fill_surf = pygame.Surface(track_rect.size, pygame.SRCALPHA)
-            pygame.draw.rect(fill_surf, bg_color_used, used_fill_rect)
-            clip_surf.blit(fill_surf, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-            surface.blit(clip_surf, track_rect.topleft)
-        if brd_color and not self._hide_border:
-            pygame.draw.rect(surface, brd_color, track_rect, width=self._border_width, border_top_left_radius=tl,
-                             border_top_right_radius=tr, border_bottom_left_radius=bl, border_bottom_right_radius=br)
-        dot_x = track_rect.x + used_width
-        dot_x = max(track_rect.left + self._dot_radius, min(dot_x, track_rect.right - self._dot_radius))
-        if not self._hide_dot:
-            pygame.draw.aacircle(surface, dot_color, (int(dot_x), int(track_rect.centery)),
-                                 self._dot_radius + self._extra_dot_radius)
-        if not self._hide_display:
-            if (self._state == "enabled" or self._show_value_when_disabled) and (
-                    self._show_value_when_pressed and self._pressed or self._show_value_when_hovered and is_hovering and not self._pressed or self._show_value_when_unpressed):
-                if self._show_full_rounding_of_whole_numbers:
-                    text_surf = self._font.render(str(round(self._value, self._round_display_value)), True,
-                                                  display_color)
-                elif not self._show_full_rounding_of_whole_numbers and round(self._value,
-                                                                             self._round_display_value) % 1 == 0:
-                    text_surf = self._font.render(
-                        str(round(self._value, self._round_display_value)).replace(".0", ""),
-                        True, display_color)
-                elif not self._show_full_rounding_of_whole_numbers:
-                    text_surf = self._font.render(str(round(self._value, self._round_display_value)), True,
-                                                  display_color)
-                text_rect = text_surf.get_rect()
-                if self._move_text_with_dot_radius:
-                    text_rect.center = (dot_x, track_rect.centery + 25 + self._dot_radius + self._extra_dot_radius)
-                else:
-                    text_rect.center = (dot_x, track_rect.centery + 25 + self._dot_radius)
-                surface.blit(text_surf, text_rect)
-
-        if not self._hide_text:
-            text_surf = self._font.render(self._text, True, text_color)
-            text_rect = text_surf.get_rect()
-            if self._move_text_with_dot_radius:
-                text_y_center = track_rect.centery - 25 - self._dot_radius - self._extra_dot_radius
-            else:
-                text_y_center = track_rect.centery - 25 - self._dot_radius
-
-            if self._alignment == "stretched" and len(self._text) > 1 and not self._auto_size:
-                total_char_width = sum(self._font.render(char, True, text_color).get_width() for char in self._text)
-                available_width = draw_rect.width - (self._alignment_spacing * 2)
-                if available_width > total_char_width:
-                    spacing = (available_width - total_char_width) / (len(self._text) - 1)
-                    current_x = draw_rect.left + self._alignment_spacing
-                    for char in self._text:
-                        char_surf = self._font.render(char, True, text_color)
-                        surface.blit(char_surf, char_surf.get_rect(midleft=(current_x, text_y_center)))
-                        current_x += char_surf.get_width() + spacing
-                else:
-                    surface.blit(text_surf, text_surf.get_rect(center=(draw_rect.centerx, text_y_center)))
-            else:
-                if self._alignment == "left":
-                    text_rect.midleft = (draw_rect.left + self._alignment_spacing, text_y_center)
-                elif self._alignment == "right":
-                    text_rect.midright = (draw_rect.right - self._alignment_spacing, text_y_center)
-                else:
-                    text_rect.center = (draw_rect.centerx, text_y_center)
-                surface.blit(text_surf, text_rect)
-
     def react(self, event=None):
         if self._state != "enabled" or not self._visible:
             return
@@ -1162,13 +1271,37 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
         def update_value():
             offset_x, offset_y = misc.get_offset(self)
-            draw_rect = self._rect.move(offset_x, offset_y)
+            total_offset_x = offset_x + round(self._current_offset[0])
+            total_offset_y = offset_y + round(self._current_offset[1])
+            draw_rect = self._rect.move(total_offset_x, total_offset_y)
+            x, y = mouse_pos
+            scale = self._current_scale
+            rotation = self._current_rotation
+            cx, cy = draw_rect.center
+            if rotation != 0:
+                v = pygame.math.Vector2(x - cx, y - cy)
+                v = v.rotate(rotation)
+                x, y = cx + v.x, cy + v.y
+            if scale != 1 and scale != 0:
+                x = cx + (x - cx) / scale
+                y = cy + (y - cy) / scale
+            orig_rect = self._original_surface.get_rect(center=(cx, cy))
 
             temp_surf = self._font.render(self._text, True, (0, 0, 0))
             text_height = temp_surf.get_height()
-            track_y = draw_rect.top + text_height + 10 + self._height // 2
-            track_rect = pygame.Rect(draw_rect.x, track_y - (self._height // 2), draw_rect.width, self._height)
-            relative_x = mouse_pos[0] - track_rect.x
+            track_y = orig_rect.top + text_height + 10 + self._height // 2
+            extra_dot = self._dot_radius + self._max_extra_dot_radius
+            track_y = max(track_y, orig_rect.top + extra_dot)
+            widest_magnitude = max(abs(self._start), abs(self._end))
+            integer_digits = len(str(int(widest_magnitude)))
+            decimal_digits = self._round_display_value if self._round_display_value > 0 else 0
+            widest_value_str = "9" * integer_digits + ("." + "9" * decimal_digits if decimal_digits else "")
+            if self._start < 0 or self._end < 0:
+                widest_value_str = "-" + widest_value_str
+            side_margin = self._max_extra_dot_radius + self._font.size(widest_value_str)[0] // 2
+            track_rect = pygame.Rect(orig_rect.x + side_margin, track_y - (self._height // 2),
+                                     orig_rect.width - side_margin * 2, self._height)
+            relative_x = x - track_rect.x
             pct = relative_x / track_rect.width
             pct = max(0, min(1, pct))
             new_slider_value = self._start + (pct * (self._end - self._start))
@@ -1221,6 +1354,155 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
             self._extra_dot_radius = min(self._max_extra_dot_radius, self._extra_dot_radius + pulse)
         else:
             self._extra_dot_radius = max(0, self._extra_dot_radius - pulse)
+
+
+def render_slider_surface(slider, is_hovering):
+    if slider.state == "enabled":
+        if slider.pressed:
+            text_color = slider.active_pressed_text_color
+            bg_color_used = slider.active_pressed_used_background_color
+            bg_color_unused = slider.active_pressed_unused_background_color
+            brd_color = slider.active_pressed_border_color
+            dot_color = slider.active_pressed_dot_color
+            display_color = slider.active_pressed_display_color
+        elif is_hovering:
+            text_color = slider.active_hover_text_color
+            bg_color_used = slider.active_hover_used_background_color
+            bg_color_unused = slider.active_hover_unused_background_color
+            brd_color = slider.active_hover_border_color
+            dot_color = slider.active_hover_dot_color
+            display_color = slider.active_hover_display_color
+        else:
+            text_color = slider.active_unpressed_text_color
+            bg_color_used = slider.active_unpressed_used_background_color
+            bg_color_unused = slider.active_unpressed_unused_background_color
+            brd_color = slider.active_unpressed_border_color
+            dot_color = slider.active_unpressed_dot_color
+            display_color = slider.active_unpressed_display_color
+    else:
+        if is_hovering:
+            text_color = slider.disabled_hover_text_color
+            bg_color_used = slider.disabled_hover_used_background_color
+            bg_color_unused = slider.disabled_hover_unused_background_color
+            brd_color = slider.disabled_hover_border_color
+            dot_color = slider.disabled_hover_dot_color
+            display_color = slider.disabled_hover_display_color
+        else:
+            text_color = slider.disabled_unpressed_text_color
+            bg_color_used = slider.disabled_unpressed_used_background_color
+            bg_color_unused = slider.disabled_unpressed_unused_background_color
+            brd_color = slider.disabled_unpressed_border_color
+            dot_color = slider.disabled_unpressed_dot_color
+            display_color = slider.disabled_unpressed_display_color
+    base_width = slider._width
+    base_height = slider._height
+    text_surf = slider.font.render(slider.text, True, text_color)
+    text_height = text_surf.get_height()
+    track_y = text_height + 10 + base_height // 2
+    extra_dot = slider.dot_radius + slider.max_extra_dot_radius
+    track_y = max(track_y, extra_dot)
+    display_dot_offset = slider.dot_radius + slider.max_extra_dot_radius if slider.move_text_with_dot_radius else slider.dot_radius
+    extra_bottom = 25 + display_dot_offset + text_height // 2 if not slider.hide_display else 0
+    canvas_height = track_y + base_height // 2 + extra_bottom
+    canvas_height = max(canvas_height, track_y + extra_dot + extra_bottom)
+    widest_magnitude = max(abs(slider.start), abs(slider.end))
+    integer_digits = len(str(int(widest_magnitude)))
+    decimal_digits = slider.round_display_value if slider.round_display_value > 0 else 0
+    widest_value_str = "9" * integer_digits + ("." + "9" * decimal_digits if decimal_digits else "")
+    if slider.start < 0 or slider.end < 0:
+        widest_value_str = "-" + widest_value_str
+    widest_value_width = slider.font.size(widest_value_str)[0]
+    side_margin = slider.max_extra_dot_radius + widest_value_width // 2
+    canvas_width = base_width + side_margin * 2
+    cached = pygame.Surface((canvas_width, canvas_height), pygame.SRCALPHA)
+    local_rect = pygame.Rect(0, 0, canvas_width, canvas_height)
+    track_rect = pygame.Rect(side_margin, track_y - (base_height // 2), base_width, base_height)
+    max_radius = min(track_rect.width, track_rect.height) // 2
+    tl = min(slider.top_left_corner_radius, max_radius)
+    tr = min(slider.top_right_corner_radius, max_radius)
+    bl = min(slider.bottom_left_corner_radius, max_radius)
+    br = min(slider.bottom_right_corner_radius, max_radius)
+    if not slider.hide_unused_background:
+        pygame.draw.rect(cached, bg_color_unused, track_rect, border_top_left_radius=tl,
+                         border_top_right_radius=tr, border_bottom_left_radius=bl,
+                         border_bottom_right_radius=br)
+    if slider.end - slider.start != 0:
+        pct = (slider.value - slider.start) / (slider.end - slider.start)
+    else:
+        pct = 0
+    pct = max(0, min(1, pct))
+    used_width = int(track_rect.width * pct)
+    if used_width > 0 and not slider.hide_used_background:
+        clip_surf = pygame.Surface(track_rect.size, pygame.SRCALPHA)
+        mask_rect = pygame.Rect(0, 0, track_rect.width, track_rect.height)
+        pygame.draw.rect(clip_surf, (255, 255, 255), mask_rect, border_top_left_radius=tl,
+                         border_bottom_left_radius=bl, border_top_right_radius=tr,
+                         border_bottom_right_radius=br)
+        used_fill_rect = pygame.Rect(0, 0, used_width, track_rect.height)
+        fill_surf = pygame.Surface(track_rect.size, pygame.SRCALPHA)
+        pygame.draw.rect(fill_surf, bg_color_used, used_fill_rect)
+        clip_surf.blit(fill_surf, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        cached.blit(clip_surf, track_rect.topleft)
+    if brd_color and not slider.hide_border:
+        pygame.draw.rect(cached, brd_color, track_rect, width=slider.border_width, border_top_left_radius=tl,
+                         border_top_right_radius=tr, border_bottom_left_radius=bl,
+                         border_bottom_right_radius=br)
+    dot_x = track_rect.x + used_width
+    dot_x = max(track_rect.left + slider.dot_radius, min(dot_x, track_rect.right - slider.dot_radius))
+    if not slider.hide_dot:
+        pygame.draw.aacircle(cached, dot_color, (int(dot_x), int(track_rect.centery)),
+                             slider.dot_radius + slider.extra_dot_radius)
+    if not slider.hide_display:
+        if (slider.state == "enabled" or slider.show_value_when_disabled) and (
+                slider.show_value_when_pressed and slider.pressed or
+                slider.show_value_when_hovered and is_hovering and not slider.pressed or
+                slider.show_value_when_unpressed):
+            if slider.show_full_rounding_of_whole_numbers:
+                display_surf = slider.font.render(str(round(slider.value, slider.round_display_value)), True,
+                                                  display_color)
+            elif round(slider.value, slider.round_display_value) % 1 == 0:
+                display_surf = slider.font.render(
+                    str(round(slider.value, slider.round_display_value)).replace(".0", ""), True, display_color)
+            else:
+                display_surf = slider.font.render(str(round(slider.value, slider.round_display_value)), True,
+                                                  display_color)
+            display_surf.set_alpha(display_color[3])
+            display_rect = display_surf.get_rect()
+            if slider.move_text_with_dot_radius:
+                display_rect.center = (dot_x, track_rect.centery + 25 + slider.dot_radius + slider.extra_dot_radius)
+            else:
+                display_rect.center = (dot_x, track_rect.centery + 25 + slider.dot_radius)
+            cached.blit(display_surf, display_rect)
+    if not slider.hide_text:
+        text_surf.set_alpha(text_color[3])
+        text_rect = text_surf.get_rect()
+        if slider.move_text_with_dot_radius:
+            text_y_center = track_rect.centery - 25 - slider.dot_radius - slider.extra_dot_radius
+        else:
+            text_y_center = track_rect.centery - 25 - slider.dot_radius
+        if slider.alignment == "stretched" and len(slider.text) > 1 and not slider.auto_size:
+            total_char_width = sum(slider.font.render(char, True, text_color).get_width() for char in slider.text)
+            available_width = local_rect.width - (slider.alignment_spacing * 2)
+            if available_width > total_char_width:
+                spacing = (available_width - total_char_width) / (len(slider.text) - 1)
+                current_x = local_rect.left + slider.alignment_spacing
+                for char in slider.text:
+                    char_surf = slider.font.render(char, True, text_color)
+                    char_surf.set_alpha(text_color[3])
+                    cached.blit(char_surf, char_surf.get_rect(midleft=(current_x, text_y_center)))
+                    current_x += char_surf.get_width() + spacing
+            else:
+                cached.blit(text_surf, text_surf.get_rect(center=(local_rect.centerx, text_y_center)))
+        else:
+            if slider.alignment == "left":
+                text_rect.midleft = (local_rect.left + slider.alignment_spacing, text_y_center)
+            elif slider.alignment == "right":
+                text_rect.midright = (local_rect.right - slider.alignment_spacing, text_y_center)
+            else:
+                text_rect.center = (local_rect.centerx, text_y_center)
+            cached.blit(text_surf, text_rect)
+    slider.original_surface = cached
+    slider.cached_surface = cached
 
 
 def safe_set_linesize(font, line_spacing):

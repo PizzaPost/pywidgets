@@ -345,6 +345,7 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
     @active_hover_text_color.setter
     def active_hover_text_color(self, value):
         self._active_hover_text_color = misc.normalize_color(value)
+        self._underline = True
 
     @property
     def active_hover_shadow_color(self):
@@ -369,6 +370,7 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
     @active_hover_underline_color.setter
     def active_hover_underline_color(self, value):
         self._active_hover_underline_color = misc.normalize_color(value)
+        self._underline = True
 
     @property
     def active_hover_strikethrough_color(self):
@@ -417,6 +419,7 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
     @active_pressed_underline_color.setter
     def active_pressed_underline_color(self, value):
         self._active_pressed_underline_color = misc.normalize_color(value)
+        self._underline = True
 
     @property
     def active_pressed_strikethrough_color(self):
@@ -465,6 +468,7 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
     @active_unpressed_underline_color.setter
     def active_unpressed_underline_color(self, value):
         self._active_unpressed_underline_color = misc.normalize_color(value)
+        self._underline = True
 
     @property
     def active_unpressed_strikethrough_color(self):
@@ -513,6 +517,7 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
     @disabled_hover_underline_color.setter
     def disabled_hover_underline_color(self, value):
         self._disabled_hover_underline_color = misc.normalize_color(value)
+        self._underline = True
 
     @property
     def disabled_hover_strikethrough_color(self):
@@ -561,6 +566,7 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
     @disabled_unpressed_underline_color.setter
     def disabled_unpressed_underline_color(self, value):
         self._disabled_unpressed_underline_color = misc.normalize_color(value)
+        self._underline = True
 
     @property
     def disabled_unpressed_strikethrough_color(self):
@@ -1064,8 +1070,7 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
         return self
 
     def config(self, **kwargs: Unpack[TypeHints.LabelConfig]):
-        self.configure(**kwargs)
-        return self
+        return self.configure(**kwargs)
 
     def set_strikethrough(self, value: bool):
         self._strikethrough = value

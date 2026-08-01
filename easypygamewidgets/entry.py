@@ -991,8 +991,7 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
         return self
 
     def config(self, **kwargs: Unpack[TypeHints.EntryConfig]):
-        self.configure(**kwargs)
-        return self
+        return self.configure(**kwargs)
 
     def get(self):
         return self._text

@@ -128,9 +128,9 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
                 self._cursors[name] = None
         self._font = font
         self._alignment = alignment
+        self._alignment_spacing = alignment_spacing
         if command:
             self.bind("<RELEASE>", command)
-        self._alignment_spacing = alignment_spacing
         self._corner_radius = corner_radius
         self._layer = layer
         self._tooltip = tooltip
@@ -769,8 +769,7 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
         return self
 
     def config(self, **kwargs: Unpack[TypeHints.ButtonConfig]):
-        self.configure(**kwargs)
-        return self
+        return self.configure(**kwargs)
 
     def scale(self, value=None, frames_to_finish=1):
         if frames_to_finish <= 0:

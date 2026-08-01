@@ -33,7 +33,7 @@ disable_button = epw.Button(text="Disable", command=screen.disable)
 enable_button = epw.Button(text="Enable", command=screen.enable)
 
 button.place(50, 50)
-slider.place(126, 250)
+slider.place(126, 300)
 entry.place(400, 50)
 hide_button.place(50, 440)
 show_button.place(50, 520)

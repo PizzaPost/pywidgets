@@ -731,7 +731,7 @@ class Timekeeper(Widget, Tooltipable, Screenable, Deletable):
         return self
 
     def config(self, **kwargs):
-        self.configure(**kwargs)
+        return self.configure(**kwargs)
 
     def get_display_text(self):
         values = {

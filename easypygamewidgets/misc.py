@@ -22,7 +22,7 @@ def check_update():
         response.raise_for_status()
         data = response.json()
         latest_version = data["version"]
-        current_version = "26.30"
+        current_version = "26.31"
         if latest_version != current_version:
             print(f"An update is available. Download it now with 'pip install --upgrade easypygamewidgets'\n"
                   f"You are currently on: {current_version}\n"
@@ -225,13 +225,38 @@ def is_point_over_widget(widget, point):
         return False
     elif class_name == "Slider":
         offset_x, offset_y = get_offset(widget)
-        draw_rect = widget.rect.move(offset_x, offset_y)
+        total_offset_x = offset_x + round(widget.current_offset[0])
+        total_offset_y = offset_y + round(widget.current_offset[1])
+        draw_rect = widget.rect.move(total_offset_x, total_offset_y)
+        x, y = point
+        scale = widget.current_scale
+        rotation = widget.current_rotation
+        cx, cy = draw_rect.center
+        if rotation != 0:
+            v = pygame.math.Vector2(x - cx, y - cy)
+            v = v.rotate(rotation)
+            x, y = cx + v.x, cy + v.y
+        if scale != 1 and scale != 0:
+            x = cx + (x - cx) / scale
+            y = cy + (y - cy) / scale
+        orig_rect = widget.original_surface.get_rect(center=(cx, cy))
+        if not orig_rect.collidepoint((x, y)):
+            return False
         temp_surf = widget.font.render(widget.text, True, (0, 0, 0))
         text_height = temp_surf.get_height()
-        track_y = draw_rect.top + text_height + 10 + widget.height // 2
-        track_rect = pygame.Rect(draw_rect.x, track_y - (widget.height // 2), draw_rect.width, widget.height)
-        x, y = point
-        if not track_rect.collidepoint(point):
+        track_y = orig_rect.top + text_height + 10 + widget._height // 2
+        extra_dot = widget.dot_radius + widget.max_extra_dot_radius
+        track_y = max(track_y, orig_rect.top + extra_dot)
+        widest_magnitude = max(abs(widget.start), abs(widget.end))
+        integer_digits = len(str(int(widest_magnitude)))
+        decimal_digits = widget.round_display_value if widget.round_display_value > 0 else 0
+        widest_value_str = "9" * integer_digits + ("." + "9" * decimal_digits if decimal_digits else "")
+        if widget.start < 0 or widget.end < 0:
+            widest_value_str = "-" + widest_value_str
+        side_margin = widget.max_extra_dot_radius + widget.font.size(widest_value_str)[0] // 2
+        track_rect = pygame.Rect(orig_rect.x + side_margin, track_y - (widget._height // 2),
+                                 orig_rect.width - side_margin * 2, widget._height)
+        if not track_rect.collidepoint((x, y)):
             return False
         max_radius = min(track_rect.width, track_rect.height) // 2
         tl = min(widget.top_left_corner_radius, max_radius)
@@ -239,21 +264,17 @@ def is_point_over_widget(widget, point):
         bl = min(widget.bottom_left_corner_radius, max_radius)
         br = min(widget.bottom_right_corner_radius, max_radius)
         if x < track_rect.left + tl and y < track_rect.top + tl:
-            cx, cy = track_rect.left + tl, track_rect.top + tl
-            if (x - cx) ** 2 + (y - cy) ** 2 > tl ** 2:
-                return False
+            cxc, cyc = track_rect.left + tl, track_rect.top + tl
+            if (x - cxc) ** 2 + (y - cyc) ** 2 > tl ** 2: return False
         elif x > track_rect.right - tr and y < track_rect.top + tr:
-            cx, cy = track_rect.right - tr, track_rect.top + tr
-            if (x - cx) ** 2 + (y - cy) ** 2 > tr ** 2:
-                return False
+            cxc, cyc = track_rect.right - tr, track_rect.top + tr
+            if (x - cxc) ** 2 + (y - cyc) ** 2 > tr ** 2: return False
         elif x < track_rect.left + bl and y > track_rect.bottom - bl:
-            cx, cy = track_rect.left + bl, track_rect.bottom - bl
-            if (x - cx) ** 2 + (y - cy) ** 2 > bl ** 2:
-                return False
+            cxc, cyc = track_rect.left + bl, track_rect.bottom - bl
+            if (x - cxc) ** 2 + (y - cyc) ** 2 > bl ** 2: return False
         elif x > track_rect.right - br and y > track_rect.bottom - br:
-            cx, cy = track_rect.right - br, track_rect.bottom - br
-            if (x - cx) ** 2 + (y - cy) ** 2 > br ** 2:
-                return False
+            cxc, cyc = track_rect.right - br, track_rect.bottom - br
+            if (x - cxc) ** 2 + (y - cyc) ** 2 > br ** 2: return False
         return True
     elif class_name == "Tooltip":
         rect = widget.rect.move(point[0], point[1])

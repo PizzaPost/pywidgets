@@ -432,7 +432,7 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
         return self
 
     def config(self, **kwargs):
-        self.configure(**kwargs)
+        return self.configure(**kwargs)
 
     def trigger_event(self, event: str, *args, **kwargs):
         if event in self._bindings:

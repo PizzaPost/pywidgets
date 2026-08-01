@@ -502,7 +502,7 @@ class Tooltip(Widget, Deletable):
         return self
 
     def config(self, **kwargs):
-        self.configure(**kwargs)
+        return self.configure(**kwargs)
 
     def show(self):
         self._visible = True
