@@ -22,11 +22,11 @@ def check_update():
         response.raise_for_status()
         data = response.json()
         latest_version = data["version"]
-        current_version = "26.31"
+        current_version = "26.32"
         if latest_version != current_version:
-            print(f"An update is available. Download it now with 'pip install --upgrade easypygamewidgets'\n"
+            print(f"\033[31mAn update is available. Download it now with 'pip install --upgrade easypygamewidgets'\n"
                   f"You are currently on: {current_version}\n"
-                  f"The newest version is: {latest_version}")
+                  f"The newest version is: {latest_version}\033[0m")
     except Exception as e:
         print(f"easypygamewidgets: Failed to check for updates: {e}")
 
@@ -96,7 +96,8 @@ def schedule(function, frames_to_execute):
 def get_offset(widget):
     offset_x = offset_y = 0
     if widget.screen:
-        offset_x, offset_y = widget.screen.x, widget.screen.y
+        offset_x = widget.screen.x + widget.screen.current_offset[0]
+        offset_y = widget.screen.y + widget.screen.current_offset[1]
     if getattr(widget, "parent", None):
         offset_x += widget.parent.x
         offset_y += widget.parent.y
@@ -310,6 +311,14 @@ def is_point_over_widget(widget, point):
 def normalize_color(color):
     if color is None:
         return 0, 0, 0, 0
+    # rgb
     if len(color) == 3:
         return *color, 255
-    return color
+    # rgba
+    if len(color) == 4:
+        return color
+    # #hex or hex
+    if len(color) == 7 and len(color.removeprefix("#")) == 6 or len(color) == 6 and len(color.removeprefix("#")) == 6:
+        color = color.removeprefix("#")
+        return int(color[0:2], 16), int(color[2:4], 16), int(color[4:6], 16), 255
+    raise ValueError("Invalid color format. Supported formats: (r, g, b), (r, g, b, a), #hex, hex")

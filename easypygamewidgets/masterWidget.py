@@ -62,18 +62,18 @@ class Widget:
             if self._anchor_x == "left":
                 anchor_offset[0] = 0
             elif self._anchor_x == "center":
-                anchor_offset[0] = self._width // 2
+                anchor_offset[0] = self.width // 2
             elif self._anchor_x == "right":
-                anchor_offset[0] = self._width
+                anchor_offset[0] = self.width
             if self._anchor_y == "top":
                 anchor_offset[1] = 0
             elif self._anchor_y == "center":
-                anchor_offset[1] = self._height // 2
+                anchor_offset[1] = self.height // 2
             elif self._anchor_y == "bottom":
-                anchor_offset[1] = self._height
+                anchor_offset[1] = self.height
             self.x -= anchor_offset[0]
             self.y -= anchor_offset[1]
-        self._rect = pygame.Rect(self._x, self._y, self._width, self._height)
+        self._rect = pygame.Rect(self._x, self._y, self.width, self.height)
         self._needs_transform = True
         return self
 
@@ -81,6 +81,31 @@ class Widget:
         self._anchor_x = anchor_x
         self._anchor_y = anchor_y
         self.place(self._x, self._y)
+        return self
+
+    def grid(self, screen: "easypygamewidgets.Screen", row: int, column: int, rowspan: int = 1, columnspan: int = 1):
+        if rowspan < 1:
+            rowspan = 1
+        if columnspan < 1:
+            columnspan = 1
+        if hasattr(self, "set_screen"):
+            self.set_screen(screen)
+        self._grid_row = row
+        self._grid_column = column
+        self._grid_rowspan = rowspan
+        self._grid_columnspan = columnspan
+        screen.recalculate_grid()
+        return self
+
+    def remove_grid(self):
+        if hasattr(self, "_grid_row"):
+            del self._grid_row
+            del self._grid_column
+            del self._grid_rowspan
+            del self._grid_columnspan
+        screen = getattr(self, "screen", None)
+        if screen is not None:
+            screen.recalculate_grid()
         return self
 
     def update_animation(self):

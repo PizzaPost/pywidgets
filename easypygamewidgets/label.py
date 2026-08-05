@@ -345,7 +345,6 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
     @active_hover_text_color.setter
     def active_hover_text_color(self, value):
         self._active_hover_text_color = misc.normalize_color(value)
-        self._underline = True
 
     @property
     def active_hover_shadow_color(self):
