@@ -832,8 +832,7 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
             self._needs_transform = True
 
     def draw(self, surface: pygame.Surface):
-        if not self._alive or not self._visible:
-            return
+        if not self._alive or not self._visible: return
         mouse_pos = pygame.mouse.get_pos()
         is_hovering = misc.is_point_over_widget(self, mouse_pos)
         current_visual_state = (self._pressed, is_hovering)

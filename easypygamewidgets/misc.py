@@ -22,7 +22,7 @@ def check_update():
         response.raise_for_status()
         data = response.json()
         latest_version = data["version"]
-        current_version = "26.32"
+        current_version = "26.33"
         if latest_version != current_version:
             print(f"\033[31mAn update is available. Download it now with 'pip install --upgrade easypygamewidgets'\n"
                   f"You are currently on: {current_version}\n"
@@ -95,7 +95,10 @@ def schedule(function, frames_to_execute):
 
 def get_offset(widget):
     offset_x = offset_y = 0
-    if widget.screen:
+    class_name = widget.__class__.__name__
+    if class_name == "Screen":
+        offset_x, offset_y = widget.current_offset
+    if getattr(widget, "screen", None):
         offset_x = widget.screen.x + widget.screen.current_offset[0]
         offset_y = widget.screen.y + widget.screen.current_offset[1]
     if getattr(widget, "parent", None):
@@ -276,6 +279,13 @@ def is_point_over_widget(widget, point):
         elif x > track_rect.right - br and y > track_rect.bottom - br:
             cxc, cyc = track_rect.right - br, track_rect.bottom - br
             if (x - cxc) ** 2 + (y - cyc) ** 2 > br ** 2: return False
+        return True
+    elif class_name == "Screen":
+        offset_x, offset_y = get_offset(widget)
+        total_offset_x = offset_x + round(widget.current_offset[0])
+        total_offset_y = offset_y + round(widget.current_offset[1])
+        rect = widget.rect.move(total_offset_x, total_offset_y)
+        if not rect.collidepoint(point): return False
         return True
     elif class_name == "Tooltip":
         rect = widget.rect.move(point[0], point[1])

@@ -13,19 +13,19 @@ pygame.init()
 
 
 # PERFECTION
-# cursors (next update) ❌
-# bindings (next update) ❌
+# TypeHints ❌
 # missing three animations ❔
 
 class Screen(Widget, Deletable):
     def __init__(self, auto_size: bool = True, width: int | None = None, height: int | None = None,
                  min_width: int | None = None, max_width: int | None = None, min_height: int | None = None,
-                 max_height: int | None = None, active_hover_cursor: pygame.Cursor | None = None,
+                 max_height: int | None = None, fill_width: bool = False, fill_height: bool = False,
+                 active_hover_cursor: pygame.Cursor | None = None,
                  disabled_hover_cursor: pygame.Cursor | None = None,
                  active_pressed_cursor: pygame.Cursor | None = None,
                  widgets: "list[easypygamewidgets.Button | easypygamewidgets.Entry | easypygamewidget.Label | easypygamewidgets.Slider | easypygamewidgets.Surface | easypygamewidgets.Timekeeper | easypygamewidgets.Tooltip]" = None,
                  darken_background_with_alpha: int = 0, anchor_x: str = "left", anchor_y: str = "top",
-                 visible: bool = False, enabled: bool = True, x: int = 0,
+                 visible: bool = False, state: str = "enabled", x: int = 0,
                  y: int = 0, layer=1000, ignore_empty_cells: bool = False, row_spacing: int = 10,
                  column_spacing: int = 10, data: Any = None):
         super().__init__()
@@ -33,16 +33,19 @@ class Screen(Widget, Deletable):
         self._row_spacing = row_spacing
         self._column_spacing = column_spacing
         self._auto_size = auto_size
-        if auto_size:
+        if auto_size and not fill_width and not fill_height:
             self._width = 0
             self._height = 0
         else:
+            self._auto_size = False
             self._width = width if width is not None else (misc.pg.get_width())
             self._height = height if height is not None else (misc.pg.get_height())
         self._min_width = min_width
         self._max_width = max_width
         self._min_height = min_height
         self._max_height = max_height
+        self._fill_width = fill_width
+        self._fill_height = fill_height
         cursor_input = {
             "active_hover": active_hover_cursor,
             "disabled_hover": disabled_hover_cursor,
@@ -61,14 +64,12 @@ class Screen(Widget, Deletable):
         self._anchor_x = anchor_x
         self._anchor_y = anchor_y
         self._visible = visible
-        self._enabled = enabled
+        self._state = state
         self._x = x
         self._y = y
         self._layer = layer
         self._ignore_empty_cells = ignore_empty_cells
         self._data = data
-        self._fill_width = width is None
-        self._fill_height = height is None
         self._last_pg_size = None
         self._alive = True
         self._pressed = False
@@ -129,7 +130,8 @@ class Screen(Widget, Deletable):
     @row_spacing.setter
     def row_spacing(self, value):
         self._row_spacing = value
-        self.recalculate_grid()
+        if not self._auto_size:
+            self.recalculate_grid()
 
     @property
     def column_spacing(self):
@@ -138,7 +140,8 @@ class Screen(Widget, Deletable):
     @column_spacing.setter
     def column_spacing(self, value):
         self._column_spacing = value
-        self.recalculate_grid()
+        if not self._auto_size:
+            self.recalculate_grid()
 
     @property
     def min_width(self):
@@ -147,7 +150,8 @@ class Screen(Widget, Deletable):
     @min_width.setter
     def min_width(self, value):
         self._min_width = value
-        self.recalculate_grid()
+        if not self._auto_size:
+            self.recalculate_grid()
 
     @property
     def max_width(self):
@@ -156,7 +160,8 @@ class Screen(Widget, Deletable):
     @max_width.setter
     def max_width(self, value):
         self._max_width = value
-        self.recalculate_grid()
+        if not self._auto_size:
+            self.recalculate_grid()
 
     @property
     def min_height(self):
@@ -165,7 +170,8 @@ class Screen(Widget, Deletable):
     @min_height.setter
     def min_height(self, value):
         self._min_height = value
-        self.recalculate_grid()
+        if not self._auto_size:
+            self.recalculate_grid()
 
     @property
     def max_height(self):
@@ -174,6 +180,27 @@ class Screen(Widget, Deletable):
     @max_height.setter
     def max_height(self, value):
         self._max_height = value
+        if not self._auto_size:
+            self.recalculate_grid()
+
+    @property
+    def fill_width(self):
+        return self._fill_width
+
+    @fill_width.setter
+    def fill_width(self, value):
+        self._fill_width = value
+        self._auto_size = False
+        self.recalculate_grid()
+
+    @property
+    def fill_height(self):
+        return self._fill_height
+
+    @fill_height.setter
+    def fill_height(self, value):
+        self._fill_height = value
+        self._auto_size = False
         self.recalculate_grid()
 
     @property
@@ -249,12 +276,12 @@ class Screen(Widget, Deletable):
         self._visible = value
 
     @property
-    def enabled(self):
-        return self._enabled
+    def state(self):
+        return self._state
 
-    @enabled.setter
-    def enabled(self, value):
-        self._enabled = value
+    @state.setter
+    def state(self, value):
+        self._state = value
 
     @property
     def x(self):
@@ -298,6 +325,14 @@ class Screen(Widget, Deletable):
         self._data = value
 
     @property
+    def last_pg_size(self):
+        return self._last_pg_size
+
+    @last_pg_size.setter
+    def last_pg_size(self, value):
+        self._last_pg_size = value
+
+    @property
     def alive(self):
         return self._alive
 
@@ -320,6 +355,7 @@ class Screen(Widget, Deletable):
     @rect.setter
     def rect(self, value):
         self._rect = value
+        self._auto_size = False
         self.recalculate_grid()
 
     @property
@@ -384,8 +420,8 @@ class Screen(Widget, Deletable):
             widget.screen.remove_widget(widget)
         self.widgets.append(widget)
         widget.screen = self
-        widget.visible = self.visible
-        widget.state = "enabled" if self.enabled else "disabled"
+        widget.visible = self._visible
+        widget.state = self._state
         return self
 
     def remove_widget(self, widget):
@@ -406,24 +442,24 @@ class Screen(Widget, Deletable):
         return self
 
     def enable(self):
-        self.enabled = True
+        self._state = "enabled"
         self.update_widget_state(False, True)
         return self
 
     def disable(self):
-        self.enabled = False
+        self._state = "disabled"
         self.update_widget_state(False, True)
         return self
 
     def update_widget_state(self, update_visibility: bool = True, update_state: bool = True):
-        for widget in self.widgets:
+        for widget in self._widgets:
             if update_visibility:
-                if self.visible:
+                if self._visible:
                     widget.configure(visible=True)
                 else:
                     widget.configure(visible=False)
             if update_state:
-                if self.enabled:
+                if self._state == "enabled":
                     widget.configure(state="enabled")
                 else:
                     widget.configure(state="disabled")
@@ -533,6 +569,10 @@ class Screen(Widget, Deletable):
             w.place(target_x, target_y, suppress_anchor=True)
 
     def draw(self, surface: pygame.Surface):
+        if not self._alive or not self._visible: return
+        mouse_pos = pygame.mouse.get_pos()
+        is_hovering = misc.is_point_over_widget(self, mouse_pos)
+
         current_pg_size = misc.pg.get_size()
         if current_pg_size != self._last_pg_size:
             self._last_pg_size = current_pg_size
@@ -542,3 +582,65 @@ class Screen(Widget, Deletable):
             background_surf.fill((0, 0, 0))
             background_surf.set_alpha(self.darken_background_with_alpha)
             surface.blit(background_surf, (0, 0))
+
+        if is_hovering:
+            if self._state == "enabled":
+                if self._pressed:
+                    cursor_key = "active_pressed"
+                else:
+                    cursor_key = "active_hover"
+            else:
+                cursor_key = "disabled_hover"
+            target_cursor = self._cursors.get(cursor_key)
+            if target_cursor:
+                current_cursor = pygame.mouse.get_cursor()
+                if current_cursor != target_cursor:
+                    if self._original_cursor is None:
+                        self._original_cursor = current_cursor
+                    pygame.mouse.set_cursor(target_cursor)
+        else:
+            if self._original_cursor:
+                pygame.mouse.set_cursor(self._original_cursor)
+                self._original_cursor = None
+
+        if is_hovering and not self._is_hovered:
+            self._is_hovered = True
+            self.trigger_event("<MOUSE-IN>")
+        elif is_hovering and self._is_hovered:
+            self._is_hovered = True
+            self.trigger_event("<HOVER>")
+        elif not is_hovering and self._is_hovered:
+            self._is_hovered = False
+            self.trigger_event("<MOUSE-OUT>")
+
+    def react(self, event=None):
+        if self._state != "enabled" or not self._visible:
+            self._pressed = False
+            return
+        mouse_pos = pygame.mouse.get_pos()
+        is_inside = misc.is_point_over_widget(self, mouse_pos)
+        if not event:
+            if pygame.mouse.get_pressed()[0]:
+                self.trigger_event("<HOLD>")
+                if is_inside:
+                    self._pressed = True
+            elif not pygame.mouse.get_pressed()[0]:
+                if self._pressed:
+                    self.trigger_event("<RELEASE>")
+                    self._pressed = False
+        else:
+            if event.type == pygame.KEYDOWN:
+                self.trigger_event("<KEY>")
+                if event.unicode:
+                    self.trigger_event(event.unicode)
+                keyname = pygame.key.name(event.key)
+                self.trigger_event(f"<{keyname.upper()}>")
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    self.trigger_event("<PRESS>")
+                    if is_inside:
+                        self._pressed = True
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    self.trigger_event("<RELEASE>")
+                    self._pressed = False
