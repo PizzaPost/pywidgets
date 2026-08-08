@@ -3,6 +3,8 @@
 # https://github.com/PizzaPost/easypygamewidgets
 
 import ctypes
+import os
+from collections.abc import Iterable
 
 import pygame
 import requests
@@ -22,7 +24,7 @@ def check_update():
         response.raise_for_status()
         data = response.json()
         latest_version = data["version"]
-        current_version = "26.33"
+        current_version = "26.34"
         if latest_version != current_version:
             print(f"\033[31mAn update is available. Download it now with 'pip install --upgrade easypygamewidgets'\n"
                   f"You are currently on: {current_version}\n"
@@ -95,12 +97,9 @@ def schedule(function, frames_to_execute):
 
 def get_offset(widget):
     offset_x = offset_y = 0
-    class_name = widget.__class__.__name__
-    if class_name == "Screen":
-        offset_x, offset_y = widget.current_offset
     if getattr(widget, "screen", None):
-        offset_x = widget.screen.x + widget.screen.current_offset[0]
-        offset_y = widget.screen.y + widget.screen.current_offset[1]
+        offset_x = widget.screen.current_offset[0]
+        offset_y = widget.screen.current_offset[1]
     if getattr(widget, "parent", None):
         offset_x += widget.parent.x
         offset_y += widget.parent.y
@@ -153,7 +152,7 @@ def is_point_over_widget(widget, point):
             cx, cy = geom_rect.right - br_r, geom_rect.bottom - br_r
             return (x - cx) ** 2 + (y - cy) ** 2 <= br_r ** 2
         return True
-    elif class_name == "Button":
+    elif class_name == "Button" or class_name == "Checkbox":
         offset_x, offset_y = get_offset(widget)
         total_offset_x = offset_x + round(widget.current_offset[0])
         total_offset_y = offset_y + round(widget.current_offset[1])
@@ -318,7 +317,7 @@ def is_point_over_widget(widget, point):
         return False
 
 
-def normalize_color(color):
+def normalize_color(color: tuple[int, int, int] | tuple[int, int, int, int] | str):
     if color is None:
         return 0, 0, 0, 0
     # rgb
@@ -332,3 +331,14 @@ def normalize_color(color):
         color = color.removeprefix("#")
         return int(color[0:2], 16), int(color[2:4], 16), int(color[4:6], 16), 255
     raise ValueError("Invalid color format. Supported formats: (r, g, b), (r, g, b, a), #hex, hex")
+
+
+def create_frames(path: str | os.PathLike) -> Iterable[pygame.Surface]:
+    if os.path.isdir(path):
+        to_return = []
+        for frame in os.listdir(path):
+            print(frame)
+            to_return.append(pygame.image.load(os.path.join(path, frame)))
+        return to_return
+    else:
+        return [pygame.image.load(path)]

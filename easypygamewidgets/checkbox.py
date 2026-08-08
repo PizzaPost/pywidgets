@@ -1,14 +1,14 @@
-# button.py
+# checkbox.py
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
-
+import os
+import pathlib
 from collections.abc import Callable
-from typing import Unpack, Any
+from typing import Any
 
 import pygame
 
 from easypygamewidgets import font, misc
-from easypygamewidgets.assets import TypeHints
 from easypygamewidgets.masterWidgets import Widget, Tooltipable, Screenable, Deletable
 
 pygame.init()
@@ -17,11 +17,11 @@ pygame.init()
 # PERFECTION
 # four different corner radii ❌
 
-class Button(Widget, Tooltipable, Screenable, Deletable):
+class Checkbox(Widget, Tooltipable, Screenable, Deletable):
     def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
                  height: int = 80,
-                 text: str = "easypygamewidgets Button",
-                 state: str | None = None,
+                 text: str = "easypygamewidgets Checkbox", checked: bool = False,
+                 state: str | None = None, visible: bool | None = None,
                  active_unpressed_text_color: tuple | None = (255, 255, 255, 255),
                  disabled_unpressed_text_color: tuple | None = (150, 150, 150, 255),
                  active_hover_text_color: tuple | None = (255, 255, 255, 255),
@@ -45,12 +45,11 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
                  disabled_hover_cursor: pygame.Cursor | None = None,
                  active_pressed_cursor: pygame.Cursor | None = None,
                  font: pygame.font.Font | pygame.font.SysFont = font.default_font, alignment: str = "center",
-                 command: Callable[[], None] | None = None, alignment_spacing: int = 40, corner_radius: int = 25,
-                 layer=1000,
-                 line_spacing: int = 30,
+                 check_command: Callable[[], None] | None = None, uncheck_command: Callable[[], None] | None = None,
+                 alignment_spacing: int = 40, corner_radius: int = 15, layer=1000, line_spacing: int = 30,
                  tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
                  max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
-                 anchor_x: str = "left", anchor_y: str = "top", visible: bool | None = None, data: Any = None):
+                 anchor_x: str = "left", anchor_y: str = "top", data: Any = None):
         super().__init__()
         self._bindings = {}
         if screen:
@@ -80,7 +79,9 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
                     total_w = text_w
             total_h = (len(lines) - 1) * effective_line_h + text_h
             vertical_padding = max(20, min(40, text_h // 2))
-            self._width = total_w + alignment_spacing
+            icon_width = text_h
+            icon_gap = 10
+            self._width = total_w + alignment_spacing + icon_width + icon_gap
             if min_width:
                 self._width = max(self._width, min_width)
             if max_width:
@@ -94,6 +95,7 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
             self._width = width
             self._height = height
         self._text = text
+        self._checked = checked
         self._active_unpressed_text_color = misc.normalize_color(active_unpressed_text_color)
         self._disabled_unpressed_text_color = misc.normalize_color(disabled_unpressed_text_color)
         self._active_hover_text_color = misc.normalize_color(active_hover_text_color)
@@ -125,13 +127,15 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
             else:
                 if cursor is not None:
                     print(
-                        f"No custom cursor is used for the button {text} because it's not a pygame.Cursor object. ({cursor})")
+                        f"No custom cursor is used for the checkbox {text} because it's not a pygame.Cursor object. ({cursor})")
                 self._cursors[name] = None
         self._font = font
         self._alignment = alignment
         self._alignment_spacing = alignment_spacing
-        if command:
-            self.bind("<RELEASE>", command)
+        if check_command:
+            self.bind("<CHECK>", check_command)
+        if uncheck_command:
+            self.bind("<UNCHECK>", uncheck_command)
         self._corner_radius = corner_radius
         self._layer = layer
         self._tooltip = tooltip
@@ -240,6 +244,14 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
     @text.setter
     def text(self, value):
         self._text = value
+
+    @property
+    def checked(self):
+        return self._checked
+
+    @checked.setter
+    def checked(self, value):
+        self._checked = value
 
     @property
     def active_unpressed_text_color(self):
@@ -449,6 +461,22 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
     @command.setter
     def command(self, value):
         self.bind("<RELEASE>", value)
+
+    @property
+    def check_command(self):
+        return self._bindings["<CHECK>"]
+
+    @check_command.setter
+    def check_command(self, value):
+        self.bind("<CHECK>", value)
+
+    @property
+    def uncheck_command(self):
+        return self._bindings["<UNCHECK>"]
+
+    @uncheck_command.setter
+    def uncheck_command(self, value):
+        self.bind("<UNCHECK>", value)
 
     @property
     def alignment_spacing(self):
@@ -734,7 +762,7 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
     def dialog(self, value):
         self._dialog = value
 
-    def configure(self, **kwargs: Unpack[TypeHints.ButtonConfig]):
+    def configure(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
         self._needs_redraw = True
@@ -769,7 +797,7 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
             self._font.set_linesize(self._line_spacing)
         return self
 
-    def config(self, **kwargs: Unpack[TypeHints.ButtonConfig]):
+    def config(self, **kwargs):
         return self.configure(**kwargs)
 
     def scale(self, value=None, frames_to_finish=1):
@@ -838,7 +866,7 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
         is_hovering = misc.is_point_over_widget(self, mouse_pos)
         current_visual_state = (self._pressed, is_hovering)
         if self._needs_redraw or self._last_visual_state != current_visual_state:
-            render_button_surface(self, is_hovering)
+            render_checkbox_surface(self, is_hovering)
             self._last_visual_state = current_visual_state
             self._needs_redraw = True
             self._needs_transform = True
@@ -918,6 +946,12 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
                 if self._pressed:
                     self.trigger_event("<RELEASE>")
                     self._pressed = False
+                    if is_inside:
+                        self._checked = not self._checked
+                        if self._checked:
+                            self.trigger_event("<CHECK>")
+                        else:
+                            self.trigger_event("<UNCHECK>")
         else:
             if event.type == pygame.KEYDOWN:
                 self.trigger_event("<KEY>")
@@ -933,84 +967,110 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
                     self.trigger_event("<RELEASE>")
-                    self._pressed = False
 
 
-def render_button_surface(button, is_hovering):
-    if button.state == "enabled":
-        if button.pressed and is_hovering:
-            text_color = button.active_pressed_text_color
-            bg_color = button.active_pressed_background_color
-            brd_color = button.active_pressed_border_color
+def render_checkbox_surface(checkbox, is_hovering):
+    if checkbox.state == "enabled":
+        if checkbox.pressed and is_hovering:
+            text_color = checkbox.active_pressed_text_color
+            bg_color = checkbox.active_pressed_background_color
+            brd_color = checkbox.active_pressed_border_color
         elif is_hovering:
-            text_color = button.active_hover_text_color
-            bg_color = button.active_hover_background_color
-            brd_color = button.active_hover_border_color
+            text_color = checkbox.active_hover_text_color
+            bg_color = checkbox.active_hover_background_color
+            brd_color = checkbox.active_hover_border_color
         else:
-            text_color = button.active_unpressed_text_color
-            bg_color = button.active_unpressed_background_color
-            brd_color = button.active_unpressed_border_color
+            text_color = checkbox.active_unpressed_text_color
+            bg_color = checkbox.active_unpressed_background_color
+            brd_color = checkbox.active_unpressed_border_color
     else:
         if is_hovering:
-            text_color = button.disabled_hover_text_color
-            bg_color = button.disabled_hover_background_color
-            brd_color = button.disabled_hover_border_color
+            text_color = checkbox.disabled_hover_text_color
+            bg_color = checkbox.disabled_hover_background_color
+            brd_color = checkbox.disabled_hover_border_color
         else:
-            text_color = button.disabled_unpressed_text_color
-            bg_color = button.disabled_unpressed_background_color
-            brd_color = button.disabled_unpressed_border_color
+            text_color = checkbox.disabled_unpressed_text_color
+            bg_color = checkbox.disabled_unpressed_background_color
+            brd_color = checkbox.disabled_unpressed_border_color
 
-    base_width = button._width
-    base_height = button._height
+    base_width = checkbox._width
+    base_height = checkbox._height
     cached = pygame.Surface((base_width, base_height), pygame.SRCALPHA)
     local_rect = pygame.Rect(0, 0, base_width, base_height)
-    if not button.hide_background:
-        pygame.draw.rect(cached, bg_color, local_rect, border_radius=button.corner_radius)
-    if not button.hide_border and brd_color:
-        pygame.draw.rect(cached, brd_color, local_rect, width=button.border_thickness,
-                         border_radius=button.corner_radius)
+    if not checkbox.hide_background:
+        pygame.draw.rect(cached, bg_color, local_rect, border_radius=checkbox.corner_radius)
+    if not checkbox.hide_border and brd_color:
+        pygame.draw.rect(cached, brd_color, local_rect, width=checkbox.border_thickness,
+                         border_radius=checkbox.corner_radius)
 
-    if not button.hide_text:
-        ascent = button.font.get_ascent()
-        descent = abs(button.font.get_descent())
+    icon_gap = 10
+    icon_width = checkbox.font.get_height()
+    icon_surf = get_scaled_icon(checkbox.checked, icon_width)
+    icon_left = local_rect.left + checkbox.alignment_spacing // 2
+    icon_top = local_rect.centery - icon_width // 2
+    cached.blit(icon_surf, (icon_left, icon_top))
+    text_area_left = icon_left + icon_width + icon_gap
+
+    if not checkbox.hide_text:
+        ascent = checkbox.font.get_ascent()
+        descent = abs(checkbox.font.get_descent())
         optical_centre_offset = ascent - (ascent - descent) // 2
-        font_line_h = button.font.get_height()
-        effective_line_h = max(font_line_h, button.line_spacing)
-        if button.alignment == "stretched" and len(button.text) > 1 and not button.auto_size:
-            total_char_width = sum(button.font.render(char, True, text_color).get_width() for char in button.text)
-            available_width = local_rect.width - button.alignment_spacing
+        font_line_h = checkbox.font.get_height()
+        effective_line_h = max(font_line_h, checkbox.line_spacing)
+        if checkbox.alignment == "stretched" and len(checkbox.text) > 1 and not checkbox.auto_size:
+            total_char_width = sum(checkbox.font.render(char, True, text_color).get_width() for char in checkbox.text)
+            available_width = local_rect.width - checkbox.alignment_spacing - icon_width - icon_gap
             if available_width > total_char_width:
-                spacing = (available_width - total_char_width) / (len(button.text) - 1)
-                current_x = local_rect.left + button.alignment_spacing // 2
+                spacing = (available_width - total_char_width) / (len(checkbox.text) - 1)
+                current_x = text_area_left
                 char_y = local_rect.centery - optical_centre_offset + ascent
-                for char in button.text:
-                    char_surf = button.font.render(char, True, text_color)
+                for char in checkbox.text:
+                    char_surf = checkbox.font.render(char, True, text_color)
                     char_surf.set_alpha(text_color[3])
-                    surf_top = char_y - button.font.get_ascent()
+                    surf_top = char_y - checkbox.font.get_ascent()
                     surf_top = max(local_rect.top, min(local_rect.bottom - char_surf.get_height(), surf_top))
                     cached.blit(char_surf, (current_x, surf_top))
                     current_x += char_surf.get_width() + spacing
             else:
-                text_surf = button.font.render(button.text, True, text_color)
+                text_surf = checkbox.font.render(checkbox.text, True, text_color)
                 text_surf.set_alpha(text_color[3])
                 surf_top = local_rect.centery - optical_centre_offset
                 surf_top = max(local_rect.top, min(local_rect.bottom - text_surf.get_height(), surf_top))
-                cached.blit(text_surf, text_surf.get_rect(centerx=local_rect.centerx, top=surf_top))
+                text_center_x = text_area_left + (local_rect.right - text_area_left) // 2
+                cached.blit(text_surf, text_surf.get_rect(centerx=text_center_x, top=surf_top))
         else:
-            lines = button.text.split("\n")
+            lines = checkbox.text.split("\n")
             total_text_height = (len(lines) - 1) * effective_line_h + font_line_h
             block_top = local_rect.centery - total_text_height // 2
             for i, line in enumerate(lines):
-                text_surf = button.font.render(line, True, text_color)
+                text_surf = checkbox.font.render(line, True, text_color)
                 text_surf.set_alpha(text_color[3])
                 surf_top = block_top + i * effective_line_h
                 surf_top = max(local_rect.top, min(local_rect.bottom - text_surf.get_height(), surf_top))
-                if button.alignment == "left":
-                    cached.blit(text_surf, (local_rect.left + button.alignment_spacing // 2, surf_top))
-                elif button.alignment == "right":
+                if checkbox.alignment == "left":
+                    cached.blit(text_surf, (text_area_left, surf_top))
+                elif checkbox.alignment == "right":
                     cached.blit(text_surf,
-                                (local_rect.right - button.alignment_spacing // 2 - text_surf.get_width(), surf_top))
+                                (local_rect.right - checkbox.alignment_spacing // 2 - text_surf.get_width(), surf_top))
                 else:
-                    cached.blit(text_surf, text_surf.get_rect(centerx=local_rect.centerx, top=surf_top))
-    button.original_surface = cached
-    button.cached_surface = cached
+                    text_center_x = text_area_left + (local_rect.right - text_area_left) // 2
+                    cached.blit(text_surf, text_surf.get_rect(centerx=text_center_x, top=surf_top))
+    checkbox.original_surface = cached
+    checkbox.cached_surface = cached
+
+
+def get_scaled_icon(checked: bool, target_width: int):
+    check_icon_raw = pygame.image.load(os.path.join(pathlib.Path(__file__).resolve().parent,
+                                                    "assets", "checkbox", "check.png"))
+    uncheck_icon_raw = pygame.image.load(os.path.join(pathlib.Path(__file__).resolve().parent,
+                                                      "assets", "checkbox", "uncheck.png"))
+    icon_scale_cache = {}
+    target_width = max(1, target_width)
+    cache_key = (checked, target_width)
+    cached_icon = icon_scale_cache.get(cache_key)
+    if cached_icon:
+        return cached_icon
+    raw = check_icon_raw if checked else uncheck_icon_raw
+    scaled = pygame.transform.smoothscale(raw, (target_width, target_width))
+    icon_scale_cache[cache_key] = scaled
+    return scaled

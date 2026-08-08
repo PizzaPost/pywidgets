@@ -9,7 +9,7 @@ from typing import Any
 import pygame
 
 from easypygamewidgets import font, misc
-from easypygamewidgets.masterWidget import Widget, Tooltipable, Screenable, Deletable
+from easypygamewidgets.masterWidgets import Widget, Tooltipable, Screenable, Deletable
 
 pygame.init()
 

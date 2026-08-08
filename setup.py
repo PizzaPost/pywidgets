@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="easypygamewidgets",
-    version="26.33",
+    version="26.34",
     author="PizzaPost",
     author_email="pizzapost.mail@gmail.com",
     description="Create GUIs for pygame.",

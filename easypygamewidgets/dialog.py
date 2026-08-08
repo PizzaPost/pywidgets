@@ -8,7 +8,7 @@ import pygame
 
 from easypygamewidgets import font, misc
 from easypygamewidgets.assets import TypeHints
-from easypygamewidgets.masterWidget import Widget, Screenable, Deletable
+from easypygamewidgets.masterWidgets import Widget, Screenable, Deletable
 
 pygame.init()
 

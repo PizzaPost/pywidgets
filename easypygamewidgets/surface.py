@@ -3,32 +3,32 @@
 # https://github.com/PizzaPost/easypygamewidgets
 
 import time
+from collections.abc import Iterable
 from typing import Any
 
 import pygame
 
 from easypygamewidgets import misc
-from easypygamewidgets.masterWidget import Widget, Tooltipable, Screenable, Deletable
+from easypygamewidgets.masterWidgets import Widget, Tooltipable, Screenable, Deletable
 
 pygame.init()
 
 
 # PERFECTION
-# everything private/properties ❌
-# basic animations ✅
-# cache system ✅
 # config suggestions ❌
-# optimized set_screen function ❌
+# animation cache system in a file... somehow ❌
 
 class Surface(Widget, Tooltipable, Screenable, Deletable):
-    def __init__(self, surface: pygame.Surface, screen: "easypygamewidgets.Screen | None" = None,
-                 state: str | None = None,
+    def __init__(self, frames: Iterable[pygame.Surface], screen: "easypygamewidgets.Screen | None" = None,
+                 state: str | None = None, visible: bool | None = None,
                  active_hover_cursor: pygame.Cursor | None = None,
                  disabled_hover_cursor: pygame.Cursor | None = None,
                  active_pressed_cursor: pygame.Cursor | None = None, dragable: bool = False, layer=1000,
                  tooltip: "easypygamewidgets.Tooltip | None" = None, anchor_x: str = "left", anchor_y: str = "top",
-                 visible: bool | None = None, data: Any = None):
+                 playing: bool = False, looping: bool = True, data: Any = None):
         super().__init__()
+        self._frames = frames
+        surface = frames[0]
         self._surface = surface
         if screen:
             screen.add_widget(self)
@@ -69,6 +69,8 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
                                   active_unpressed_border_color=(100, 100, 100, 255))
         self._anchor_x = anchor_x
         self._anchor_y = anchor_y
+        self._playing = playing
+        self._looping = looping
         self._data = data
         self._width = surface.get_width()
         self._height = surface.get_height()
@@ -94,8 +96,19 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
         self._offset_step = [0, 0]
         self._use_rotozoom = False
         self._dialog = None
+        self._current_frame = 0
 
         misc.add_widget(self)
+
+    @property
+    def frames(self):
+        return self._frames
+
+    @frames.setter
+    def frames(self, value):
+        self._frames = value
+        self._surface = self._frames[0]
+        self._current_frame = 0
 
     @property
     def surface(self):
@@ -203,6 +216,22 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
     @anchor_y.setter
     def anchor_y(self, value):
         self._anchor_y = value
+
+    @property
+    def playing(self):
+        return self._playing
+
+    @playing.setter
+    def playing(self, value):
+        self._playing = value
+
+    @property
+    def looping(self):
+        return self._looping
+
+    @looping.setter
+    def looping(self, value):
+        self._looping = value
 
     @property
     def data(self):
@@ -404,6 +433,15 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
     def dialog(self, value):
         self._dialog = value
 
+    @property
+    def current_frame(self):
+        return self._current_frame
+
+    @current_frame.setter
+    def current_frame(self, value):
+        self._current_frame = value
+        self._surface = self._frames[self._current_frame]
+
     def configure(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -536,6 +574,18 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
             self._x = self._rect.x
             self._y = self._rect.y
 
+    def play(self):
+        self._playing = True
+        return self
+
+    def jump(self, index: int):
+        self._surface = self._frames[index]
+        return self
+
+    def stop(self):
+        self._playing = False
+        return self
+
     def draw(self, window: pygame.Surface):
         if not self._alive or not self._visible:
             return
@@ -578,7 +628,12 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
             self.trigger_event("<MOUSE-OUT>")
             if self._tooltip:
                 self._tooltip.hide()
-
+        if self._playing:
+            self._surface = self._frames[self._current_frame]
+            if self._current_frame < len(self._frames) - 1:
+                self._current_frame += 1
+            if self._current_frame >= len(self._frames) and self._looping:
+                self._current_frame = 0
         draw_rect = self._rect.move(total_offset_x, total_offset_y)
         window.blit(self._surface, draw_rect)
 
