@@ -1,8 +1,6 @@
 # checkbox.py
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
-import os
-import pathlib
 from collections.abc import Callable
 from typing import Any
 
@@ -15,6 +13,7 @@ pygame.init()
 
 
 # PERFECTION
+# cache system ❌
 # four different corner radii ❌
 
 class Checkbox(Widget, Tooltipable, Screenable, Deletable):
@@ -37,6 +36,16 @@ class Checkbox(Widget, Tooltipable, Screenable, Deletable):
                  active_hover_border_color: tuple | None = (150, 150, 150, 255),
                  disabled_hover_border_color: tuple | None = (60, 60, 60, 255),
                  active_pressed_border_color: tuple | None = (50, 50, 50, 255),
+                 active_unpressed_mark_color: tuple | None = (255, 255, 255, 255),
+                 disabled_unpressed_mark_color: tuple | None = (150, 150, 150, 255),
+                 active_hover_mark_color: tuple | None = (255, 255, 255, 255),
+                 disabled_hover_mark_color: tuple | None = (150, 150, 150, 255),
+                 active_pressed_mark_color: tuple | None = (200, 200, 200, 255),
+                 active_unpressed_mark_background_color: tuple | None = (30, 30, 30, 255),
+                 disabled_unpressed_mark_background_color: tuple | None = (20, 20, 20, 255),
+                 active_hover_mark_background_color: tuple | None = (45, 45, 45, 255),
+                 disabled_hover_mark_background_color: tuple | None = (20, 20, 20, 255),
+                 active_pressed_mark_background_color: tuple | None = (25, 25, 25, 255),
                  border_thickness: int = 2,
                  hide_text: bool = False,
                  hide_background: bool = False,
@@ -111,6 +120,16 @@ class Checkbox(Widget, Tooltipable, Screenable, Deletable):
         self._active_hover_border_color = misc.normalize_color(active_hover_border_color)
         self._disabled_hover_border_color = misc.normalize_color(disabled_hover_border_color)
         self._active_pressed_border_color = misc.normalize_color(active_pressed_border_color)
+        self._active_unpressed_mark_color = misc.normalize_color(active_unpressed_mark_color)
+        self._disabled_unpressed_mark_color = misc.normalize_color(disabled_unpressed_mark_color)
+        self._active_hover_mark_color = misc.normalize_color(active_hover_mark_color)
+        self._disabled_hover_mark_color = misc.normalize_color(disabled_hover_mark_color)
+        self._active_pressed_mark_color = misc.normalize_color(active_pressed_mark_color)
+        self._active_unpressed_mark_background_color = misc.normalize_color(active_unpressed_mark_background_color)
+        self._disabled_unpressed_mark_background_color = misc.normalize_color(disabled_unpressed_mark_background_color)
+        self._active_hover_mark_background_color = misc.normalize_color(active_hover_mark_background_color)
+        self._disabled_hover_mark_background_color = misc.normalize_color(disabled_hover_mark_background_color)
+        self._active_pressed_mark_background_color = misc.normalize_color(active_pressed_mark_background_color)
         self._border_thickness = border_thickness
         self._hide_text = hide_text
         self._hide_background = hide_background
@@ -372,6 +391,86 @@ class Checkbox(Widget, Tooltipable, Screenable, Deletable):
     @active_pressed_border_color.setter
     def active_pressed_border_color(self, value):
         self._active_pressed_border_color = misc.normalize_color(value)
+
+    @property
+    def active_unpressed_mark_color(self):
+        return self._active_unpressed_mark_color
+
+    @active_unpressed_mark_color.setter
+    def active_unpressed_mark_color(self, value):
+        self._active_unpressed_mark_color = misc.normalize_color(value)
+
+    @property
+    def disabled_unpressed_mark_color(self):
+        return self._disabled_unpressed_mark_color
+
+    @disabled_unpressed_mark_color.setter
+    def disabled_unpressed_mark_color(self, value):
+        self._disabled_unpressed_mark_color = misc.normalize_color(value)
+
+    @property
+    def active_hover_mark_color(self):
+        return self._active_hover_mark_color
+
+    @active_hover_mark_color.setter
+    def active_hover_mark_color(self, value):
+        self._active_hover_mark_color = misc.normalize_color(value)
+
+    @property
+    def disabled_hover_mark_color(self):
+        return self._disabled_hover_mark_color
+
+    @disabled_hover_mark_color.setter
+    def disabled_hover_mark_color(self, value):
+        self._disabled_hover_mark_color = misc.normalize_color(value)
+
+    @property
+    def active_pressed_mark_color(self):
+        return self._active_pressed_mark_color
+
+    @active_pressed_mark_color.setter
+    def active_pressed_mark_color(self, value):
+        self._active_pressed_mark_color = misc.normalize_color(value)
+
+    @property
+    def active_unpressed_mark_background_color(self):
+        return self._active_unpressed_mark_background_color
+
+    @active_unpressed_mark_background_color.setter
+    def active_unpressed_mark_background_color(self, value):
+        self._active_unpressed_mark_background_color = misc.normalize_color(value)
+
+    @property
+    def disabled_unpressed_mark_background_color(self):
+        return self._disabled_unpressed_mark_background_color
+
+    @disabled_unpressed_mark_background_color.setter
+    def disabled_unpressed_mark_background_color(self, value):
+        self._disabled_unpressed_mark_background_color = misc.normalize_color(value)
+
+    @property
+    def active_hover_mark_background_color(self):
+        return self._active_hover_mark_background_color
+
+    @active_hover_mark_background_color.setter
+    def active_hover_mark_background_color(self, value):
+        self._active_hover_mark_background_color = misc.normalize_color(value)
+
+    @property
+    def disabled_hover_mark_background_color(self):
+        return self._disabled_hover_mark_background_color
+
+    @disabled_hover_mark_background_color.setter
+    def disabled_hover_mark_background_color(self, value):
+        self._disabled_hover_mark_background_color = misc.normalize_color(value)
+
+    @property
+    def active_pressed_mark_background_color(self):
+        return self._active_pressed_mark_background_color
+
+    @active_pressed_mark_background_color.setter
+    def active_pressed_mark_background_color(self, value):
+        self._active_pressed_mark_background_color = misc.normalize_color(value)
 
     @property
     def border_thickness(self):
@@ -975,23 +1074,33 @@ def render_checkbox_surface(checkbox, is_hovering):
             text_color = checkbox.active_pressed_text_color
             bg_color = checkbox.active_pressed_background_color
             brd_color = checkbox.active_pressed_border_color
+            mark_color = checkbox.active_pressed_mark_color
+            mark_bg_color = checkbox.active_pressed_mark_background_color
         elif is_hovering:
             text_color = checkbox.active_hover_text_color
             bg_color = checkbox.active_hover_background_color
             brd_color = checkbox.active_hover_border_color
+            mark_color = checkbox.active_hover_mark_color
+            mark_bg_color = checkbox.active_hover_mark_background_color
         else:
             text_color = checkbox.active_unpressed_text_color
             bg_color = checkbox.active_unpressed_background_color
             brd_color = checkbox.active_unpressed_border_color
+            mark_color = checkbox.active_unpressed_mark_color
+            mark_bg_color = checkbox.active_unpressed_mark_background_color
     else:
         if is_hovering:
             text_color = checkbox.disabled_hover_text_color
             bg_color = checkbox.disabled_hover_background_color
             brd_color = checkbox.disabled_hover_border_color
+            mark_color = checkbox.disabled_hover_mark_color
+            mark_bg_color = checkbox.disabled_hover_mark_background_color
         else:
             text_color = checkbox.disabled_unpressed_text_color
             bg_color = checkbox.disabled_unpressed_background_color
             brd_color = checkbox.disabled_unpressed_border_color
+            mark_color = checkbox.disabled_unpressed_mark_color
+            mark_bg_color = checkbox.disabled_unpressed_mark_background_color
 
     base_width = checkbox._width
     base_height = checkbox._height
@@ -1005,10 +1114,18 @@ def render_checkbox_surface(checkbox, is_hovering):
 
     icon_gap = 10
     icon_width = checkbox.font.get_height()
-    icon_surf = get_scaled_icon(checkbox.checked, icon_width)
     icon_left = local_rect.left + checkbox.alignment_spacing // 2
     icon_top = local_rect.centery - icon_width // 2
-    cached.blit(icon_surf, (icon_left, icon_top))
+    mark_rect = pygame.Rect(icon_left, icon_top, icon_width, icon_width)
+    mark_box_radius = max(2, icon_width // 6)
+    pygame.draw.rect(cached, mark_bg_color, mark_rect, border_radius=mark_box_radius)
+    mark_thickness = max(2, icon_width // 8)
+    inset = max(3, icon_width // 5)
+    if checkbox.checked:
+        pygame.draw.line(cached, mark_color, (mark_rect.left + inset, mark_rect.top + inset),
+                         (mark_rect.right - inset, mark_rect.bottom - inset), mark_thickness)
+        pygame.draw.line(cached, mark_color, (mark_rect.right - inset, mark_rect.top + inset),
+                         (mark_rect.left + inset, mark_rect.bottom - inset), mark_thickness)
     text_area_left = icon_left + icon_width + icon_gap
 
     if not checkbox.hide_text:
@@ -1057,20 +1174,3 @@ def render_checkbox_surface(checkbox, is_hovering):
                     cached.blit(text_surf, text_surf.get_rect(centerx=text_center_x, top=surf_top))
     checkbox.original_surface = cached
     checkbox.cached_surface = cached
-
-
-def get_scaled_icon(checked: bool, target_width: int):
-    check_icon_raw = pygame.image.load(os.path.join(pathlib.Path(__file__).resolve().parent,
-                                                    "assets", "checkbox", "check.png"))
-    uncheck_icon_raw = pygame.image.load(os.path.join(pathlib.Path(__file__).resolve().parent,
-                                                      "assets", "checkbox", "uncheck.png"))
-    icon_scale_cache = {}
-    target_width = max(1, target_width)
-    cache_key = (checked, target_width)
-    cached_icon = icon_scale_cache.get(cache_key)
-    if cached_icon:
-        return cached_icon
-    raw = check_icon_raw if checked else uncheck_icon_raw
-    scaled = pygame.transform.smoothscale(raw, (target_width, target_width))
-    icon_scale_cache[cache_key] = scaled
-    return scaled

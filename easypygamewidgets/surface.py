@@ -632,7 +632,8 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
             self._surface = self._frames[self._current_frame]
             if self._current_frame < len(self._frames) - 1:
                 self._current_frame += 1
-            if self._current_frame >= len(self._frames) and self._looping:
+            print(self._current_frame, len(self._frames), self._looping)
+            if self._current_frame >= len(self._frames) - 1 and self._looping:
                 self._current_frame = 0
         draw_rect = self._rect.move(total_offset_x, total_offset_y)
         window.blit(self._surface, draw_rect)

@@ -33,7 +33,10 @@ class Widget:
             if not require_hover or misc.is_point_over_widget(self, pygame.mouse.get_pos()):
                 value = widget_boolean_value() if callable(widget_boolean_value) else widget_boolean_value
                 if value is None or value == required_value_for_widget_boolean_value:
-                    command(*args, **kwargs)
+                    try:
+                        command(self, *args, **kwargs)
+                    except TypeError:
+                        command(*args, **kwargs)
 
     def unbind(self, event: str):
         if event in self._bindings:
