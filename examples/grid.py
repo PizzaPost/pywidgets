@@ -26,18 +26,18 @@ login.grid(screen=screen, row=1, column=3)
 
 
 def draw():
-    window.fill((30, 30, 30))
+	window.fill((30, 30, 30))
 
 
 epw.create_pygame_layer(draw, 500)
 
 running = True
 while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        epw.handle_event(event)
-    epw.handle_special_events()
-    epw.flip()
-    clock.tick(60)
+	for event in pygame.event.get():
+		if event.type==pygame.QUIT:
+			running = False
+		epw.handle_event(event)
+	epw.handle_special_events()
+	epw.flip()
+	clock.tick(60)
 pygame.quit()

@@ -91,11 +91,18 @@ A customizable button widget to run commands when interacted.
 
 [example code](https://github.com/PizzaPost/easypygamewidgets/blob/master/examples/button.py)
 
-### Slider
+### Checkbox
 
-A slider for selecting values within a specific range.
+A button that can toggle between pressed and unpressed. It displays the current state and can trigger commands based on
+them.
 
-[example code](https://github.com/PizzaPost/easypygamewidgets/blob/master/examples/slider.py)
+[example code](https://github.com/PizzaPost/easypygamewidgets/blob/master/examples/checkbox.py)
+
+### Dialog
+
+A popup with a title, description and interaction options (widgets) at the bottom.
+
+[example code](https://github.com/PizzaPost/easypygamewidgets/blob/master/examples/dialog.py)
 
 ### Entry
 
@@ -108,6 +115,12 @@ A text entry with selection and clipboard support.
 A text display that can be used to drag it into places or show text.
 
 [example code](https://github.com/PizzaPost/easypygamewidgets/blob/master/examples/label.py)
+
+### Slider
+
+A slider for selecting values within a specific range.
+
+[example code](https://github.com/PizzaPost/easypygamewidgets/blob/master/examples/slider.py)
 
 ### Surface (images etc.)
 
@@ -122,7 +135,7 @@ A text display that can show a timer or stopwatch.
 
 [example code](https://github.com/PizzaPost/easypygamewidgets/blob/master/examples/timekeeper.py)
 
-### Tooltips
+### Tooltip
 
 A text display that is only shown when you hover over a widgets.
 
@@ -146,23 +159,39 @@ epw.handle_special_events()
 epw.flip()
 ```
 
+### Other Functions
+
+```python
+# disable the update check when linking the pygame window (could improve startup time)
+epw.disable_update_check()
+
+# run a function every frame but draw the content on a specific layer
+epw.create_pygame_layer(function, layer)
+
+# set the appearance mode (light (0), dark (1), system (2))
+epw.set_appearance_mode(mode)
+
+# schedule something callable
+epw.schedule(function, time_to_execute, unit, fps)
+
+# turn a folder into a list of pygame surfaces that can be used for an animated Surface widget
+epw.create_frames(path)
+```
+
 ## Examples (COMING SOON)
 
 Check the [examples directory](https://github.com/PizzaPost/easypygamewidgets/tree/master/examples) for complete working
 examples:
 
 1. **[all widgets example](https://github.com/PizzaPost/easypygamewidgets/blob/master/examples/basic.py)** - simple demo
-   of all
-   widgets
-2. **[screens with animations](https://github.com/PizzaPost/easypygamewidgets/blob/master/examples/animated_screens.py)
-   ** -
-   multiple screens with transitions
+   of all widgets
+2.
+**[screens with animations](https://github.com/PizzaPost/easypygamewidgets/blob/master/examples/animated_screens.py)** -
+multiple screens with transitions
 3. **[settings screen](https://github.com/PizzaPost/easypygamewidgets/blob/master/examples/settings.py)** - interactive
-   settings
-   panel with sliders
+   settings panel with sliders
 4. **[login form](https://github.com/PizzaPost/easypygamewidgets/blob/master/examples/login_form.py)** - form with
-   entries and
-   validation
+   entries and validation
 5. **[bindings](https://github.com/PizzaPost/easypygamewidgets/blob/master/examples/slider.py)** - binding events to
    widgets
 

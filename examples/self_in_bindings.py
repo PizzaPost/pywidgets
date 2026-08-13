@@ -1,4 +1,4 @@
-# surface.py
+# button.py
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
 
@@ -12,13 +12,16 @@ clock = pygame.time.Clock()
 epw.link_pygame_window(window)
 epw.set_appearance_mode(2)
 
-screen = epw.Screen(visible=True)
-img_surface = epw.Surface(
-	frames=[pygame.image.load("surface_example.png")], screen=screen,
-	active_hover_cursor=pygame.cursors.tri_left, anchor_x="center", anchor_y="center"
-)
-img_surface.bind("<RELEASE>", lambda: exit(0))
-img_surface.place(x=50, y=50, mode="%")
+
+def change_text(self):
+	self.config(text="You pressed the button!")
+	self.place(50, 50, mode="%")
+
+
+button = epw.Button(text="This is a button!", corner_radius=15)
+button.anchor(anchor_x="center", anchor_y="center")
+button.place(x=50, y=50, mode="%")
+button.bind("<RELEASE>", lambda self: change_text(self))
 
 
 def draw():
