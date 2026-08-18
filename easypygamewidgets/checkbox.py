@@ -1,12 +1,17 @@
 # checkbox.py
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
+"""
+A checkbox widget for pygame.
+"""
+
 from collections.abc import Callable
-from typing import Any
+from typing import Any, Unpack
 
 import pygame
 
 from easypygamewidgets import font, misc
+from easypygamewidgets.assets import TypeHints
 from easypygamewidgets.masterWidgets import Deletable, Screenable, Tooltipable, Widget
 
 pygame.init()
@@ -17,48 +22,116 @@ pygame.init()
 # four different corner radii ❌
 
 class Checkbox(Widget, Tooltipable, Screenable, Deletable):
+	"""Initializes a checkbox widget for pygame."""
+
 	def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
 	             height: int = 80,
 	             text: str = "easypygamewidgets Checkbox", checked: bool = False,
-	             state: str|None = None, visible: bool|None = None,
-	             active_unpressed_text_color: tuple|None = (255, 255, 255, 255),
-	             disabled_unpressed_text_color: tuple|None = (150, 150, 150, 255),
-	             active_hover_text_color: tuple|None = (255, 255, 255, 255),
-	             disabled_hover_text_color: tuple|None = (150, 150, 150, 255),
-	             active_pressed_text_color: tuple|None = (200, 200, 200, 255),
-	             active_unpressed_background_color: tuple|None = (50, 50, 50, 255),
-	             disabled_unpressed_background_color: tuple|None = (30, 30, 30, 255),
-	             active_hover_background_color: tuple|None = (70, 70, 70, 255),
-	             disabled_hover_background_color: tuple|None = (30, 30, 30, 255),
-	             active_pressed_background_color: tuple|None = (40, 40, 40, 255),
-	             active_unpressed_border_color: tuple|None = (100, 100, 100, 255),
-	             disabled_unpressed_border_color: tuple|None = (60, 60, 60, 255),
-	             active_hover_border_color: tuple|None = (150, 150, 150, 255),
-	             disabled_hover_border_color: tuple|None = (60, 60, 60, 255),
-	             active_pressed_border_color: tuple|None = (50, 50, 50, 255),
-	             active_unpressed_mark_color: tuple|None = (255, 255, 255, 255),
-	             disabled_unpressed_mark_color: tuple|None = (150, 150, 150, 255),
-	             active_hover_mark_color: tuple|None = (255, 255, 255, 255),
-	             disabled_hover_mark_color: tuple|None = (150, 150, 150, 255),
-	             active_pressed_mark_color: tuple|None = (200, 200, 200, 255),
-	             active_unpressed_mark_background_color: tuple|None = (30, 30, 30, 255),
-	             disabled_unpressed_mark_background_color: tuple|None = (20, 20, 20, 255),
-	             active_hover_mark_background_color: tuple|None = (45, 45, 45, 255),
-	             disabled_hover_mark_background_color: tuple|None = (20, 20, 20, 255),
-	             active_pressed_mark_background_color: tuple|None = (25, 25, 25, 255),
+	             state: str | None = None, visible: bool | None = None,
+	             active_unpressed_text_color: tuple | None = (255, 255, 255, 255),
+	             disabled_unpressed_text_color: tuple | None = (150, 150, 150, 255),
+	             active_hover_text_color: tuple | None = (255, 255, 255, 255),
+	             disabled_hover_text_color: tuple | None = (150, 150, 150, 255),
+	             active_pressed_text_color: tuple | None = (200, 200, 200, 255),
+	             active_unpressed_background_color: tuple | None = (50, 50, 50, 255),
+	             disabled_unpressed_background_color: tuple | None = (30, 30, 30, 255),
+	             active_hover_background_color: tuple | None = (70, 70, 70, 255),
+	             disabled_hover_background_color: tuple | None = (30, 30, 30, 255),
+	             active_pressed_background_color: tuple | None = (40, 40, 40, 255),
+	             active_unpressed_border_color: tuple | None = (100, 100, 100, 255),
+	             disabled_unpressed_border_color: tuple | None = (60, 60, 60, 255),
+	             active_hover_border_color: tuple | None = (150, 150, 150, 255),
+	             disabled_hover_border_color: tuple | None = (60, 60, 60, 255),
+	             active_pressed_border_color: tuple | None = (50, 50, 50, 255),
+	             active_unpressed_mark_color: tuple | None = (255, 255, 255, 255),
+	             disabled_unpressed_mark_color: tuple | None = (150, 150, 150, 255),
+	             active_hover_mark_color: tuple | None = (255, 255, 255, 255),
+	             disabled_hover_mark_color: tuple | None = (150, 150, 150, 255),
+	             active_pressed_mark_color: tuple | None = (200, 200, 200, 255),
+	             active_unpressed_mark_background_color: tuple | None = (30, 30, 30, 255),
+	             disabled_unpressed_mark_background_color: tuple | None = (20, 20, 20, 255),
+	             active_hover_mark_background_color: tuple | None = (45, 45, 45, 255),
+	             disabled_hover_mark_background_color: tuple | None = (20, 20, 20, 255),
+	             active_pressed_mark_background_color: tuple | None = (25, 25, 25, 255),
 	             border_thickness: int = 2,
 	             hide_text: bool = False,
 	             hide_background: bool = False,
 	             hide_border: bool = False,
-	             active_hover_cursor: pygame.Cursor|None = None,
-	             disabled_hover_cursor: pygame.Cursor|None = None,
-	             active_pressed_cursor: pygame.Cursor|None = None,
-	             font: pygame.font.Font|pygame.font.SysFont = font.default_font, alignment: str = "center",
-	             check_command: Callable[[], None]|None = None, uncheck_command: Callable[[], None]|None = None,
+	             active_hover_cursor: pygame.Cursor | None = None,
+	             disabled_hover_cursor: pygame.Cursor | None = None,
+	             active_pressed_cursor: pygame.Cursor | None = None,
+	             font: pygame.font.Font | pygame.font.SysFont = font.default_font, alignment: str = "center",
+	             check_command: Callable[[], None] | None = None, uncheck_command: Callable[[], None] | None = None,
 	             alignment_spacing: int = 40, corner_radius: int = 15, layer=1000, line_spacing: int = 30,
-	             tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int|None = None,
-	             max_width: int|None = None, min_height: int|None = None, max_height: int|None = None,
-	             anchor_x: str = "left", anchor_y: str = "top", data: Any = None):
+	             tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
+	             max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
+	             anchor_x: str = "left", anchor_y: str = "top", data: Any = None) -> None:
+		"""
+		Initializes a Checkbox widget.
+
+		Args:
+			screen: The Screen this checkbox is attached to. If None, the checkbox is created without a parent screen.
+			auto_size: If True, width and height are computed from the rendered text instead of using the given
+				width/height.
+			width: Fixed checkbox width in pixels. Ignored if auto_size is True.
+			height: Fixed checkbox height in pixels. Ignored if auto_size is True.
+			text: The text displayed next to the checkbox mark. Supports multi-line text via '\\n'.
+			checked: Initial checked state.
+			state: Initial state, 'enabled' or 'disabled'. Defaults to 'enabled' if not given.
+			visible: Initial visibility. Defaults to True if not given.
+			active_unpressed_text_color: RGBA text color while enabled, not pressed, not hovered.
+			disabled_unpressed_text_color: RGBA text color while disabled, not hovered.
+			active_hover_text_color: RGBA text color while enabled and hovered.
+			disabled_hover_text_color: RGBA text color while disabled and hovered.
+			active_pressed_text_color: RGBA text color while enabled and pressed.
+			active_unpressed_background_color: RGBA background color while enabled, not pressed, not hovered.
+			disabled_unpressed_background_color: RGBA background color while disabled, not hovered.
+			active_hover_background_color: RGBA background color while enabled and hovered.
+			disabled_hover_background_color: RGBA background color while disabled and hovered.
+			active_pressed_background_color: RGBA background color while enabled and pressed.
+			active_unpressed_border_color: RGBA border color while enabled, not pressed, not hovered.
+			disabled_unpressed_border_color: RGBA border color while disabled, not hovered.
+			active_hover_border_color: RGBA border color while enabled and hovered.
+			disabled_hover_border_color: RGBA border color while disabled and hovered.
+			active_pressed_border_color: RGBA border color while enabled and pressed.
+			active_unpressed_mark_color: RGBA color of the check mark while enabled, not pressed, not hovered.
+			disabled_unpressed_mark_color: RGBA color of the check mark while disabled, not hovered.
+			active_hover_mark_color: RGBA color of the check mark while enabled and hovered.
+			disabled_hover_mark_color: RGBA color of the check mark while disabled and hovered.
+			active_pressed_mark_color: RGBA color of the check mark while enabled and pressed.
+			active_unpressed_mark_background_color: RGBA background color of the mark box while enabled, not pressed,
+				not hovered.
+			disabled_unpressed_mark_background_color: RGBA background color of the mark box while disabled, not hovered.
+			active_hover_mark_background_color: RGBA background color of the mark box while enabled and hovered.
+			disabled_hover_mark_background_color: RGBA background color of the mark box while disabled and hovered.
+			active_pressed_mark_background_color: RGBA background color of the mark box while enabled and pressed.
+			border_thickness: Border width in pixels.
+			hide_text: If True, text is not rendered.
+			hide_background: If True, the background fill is not rendered.
+			hide_border: If True, the border is not rendered.
+			active_hover_cursor: Custom cursor shown on hover while enabled.
+			disabled_hover_cursor: Custom cursor shown on hover while disabled.
+			active_pressed_cursor: Custom cursor shown while pressed.
+			font: The pygame font used to render the checkbox text.
+			alignment: Text alignment: 'left', 'right', 'center', or 'stretched'.
+			check_command: Callback bound to the '<CHECK>' event, triggered when the checkbox becomes checked.
+			uncheck_command: Callback bound to the '<UNCHECK>' event, triggered when the checkbox becomes unchecked.
+			alignment_spacing: Horizontal padding reserved around the mark and aligned text.
+			corner_radius: Corner radius in pixels for the checkbox shape.
+			layer: Draw order layer; higher values draw on top.
+			line_spacing: Line height in pixels for multi-line text.
+			tooltip: A Tooltip widget shown on hover, if given.
+			min_width: Minimum width in pixels when auto_size is True.
+			max_width: Maximum width in pixels when auto_size is True.
+			min_height: Minimum height in pixels when auto_size is True.
+			max_height: Maximum height in pixels when auto_size is True.
+			anchor_x: Horizontal anchor point: 'left', 'center', or 'right'.
+			anchor_y: Vertical anchor point: 'top', 'center', or 'bottom'.
+			data: Arbitrary user data attached to the widget.
+
+		Raises:
+			ValueError: If a *_cursor argument is given but is not a pygame.Cursor instance.
+		"""
 		super().__init__()
 		self._bindings = {}
 		if screen:
@@ -145,8 +218,9 @@ class Checkbox(Widget, Tooltipable, Screenable, Deletable):
 				self._cursors[name] = cursor
 			else:
 				if cursor is not None:
-					print(
-						f"No custom cursor is used for the checkbox {text} because it's not a pygame.Cursor object. ({cursor})"
+					raise ValueError(
+						f"No custom cursor is used for the button '{text}' because it's not a pygame.Cursor object. "
+						f"{cursor} is a {type(cursor)}"
 					)
 				self._cursors[name] = None
 		self._font = font
@@ -864,7 +938,16 @@ class Checkbox(Widget, Tooltipable, Screenable, Deletable):
 	def dialog(self, value):
 		self._dialog = value
 
-	def configure(self, **kwargs):
+	def configure(self, **kwargs: Unpack[TypeHints.CheckboxConfig]) -> "Checkbox":
+		"""
+		Updates one or more of the checkbox's attributes.
+
+		Args:
+			**kwargs: Checkbox attributes to update as defined in TypeHints.CheckboxConfig
+
+		Returns:
+			Checkbox (Checkbox): This checkbox instance to allow method chaining.
+		"""
 		for key, value in kwargs.items():
 			setattr(self, key, value)
 		self._needs_redraw = True
@@ -904,46 +987,97 @@ class Checkbox(Widget, Tooltipable, Screenable, Deletable):
 			self._font.set_linesize(self._line_spacing)
 		return self
 
-	def config(self, **kwargs):
+	def config(self, **kwargs: Unpack[TypeHints.CheckboxConfig]) -> "Checkbox":
+		"""
+		Updates one or more of the checkbox's attributes.
+
+		Args:
+			**kwargs: Checkbox attributes to update as defined in TypeHints.CheckboxConfig
+
+		Returns:
+			Checkbox (Checkbox): This checkbox instance to allow method chaining.
+		"""
 		return self.configure(**kwargs)
 
-	def scale(self, value=None, frames_to_finish=1):
+	def scale(self, value: int | float = 1, frames_to_finish: int = 1) -> "Checkbox":
+		"""
+		Scale the checkbox by a factor. It's only a visual scale so upscaling could look pixelated.
+
+		Args:
+			 value (int|float): the scale factor
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Checkbox (Checkbox): This checkbox instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		self._target_scale = 1 if value is None else value
+		self._target_scale = value
 		self._scale_step = (self._target_scale-self._current_scale)/frames_to_finish
-		self.update_animation()
+		self._update_animation()
 		return self
 
-	def rotate(self, value=None, frames_to_finish=1):
+	def rotate(self, value: int | float = 0, frames_to_finish: int = 1) -> "Checkbox":
+		"""
+		Rotate the checkbox by a degree.
+
+		Args:
+			 value (int|float): the rotation degree
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Checkbox (Checkbox): This checkbox instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		self._target_rotation = 0 if value is None else value
+		self._target_rotation = value
 		self._rotation_step = (self._target_rotation-self._current_rotation)/frames_to_finish
-		self.update_animation()
+		self._update_animation()
 		return self
 
-	def rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
+	def rotozoom(self, scale: int | float = 1, rotation: int = 0, frames_to_finish: int = 1) -> "Checkbox":
+		"""
+		Rotate the checkbox by a degree and scale it.
+
+		Args:
+			 scale (int|float): the scale factor
+			 rotation (int): the rotation degree
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Checkbox (Checkbox): This checkbox instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		self._target_scale = 1 if scale is None else scale
+		self._target_scale = scale
 		self._scale_step = (self._target_scale-self._current_scale)/frames_to_finish
-		self._target_rotation = 0 if rotation is None else rotation
+		self._target_rotation = rotation
 		self._rotation_step = (self._target_rotation-self._current_rotation)/frames_to_finish
 		self._use_rotozoom = True
-		self.update_animation()
+		self._update_animation()
 		return self
 
-	def offset(self, value: tuple[int, int], frames_to_finish=1):
+	def offset(self, value: tuple[int, int] = (0, 0), frames_to_finish: int = 1) -> "Checkbox":
+		"""
+		Offset the checkbox by an x and y value.
+
+		Args:
+			 value: an iterable thing with two values. The first being the x and the second the y offset.
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Checkbox (Checkbox): This checkbox instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		self._target_offset = (0, 0) if value is None else value
+		self._target_offset = value
 		self._offset_step[0] = (self._target_offset[0]-self._current_offset[0])/frames_to_finish
 		self._offset_step[1] = (self._target_offset[1]-self._current_offset[1])/frames_to_finish
-		self.update_animation()
+		self._update_animation()
 		return self
 
-	def update_animation(self):
+	def _update_animation(self) -> None:
+		"""This function is only used internally to update the animation until it's finished."""
 		scale_changed = False
 		rotation_changed = False
 		if self._current_scale!=self._target_scale:
@@ -967,13 +1101,19 @@ class Checkbox(Widget, Tooltipable, Screenable, Deletable):
 		if scale_changed or rotation_changed:
 			self._needs_transform = True
 
-	def draw(self, surface: pygame.Surface):
+	def _draw(self, surface: pygame.Surface) -> None:
+		"""
+		This function is only used internally to draw the checkbox.
+
+		Args:
+			surface (pygame.Surface): The surface to draw the checkbox on.
+		"""
 		if not self._alive or not self._visible: return
 		mouse_pos = pygame.mouse.get_pos()
 		is_hovering = misc._is_point_over_widget(self, mouse_pos)
 		current_visual_state = (self._pressed, is_hovering)
 		if self._needs_redraw or self._last_visual_state!=current_visual_state:
-			render_checkbox_surface(self, is_hovering)
+			_render_checkbox_surface(self, is_hovering)
 			self._last_visual_state = current_visual_state
 			self._needs_redraw = True
 			self._needs_transform = True
@@ -1040,27 +1180,21 @@ class Checkbox(Widget, Tooltipable, Screenable, Deletable):
 			if self._tooltip:
 				self._tooltip.hide()
 
-	def react(self, event=None):
+	def _react(self, event: pygame.Event | None = None) -> None:
+		"""
+		This function is only used internally to react to events.
+
+		Args:
+			event (pygame.Event, optional): The event to react to.
+		"""
 		if self._state!="enabled" or not self._visible:
 			self._pressed = False
 			return
 		mouse_pos = pygame.mouse.get_pos()
 		is_inside = misc._is_point_over_widget(self, mouse_pos)
 		if not event:
-			if pygame.mouse.get_pressed()[0]:
+			if pygame.mouse.get_pressed()[0] and is_inside and self._pressed:
 				self.trigger_event("<HOLD>")
-				if is_inside:
-					self._pressed = True
-			elif not pygame.mouse.get_pressed()[0]:
-				if self._pressed:
-					self.trigger_event("<RELEASE>")
-					self._pressed = False
-					if is_inside:
-						self._checked = not self._checked
-						if self._checked:
-							self.trigger_event("<CHECK>")
-						else:
-							self.trigger_event("<UNCHECK>")
 		else:
 			if event.type==pygame.KEYDOWN:
 				self.trigger_event("<KEY>")
@@ -1074,11 +1208,18 @@ class Checkbox(Widget, Tooltipable, Screenable, Deletable):
 					if is_inside:
 						self._pressed = True
 			elif event.type==pygame.MOUSEBUTTONUP:
-				if event.button==1:
+				if event.button==1 and self._pressed:
 					self.trigger_event("<RELEASE>")
+					self._pressed = False
+					if is_inside:
+						self._checked = not self._checked
+						if self._checked:
+							self.trigger_event("<CHECK>")
+						else:
+							self.trigger_event("<UNCHECK>")
 
 
-def render_checkbox_surface(checkbox, is_hovering):
+def _render_checkbox_surface(checkbox: Checkbox, is_hovering: bool) -> None:
 	if checkbox.state=="enabled":
 		if checkbox.pressed and is_hovering:
 			text_color = checkbox.active_pressed_text_color

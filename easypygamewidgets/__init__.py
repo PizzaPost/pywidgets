@@ -1,11 +1,16 @@
 # __init__.py
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
+"""
+easypygamewidgets is a widget library for pygame and based on pygame. It uses pygame-ce instead of pygame for a
+better performance, more features and support for the newest python versions.
+"""
 
 from collections.abc import Callable
 
 import pygame
 
+from . import misc
 from .button import Button
 from .checkbox import Checkbox
 from .dialog import Dialog
@@ -22,11 +27,15 @@ from .timekeeper import Timekeeper
 from .tooltip import Tooltip
 
 
-def flip():
-	if not misc.pg:
+def flip() -> None:
+	"""
+	Update the display.
+	You don't need to call pygame.display.flip() or pygame.display.update() after this.
+	"""
+	if not misc._pg:
 		misc._check_linked()
 	misc._update_clock()
-	for widget in misc.all_widgets:
+	for widget in misc._all_widgets:
 		if isinstance(widget, tuple):
 			if isinstance(widget[0], Callable):
 				try:
@@ -34,24 +43,41 @@ def flip():
 				except TypeError:
 					pass
 		else:
-			if hasattr(widget, "update_animation"):
-				widget.update_animation()
-			widget.draw(misc.pg)
+			if hasattr(widget, "_update_animation"):
+				widget._update_animation()
+			widget._draw(misc._pg)
 	pygame.display.flip()
 
 
-def handle_event(event):
-	for widget in misc.all_widgets:
-		if hasattr(widget, "react"):
-			widget.react(event)
+def handle_event(event: pygame.Event) -> None:
+	"""
+	This will make widgets interactable.
+	(Used for interactions with pygame.Event. Don't forget to use epw.handle_special_events().)
+
+	Args:
+		event: pygame.Event
+
+	Raises:
+		ValueError: if event is not a pygame.Event
+	"""
+	if isinstance(event, pygame.Event):
+		for widget in misc._all_widgets:
+			if hasattr(widget, "_react"):
+				widget._react(event)
+	else:
+		raise ValueError("Event must be a pygame.Event")
 
 
-def handle_special_events():
+def handle_special_events() -> None:
+	"""
+	This will make widgets interactable.
+	(Used for interactions with the mouse. Don't forget to use epw.handle_event(event).)
+	"""
 	for func in misc._scheduled_functions[:]:
 		func[1] -= misc._dt
 		if func[1]<=0:
 			func[0]()
 			misc._scheduled_functions.remove(func)
-	for widget in misc.all_widgets:
-		if hasattr(widget, "react"):
-			widget.react()
+	for widget in misc._all_widgets:
+		if hasattr(widget, "_react"):
+			widget._react()

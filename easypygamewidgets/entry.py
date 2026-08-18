@@ -17,41 +17,41 @@ pygame.init()
 class Entry(Widget, Tooltipable, Screenable, Deletable):
 	def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
 	             height: int = 80, placeholder_text: str = "",
-	             text: str = "", char_limit: int|None = None,
-	             show: str|None = None, state: str|None = None,
-	             active_unpressed_text_color: tuple|None = (255, 255, 255, 255),
-	             disabled_unpressed_text_color: tuple|None = (150, 150, 150, 255),
-	             active_hover_text_color: tuple|None = (255, 255, 255, 255),
-	             disabled_hover_text_color: tuple|None = (150, 150, 150, 255),
-	             active_pressed_text_color: tuple|None = (200, 200, 200, 255),
-	             active_unpressed_background_color: tuple|None = (50, 50, 50, 255),
-	             disabled_unpressed_background_color: tuple|None = (30, 30, 30, 255),
-	             active_hover_background_color: tuple|None = (70, 70, 70, 255),
-	             disabled_hover_background_color: tuple|None = (30, 30, 30, 255),
-	             active_pressed_background_color: tuple|None = (40, 40, 40, 255),
-	             active_unpressed_border_color: tuple|None = (100, 100, 100, 255),
-	             disabled_unpressed_border_color: tuple|None = (60, 60, 60, 255),
-	             active_hover_border_color: tuple|None = (150, 150, 150, 255),
-	             disabled_hover_border_color: tuple|None = (60, 60, 60, 255),
-	             active_pressed_border_color: tuple|None = (50, 50, 50, 255),
-	             selection_color: tuple|None = (0, 120, 215, 255),
-	             disabled_selection_color: tuple|None = (32, 106, 163, 255),
+	             text: str = "", char_limit: int | None = None,
+	             show: str | None = None, state: str | None = None,
+	             active_unpressed_text_color: tuple | None = (255, 255, 255, 255),
+	             disabled_unpressed_text_color: tuple | None = (150, 150, 150, 255),
+	             active_hover_text_color: tuple | None = (255, 255, 255, 255),
+	             disabled_hover_text_color: tuple | None = (150, 150, 150, 255),
+	             active_pressed_text_color: tuple | None = (200, 200, 200, 255),
+	             active_unpressed_background_color: tuple | None = (50, 50, 50, 255),
+	             disabled_unpressed_background_color: tuple | None = (30, 30, 30, 255),
+	             active_hover_background_color: tuple | None = (70, 70, 70, 255),
+	             disabled_hover_background_color: tuple | None = (30, 30, 30, 255),
+	             active_pressed_background_color: tuple | None = (40, 40, 40, 255),
+	             active_unpressed_border_color: tuple | None = (100, 100, 100, 255),
+	             disabled_unpressed_border_color: tuple | None = (60, 60, 60, 255),
+	             active_hover_border_color: tuple | None = (150, 150, 150, 255),
+	             disabled_hover_border_color: tuple | None = (60, 60, 60, 255),
+	             active_pressed_border_color: tuple | None = (50, 50, 50, 255),
+	             selection_color: tuple | None = (0, 120, 215, 255),
+	             disabled_selection_color: tuple | None = (32, 106, 163, 255),
 	             border_thickness: int = 2,
 	             hide_text: bool = False,
 	             hide_background: bool = False,
 	             hide_border: bool = False,
 	             hide_selection: bool = False,
-	             active_hover_cursor: pygame.Cursor|None = None,
-	             disabled_hover_cursor: pygame.Cursor|None = None,
-	             active_pressed_cursor: pygame.Cursor|None = None,
+	             active_hover_cursor: pygame.Cursor | None = None,
+	             disabled_hover_cursor: pygame.Cursor | None = None,
+	             active_pressed_cursor: pygame.Cursor | None = None,
 	             blinking_cursor: str = "|", blinking_speed: int = 500,
-	             font: pygame.font.Font|pygame.font.SysFont = font.default_font, alignment: str = "left",
+	             font: pygame.font.Font | pygame.font.SysFont = font.default_font, alignment: str = "left",
 	             alignment_spacing: int = 20, top_left_corner_radius: int = 25, top_right_corner_radius: int = 25,
 	             bottom_left_corner_radius: int = 25, bottom_right_corner_radius: int = 25, repeat_delay: int = 500,
 	             repeat_interval: int = 50, layer=1000, line_spacing: int = 30,
-	             tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int|None = None,
-	             max_width: int|None = None, min_height: int|None = None, max_height: int|None = None,
-	             anchor_x: str = "left", anchor_y: str = "top", visible: bool|None = None, data: Any = None):
+	             tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
+	             max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
+	             anchor_x: str = "left", anchor_y: str = "top", visible: bool | None = None, data: Any = None):
 		super().__init__()
 		if screen:
 			screen.add_widget(self)
@@ -1003,7 +1003,7 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 	def get(self):
 		return self._text
 
-	def text_delete(self, position_start: int = 0, position_end: int|None = None):
+	def text_delete(self, position_start: int = 0, position_end: int | None = None):
 		if position_end is None:
 			position_end = len(self._text)
 		position_start = max(0, min(position_start, len(self._text)))
@@ -1025,7 +1025,7 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 		self._cursor_position += len(text)
 		self.reset_cursor_blink()
 
-	def text_select(self, position_start: int = 0, position_end: int|None = None):
+	def text_select(self, position_start: int = 0, position_end: int | None = None):
 		if position_end is None:
 			position_end = len(self._text)
 		self._selected_text = [min(position_start, position_end), max(position_start, position_end)]
@@ -1075,7 +1075,7 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 			frames_to_finish = 1
 		self._target_scale = 1 if value is None else value
 		self._scale_step = (self._target_scale-self._current_scale)/frames_to_finish
-		self.update_animation()
+		self._update_animation()
 		return self
 
 	def rotate(self, value=None, frames_to_finish=1):
@@ -1083,7 +1083,7 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 			frames_to_finish = 1
 		self._target_rotation = 0 if value is None else value
 		self._rotation_step = (self._target_rotation-self._current_rotation)/frames_to_finish
-		self.update_animation()
+		self._update_animation()
 		return self
 
 	def rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
@@ -1094,7 +1094,7 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 		self._target_rotation = 0 if rotation is None else rotation
 		self._rotation_step = (self._target_rotation-self._current_rotation)/frames_to_finish
 		self._use_rotozoom = True
-		self.update_animation()
+		self._update_animation()
 		return self
 
 	def offset(self, value: tuple[int, int], frames_to_finish=1):
@@ -1103,10 +1103,10 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 		self._target_offset = (0, 0) if value is None else value
 		self._offset_step[0] = (self._target_offset[0]-self._current_offset[0])/frames_to_finish
 		self._offset_step[1] = (self._target_offset[1]-self._current_offset[1])/frames_to_finish
-		self.update_animation()
+		self._update_animation()
 		return self
 
-	def update_animation(self):
+	def _update_animation(self):
 		scale_changed = False
 		rotation_changed = False
 		if self._current_scale!=self._target_scale:
@@ -1130,7 +1130,7 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 		if scale_changed or rotation_changed:
 			self._needs_transform = True
 
-	def draw(self, surface: pygame.Surface):
+	def _draw(self, surface: pygame.Surface):
 		if not self._alive or not self._visible:
 			return
 		if self._focused and self._held_key_info:
@@ -1256,7 +1256,7 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 			if self._tooltip:
 				self._tooltip.hide()
 
-	def react(self, event=None):
+	def _react(self, event=None):
 		if self._state!="enabled" or not self._visible:
 			self._pressed = False
 			self._focused = False
@@ -1293,7 +1293,8 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 						self.trigger_event("<FOCUS-OUT>")
 					self._focused = False
 			elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
-				self.trigger_event("<RELEASE>")
+				if self._pressed:
+					self.trigger_event("<RELEASE>")
 				self._pressed = False
 				self._selection_anchor = None
 			elif event.type==pygame.MOUSEMOTION and self._pressed:
@@ -1319,8 +1320,8 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 def process_key_action(entry, key, unicode_char):
 	is_linux = sys.platform.startswith("linux")
 	mods = pygame.key.get_mods()
-	ctrl = (mods&pygame.KMOD_CTRL) or (mods&pygame.KMOD_META)
-	shift = mods&pygame.KMOD_SHIFT
+	ctrl = (mods & pygame.KMOD_CTRL) or (mods & pygame.KMOD_META)
+	shift = mods & pygame.KMOD_SHIFT
 	entry.reset_cursor_blink()
 	if key in (pygame.K_LEFT, pygame.K_RIGHT, pygame.K_HOME, pygame.K_END):
 		if shift and entry.selected_text is None:

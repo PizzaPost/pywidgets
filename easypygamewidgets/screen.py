@@ -17,12 +17,12 @@ pygame.init()
 # missing three animations ❔
 
 class Screen(Widget, Deletable):
-	def __init__(self, auto_size: bool = True, width: int|None = None, height: int|None = None,
-	             min_width: int|None = None, max_width: int|None = None, min_height: int|None = None,
-	             max_height: int|None = None, fill_width: bool = False, fill_height: bool = False,
-	             active_hover_cursor: pygame.Cursor|None = None,
-	             disabled_hover_cursor: pygame.Cursor|None = None,
-	             active_pressed_cursor: pygame.Cursor|None = None,
+	def __init__(self, auto_size: bool = True, width: int | None = None, height: int | None = None,
+	             min_width: int | None = None, max_width: int | None = None, min_height: int | None = None,
+	             max_height: int | None = None, fill_width: bool = False, fill_height: bool = False,
+	             active_hover_cursor: pygame.Cursor | None = None,
+	             disabled_hover_cursor: pygame.Cursor | None = None,
+	             active_pressed_cursor: pygame.Cursor | None = None,
 	             widgets: "list[easypygamewidgets.Button | easypygamewidgets.Entry | easypygamewidget.Label | easypygamewidgets.Slider | easypygamewidgets.Surface | easypygamewidgets.Timekeeper | easypygamewidgets.Tooltip]" = None,
 	             darken_background_with_alpha: int = 0, anchor_x: str = "left", anchor_y: str = "top",
 	             visible: bool = False, state: str = "enabled", x: int = 0,
@@ -38,8 +38,8 @@ class Screen(Widget, Deletable):
 			self._height = 0
 		else:
 			self._auto_size = False
-			self._width = width if width is not None else (misc.pg.get_width())
-			self._height = height if height is not None else (misc.pg.get_height())
+			self._width = width if width is not None else (misc._pg.get_width())
+			self._height = height if height is not None else (misc._pg.get_height())
 		self._min_width = min_width
 		self._max_width = max_width
 		self._min_height = min_height
@@ -108,7 +108,7 @@ class Screen(Widget, Deletable):
 	@width.setter
 	def width(self, value):
 		self._fill_width = value is None
-		self._width = value if value is not None else (misc.pg.get_width())
+		self._width = value if value is not None else (misc._pg.get_width())
 		if not self._auto_size:
 			self.recalculate_grid()
 
@@ -119,7 +119,7 @@ class Screen(Widget, Deletable):
 	@height.setter
 	def height(self, value):
 		self._fill_height = value is None
-		self._height = value if value is not None else (misc.pg.get_height())
+		self._height = value if value is not None else (misc._pg.get_height())
 		if not self._auto_size:
 			self.recalculate_grid()
 
@@ -404,10 +404,10 @@ class Screen(Widget, Deletable):
 		self._target_offset = (0, 0) if value is None else value
 		self._offset_step[0] = (self._target_offset[0]-self._current_offset[0])/frames_to_finish
 		self._offset_step[1] = (self._target_offset[1]-self._current_offset[1])/frames_to_finish
-		self.update_animation()
+		self._update_animation()
 		return self
 
-	def update_animation(self):
+	def _update_animation(self):
 		for x in range(2):
 			if self._current_offset[x]!=self._target_offset[x]:
 				if abs(self._current_offset[x]-self._target_offset[x])<=abs(self._offset_step[x]):
@@ -465,8 +465,8 @@ class Screen(Widget, Deletable):
 					widget.configure(state="disabled")
 
 	def delete(self):
-		if self in misc.all_widgets:
-			misc.all_widgets.remove(self)
+		if self in misc._all_widgets:
+			misc._all_widgets.remove(self)
 		for widget in self._widgets:
 			widget.set_screen(None)
 			widget.delete()
@@ -536,8 +536,8 @@ class Screen(Widget, Deletable):
 			if self._max_height:
 				self._height = min(self._height, self._max_height)
 		else:
-			available_width = misc.pg.get_width() if self._fill_width else self._width
-			available_height = misc.pg.get_height() if self._fill_height else self._height
+			available_width = misc._pg.get_width() if self._fill_width else self._width
+			available_height = misc._pg.get_height() if self._fill_height else self._height
 			self._width = available_width
 			self._height = available_height
 			col_width = (available_width-self._column_spacing*(num_cols-1))/num_cols
@@ -568,12 +568,12 @@ class Screen(Widget, Deletable):
 			target_y = int(self._y+cell_y+offset_y)
 			w.place(target_x, target_y, suppress_anchor=True)
 
-	def draw(self, surface: pygame.Surface):
+	def _draw(self, surface: pygame.Surface):
 		if not self._alive or not self._visible: return
 		mouse_pos = pygame.mouse.get_pos()
 		is_hovering = misc._is_point_over_widget(self, mouse_pos)
 
-		current_pg_size = misc.pg.get_size()
+		current_pg_size = misc._pg.get_size()
 		if current_pg_size!=self._last_pg_size:
 			self._last_pg_size = current_pg_size
 			self.recalculate_grid()
@@ -613,21 +613,15 @@ class Screen(Widget, Deletable):
 			self._is_hovered = False
 			self.trigger_event("<MOUSE-OUT>")
 
-	def react(self, event=None):
+	def _react(self, event=None):
 		if self._state!="enabled" or not self._visible:
 			self._pressed = False
 			return
 		mouse_pos = pygame.mouse.get_pos()
 		is_inside = misc._is_point_over_widget(self, mouse_pos)
 		if not event:
-			if pygame.mouse.get_pressed()[0]:
+			if pygame.mouse.get_pressed()[0] and is_inside and self._pressed:
 				self.trigger_event("<HOLD>")
-				if is_inside:
-					self._pressed = True
-			elif not pygame.mouse.get_pressed()[0]:
-				if self._pressed:
-					self.trigger_event("<RELEASE>")
-					self._pressed = False
 		else:
 			if event.type==pygame.KEYDOWN:
 				self.trigger_event("<KEY>")
@@ -641,6 +635,6 @@ class Screen(Widget, Deletable):
 					if is_inside:
 						self._pressed = True
 			elif event.type==pygame.MOUSEBUTTONUP:
-				if event.button==1:
+				if event.button==1 and self._pressed:
 					self.trigger_event("<RELEASE>")
 					self._pressed = False

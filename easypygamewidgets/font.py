@@ -15,7 +15,7 @@ default_emoji_font_path = os.path.join(pack_font_path/"emoji"/"NotoEmoji-Regular
 
 
 class Font:
-	def __init__(self, font_path: str = default_font_path, font_size: int = 26, line_spacing: int|None = None,
+	def __init__(self, font_path: str = default_font_path, font_size: int = 26, line_spacing: int | None = None,
 	             bold: bool = False, italic: bool = False, data: Any = None):
 		self.font = pygame.font.Font(font_path, font_size)
 		self.font.set_bold(bold)
@@ -31,7 +31,7 @@ class Font:
 
 
 class SysFont:
-	def __init__(self, font: str = "Arial", font_size: int = 26, line_spacing: int|None = None, bold: bool = False,
+	def __init__(self, font: str = "Arial", font_size: int = 26, line_spacing: int | None = None, bold: bool = False,
 	             italic: bool = False):
 		self.font = pygame.font.SysFont(font, font_size)
 		self.font.set_bold(bold)

@@ -9,7 +9,7 @@ from easypygamewidgets import misc
 class Widget:
 	def clone(self):
 		copied_widget = copy.deepcopy(self)
-		misc.all_widgets.append(copied_widget)
+		misc._all_widgets.append(copied_widget)
 		misc._resort_layers()
 		return copied_widget
 
@@ -59,8 +59,8 @@ class Widget:
 			self._x = x
 			self._y = y
 		elif mode in ("%", "percent", "percentage"):
-			screen_width = misc.pg.get_width()
-			screen_height = misc.pg.get_height()
+			screen_width = misc._pg.get_width()
+			screen_height = misc._pg.get_height()
 			self._x = int(x*screen_width/100)
 			self._y = int(y*screen_height/100)
 		else:
@@ -118,13 +118,13 @@ class Widget:
 			screen.recalculate_grid()
 		return self
 
-	def update_animation(self):
+	def _update_animation(self):
 		pass
 
-	def draw(self, surface: pygame.Surface):
+	def _draw(self, surface: pygame.Surface):
 		pass
 
-	def react(self, event=None):
+	def _react(self, event=None):
 		pass
 
 
@@ -162,8 +162,8 @@ class Screenable:
 class Deletable:
 	def delete(self):
 		self._alive = False
-		if self in misc.all_widgets:
-			misc.all_widgets.remove(self)
+		if self in misc._all_widgets:
+			misc._all_widgets.remove(self)
 		if getattr(self, "screen", None) is not None:
 			if self in self._screen._widgets:
 				self._screen._widgets.remove(self)

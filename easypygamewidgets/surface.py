@@ -19,14 +19,17 @@ pygame.init()
 # animation cache system in a file... somehow ❌
 
 class Surface(Widget, Tooltipable, Screenable, Deletable):
-	def __init__(self, frames: Iterable[pygame.Surface], screen: "easypygamewidgets.Screen | None" = None,
-	             state: str|None = None, visible: bool|None = None,
-	             active_hover_cursor: pygame.Cursor|None = None,
-	             disabled_hover_cursor: pygame.Cursor|None = None,
-	             active_pressed_cursor: pygame.Cursor|None = None, dragable: bool = False, layer=1000,
+	def __init__(self, frames: pygame.Surface | Iterable[pygame.Surface],
+	             screen: "easypygamewidgets.Screen | None" = None,
+	             state: str | None = None, visible: bool | None = None,
+	             active_hover_cursor: pygame.Cursor | None = None,
+	             disabled_hover_cursor: pygame.Cursor | None = None,
+	             active_pressed_cursor: pygame.Cursor | None = None, dragable: bool = False, layer=1000,
 	             tooltip: "easypygamewidgets.Tooltip | None" = None, anchor_x: str = "left", anchor_y: str = "top",
 	             playing: bool = False, looping: bool = True, fps: int = 60, data: Any = None):
 		super().__init__()
+		if isinstance(frames, pygame.Surface):
+			frames = [frames]
 		self._frames = frames
 		surface = frames[0]
 		self._surface = surface
@@ -527,7 +530,7 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
 		else:
 			self._target_scale = value
 		self._scale_step = (self._target_scale-self._current_scale)/frames_to_finish
-		self.update_animation()
+		self._update_animation()
 		return self
 
 	def rotate(self, value=None, frames_to_finish=1):
@@ -538,7 +541,7 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
 		else:
 			self._target_rotation = value
 		self._rotation_step = (self._target_rotation-self._current_rotation)/frames_to_finish
-		self.update_animation()
+		self._update_animation()
 		return self
 
 	def rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
@@ -549,7 +552,7 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
 		self._target_rotation = 0 if rotation is None else rotation
 		self._rotation_step = (self._target_rotation-self._current_rotation)/frames_to_finish
 		self._use_rotozoom = True
-		self.update_animation()
+		self._update_animation()
 		return self
 
 	def offset(self, value: tuple[int, int], frames_to_finish=1):
@@ -558,10 +561,10 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
 		self._target_offset = (0, 0) if value is None else value
 		self._offset_step[0] = (self._target_offset[0]-self._current_offset[0])/frames_to_finish
 		self._offset_step[1] = (self._target_offset[1]-self._current_offset[1])/frames_to_finish
-		self.update_animation()
+		self._update_animation()
 		return self
 
-	def update_animation(self):
+	def _update_animation(self):
 		needs_transform = False
 		if self._current_scale!=self._target_scale:
 			if abs(self._current_scale-self._target_scale)<=abs(self._scale_step):
@@ -616,7 +619,7 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
 		self._playing = False
 		return self
 
-	def draw(self, window: pygame.Surface):
+	def _draw(self, window: pygame.Surface):
 		if not self._alive or not self._visible:
 			return
 		mouse_pos = pygame.mouse.get_pos()
@@ -675,7 +678,7 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
 		draw_rect = self._rect.move(total_offset_x, total_offset_y)
 		window.blit(self._surface, draw_rect)
 
-	def react(self, event=None):
+	def _react(self, event=None):
 		if self._state!="enabled" or not self._visible:
 			self._pressed = False
 			return
@@ -687,15 +690,8 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
 		is_inside = interaction_rect.collidepoint(mouse_pos)
 		current_time = time.time()
 		if not event:
-			if pygame.mouse.get_pressed()[0] and is_inside:
-				self._pressed = True
+			if pygame.mouse.get_pressed()[0] and is_inside and self._pressed:
 				self.trigger_event("<HOLD>")
-			elif not pygame.mouse.get_pressed()[0] and is_inside:
-				if self._pressed:
-					self._pressed = False
-					self.trigger_event("<RELEASE>")
-			elif not pygame.mouse.get_pressed()[0] and not is_inside:
-				self._pressed = False
 		else:
 			if event.type==pygame.MOUSEMOTION:
 				if self._pressed and self._dragable:

@@ -20,45 +20,45 @@ pygame.init()
 class Slider(Widget, Tooltipable, Screenable, Deletable):
 	def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
 	             height: int = 16,
-	             text: str = "easypygamewidgets Slider", start: int|float = 0,
-	             end: int|float = 100, initial_value: int|None = None, state: str|None = None,
+	             text: str = "easypygamewidgets Slider", start: int | float = 0,
+	             end: int | float = 100, initial_value: int | None = None, state: str | None = None,
 	             top_left_corner_radius: int = 25,
 	             top_right_corner_radius: int = 25,
 	             bottom_left_corner_radius: int = 25,
 	             bottom_right_corner_radius: int = 25,
-	             dot_radius: int|None = None,
-	             max_extra_dot_radius: int|None = None,
+	             dot_radius: int | None = None,
+	             max_extra_dot_radius: int | None = None,
 	             move_text_with_dot_radius: bool = False,
-	             active_unpressed_text_color: tuple|None = (255, 255, 255, 255),
-	             disabled_unpressed_text_color: tuple|None = (150, 150, 150, 255),
-	             active_hover_text_color: tuple|None = (255, 255, 255, 255),
-	             disabled_hover_text_color: tuple|None = (150, 150, 150, 255),
-	             active_pressed_text_color: tuple|None = (255, 255, 255, 255),
-	             active_unpressed_used_background_color: tuple|None = (30, 30, 30, 255),
-	             disabled_unpressed_used_background_color: tuple|None = (20, 20, 20, 255),
-	             active_hover_used_background_color: tuple|None = (30, 30, 30, 255),
-	             disabled_hover_used_background_color: tuple|None = (20, 20, 20, 255),
-	             active_pressed_used_background_color: tuple|None = (30, 30, 30, 255),
-	             active_unpressed_unused_background_color: tuple|None = (60, 60, 60, 255),
-	             disabled_unpressed_unused_background_color: tuple|None = (30, 30, 30, 255),
-	             active_hover_unused_background_color: tuple|None = (60, 60, 60, 255),
-	             disabled_hover_unused_background_color: tuple|None = (30, 30, 30, 255),
-	             active_pressed_unused_background_color: tuple|None = (60, 60, 60, 255),
-	             active_unpressed_dot_color: tuple|None = (255, 255, 255, 255),
-	             disabled_unpressed_dot_color: tuple|None = (150, 150, 150, 255),
-	             active_hover_dot_color: tuple|None = (255, 255, 255, 255),
-	             disabled_hover_dot_color: tuple|None = (150, 150, 150, 255),
-	             active_pressed_dot_color: tuple|None = (200, 200, 200, 255),
-	             active_unpressed_border_color: tuple|None = (100, 100, 100, 255),
-	             disabled_unpressed_border_color: tuple|None = (60, 60, 60, 255),
-	             active_hover_border_color: tuple|None = (150, 150, 150, 255),
-	             disabled_hover_border_color: tuple|None = (60, 60, 60, 255),
-	             active_pressed_border_color: tuple|None = (150, 150, 150, 255),
-	             active_pressed_display_color: tuple|None = (190, 190, 190, 255),
-	             active_hover_display_color: tuple|None = (190, 190, 190, 255),
-	             active_unpressed_display_color: tuple|None = (190, 190, 190, 255),
-	             disabled_hover_display_color: tuple|None = (150, 150, 150, 255),
-	             disabled_unpressed_display_color: tuple|None = (150, 150, 150, 255),
+	             active_unpressed_text_color: tuple | None = (255, 255, 255, 255),
+	             disabled_unpressed_text_color: tuple | None = (150, 150, 150, 255),
+	             active_hover_text_color: tuple | None = (255, 255, 255, 255),
+	             disabled_hover_text_color: tuple | None = (150, 150, 150, 255),
+	             active_pressed_text_color: tuple | None = (255, 255, 255, 255),
+	             active_unpressed_used_background_color: tuple | None = (30, 30, 30, 255),
+	             disabled_unpressed_used_background_color: tuple | None = (20, 20, 20, 255),
+	             active_hover_used_background_color: tuple | None = (30, 30, 30, 255),
+	             disabled_hover_used_background_color: tuple | None = (20, 20, 20, 255),
+	             active_pressed_used_background_color: tuple | None = (30, 30, 30, 255),
+	             active_unpressed_unused_background_color: tuple | None = (60, 60, 60, 255),
+	             disabled_unpressed_unused_background_color: tuple | None = (30, 30, 30, 255),
+	             active_hover_unused_background_color: tuple | None = (60, 60, 60, 255),
+	             disabled_hover_unused_background_color: tuple | None = (30, 30, 30, 255),
+	             active_pressed_unused_background_color: tuple | None = (60, 60, 60, 255),
+	             active_unpressed_dot_color: tuple | None = (255, 255, 255, 255),
+	             disabled_unpressed_dot_color: tuple | None = (150, 150, 150, 255),
+	             active_hover_dot_color: tuple | None = (255, 255, 255, 255),
+	             disabled_hover_dot_color: tuple | None = (150, 150, 150, 255),
+	             active_pressed_dot_color: tuple | None = (200, 200, 200, 255),
+	             active_unpressed_border_color: tuple | None = (100, 100, 100, 255),
+	             disabled_unpressed_border_color: tuple | None = (60, 60, 60, 255),
+	             active_hover_border_color: tuple | None = (150, 150, 150, 255),
+	             disabled_hover_border_color: tuple | None = (60, 60, 60, 255),
+	             active_pressed_border_color: tuple | None = (150, 150, 150, 255),
+	             active_pressed_display_color: tuple | None = (190, 190, 190, 255),
+	             active_hover_display_color: tuple | None = (190, 190, 190, 255),
+	             active_unpressed_display_color: tuple | None = (190, 190, 190, 255),
+	             disabled_hover_display_color: tuple | None = (150, 150, 150, 255),
+	             disabled_unpressed_display_color: tuple | None = (150, 150, 150, 255),
 	             border_width: int = 2,
 	             hide_text: bool = False,
 	             hide_used_background: bool = False,
@@ -66,18 +66,18 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 	             hide_dot: bool = False,
 	             hide_border: bool = False,
 	             hide_display: bool = False,
-	             active_hover_cursor: pygame.Cursor|None = None,
-	             disabled_hover_cursor: pygame.Cursor|None = None,
-	             active_pressed_cursor: pygame.Cursor|None = None,
-	             font: pygame.font.Font|pygame.font.SysFont = font.default_font, alignment: str = "center",
+	             active_hover_cursor: pygame.Cursor | None = None,
+	             disabled_hover_cursor: pygame.Cursor | None = None,
+	             active_pressed_cursor: pygame.Cursor | None = None,
+	             font: pygame.font.Font | pygame.font.SysFont = font.default_font, alignment: str = "center",
 	             alignment_spacing: int = 20, show_value_when_pressed: bool = True,
 	             show_value_when_hovered: bool = True, show_value_when_unpressed: bool = False,
 	             show_value_when_disabled: bool = False, round_display_value: int = 0,
 	             show_full_rounding_of_whole_numbers: bool = False, trigger_hold_delay: int = 150, layer=1000,
 	             tooltip: "easypygamewidgets.Tooltip | None" = None, line_spacing: int = 30,
-	             min_width: int|None = None, max_width: int|None = None, min_height: int|None = None,
-	             max_height: int|None = None, anchor_x: str = "left", anchor_y: str = "top",
-	             visible: bool|None = None, data: Any = None):
+	             min_width: int | None = None, max_width: int | None = None, min_height: int | None = None,
+	             max_height: int | None = None, anchor_x: str = "left", anchor_y: str = "top",
+	             visible: bool | None = None, data: Any = None):
 		super().__init__()
 		if screen:
 			screen.add_widget(self)
@@ -1127,7 +1127,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 			frames_to_finish = 1
 		self._target_scale = 1 if value is None else value
 		self._scale_step = (self._target_scale-self._current_scale)/frames_to_finish
-		self.update_animation()
+		self._update_animation()
 		return self
 
 	def rotate(self, value=None, frames_to_finish=1):
@@ -1135,7 +1135,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 			frames_to_finish = 1
 		self._target_rotation = 0 if value is None else value
 		self._rotation_step = (self._target_rotation-self._current_rotation)/frames_to_finish
-		self.update_animation()
+		self._update_animation()
 		return self
 
 	def rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
@@ -1146,7 +1146,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 		self._target_rotation = 0 if rotation is None else rotation
 		self._rotation_step = (self._target_rotation-self._current_rotation)/frames_to_finish
 		self._use_rotozoom = True
-		self.update_animation()
+		self._update_animation()
 		return self
 
 	def offset(self, value: tuple[int, int], frames_to_finish=1):
@@ -1155,10 +1155,10 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 		self._target_offset = (0, 0) if value is None else value
 		self._offset_step[0] = (self._target_offset[0]-self._current_offset[0])/frames_to_finish
 		self._offset_step[1] = (self._target_offset[1]-self._current_offset[1])/frames_to_finish
-		self.update_animation()
+		self._update_animation()
 		return self
 
-	def update_animation(self):
+	def _update_animation(self):
 		scale_changed = False
 		rotation_changed = False
 		if self._current_scale!=self._target_scale:
@@ -1182,7 +1182,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 		if scale_changed or rotation_changed:
 			self._needs_transform = True
 
-	def draw(self, surface: pygame.Surface):
+	def _draw(self, surface: pygame.Surface):
 		if not self._alive or not self._visible:
 			return
 		mouse_pos = pygame.mouse.get_pos()
@@ -1273,7 +1273,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 				if not self._pressed and not is_hovering:
 					self._tooltip.hide()
 
-	def react(self, event=None):
+	def _react(self, event=None):
 		if self._state!="enabled" or not self._visible:
 			return
 		mouse_pos = pygame.mouse.get_pos()
@@ -1332,8 +1332,6 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 						self.trigger_event("<HOLD>")
 
 		if not event:
-			if pygame.mouse.get_pressed()[0] and is_inside:
-				self._pressed = True
 			if self._pressed:
 				if pygame.mouse.get_pressed()[0]:
 					update_value()
@@ -1353,7 +1351,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 					self._pressed = True
 					update_value()
 			elif event.type==pygame.MOUSEBUTTONUP:
-				if event.button==1:
+				if event.button==1 and self._pressed:
 					self._pressed = False
 					self._pressed_before = False
 					self.trigger_event("<RELEASE>")

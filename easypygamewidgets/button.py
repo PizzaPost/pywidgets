@@ -1,6 +1,9 @@
 # button.py
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
+"""
+A button widget for pygame.
+"""
 
 from collections.abc import Callable
 from typing import Any, Unpack
@@ -18,39 +21,90 @@ pygame.init()
 # four different corner radii ❌
 
 class Button(Widget, Tooltipable, Screenable, Deletable):
+	"""Initializes a button widget for pygame."""
+
 	def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
 	             height: int = 80,
 	             text: str = "easypygamewidgets Button",
-	             state: str|None = None,
-	             active_unpressed_text_color: tuple|None = (255, 255, 255, 255),
-	             disabled_unpressed_text_color: tuple|None = (150, 150, 150, 255),
-	             active_hover_text_color: tuple|None = (255, 255, 255, 255),
-	             disabled_hover_text_color: tuple|None = (150, 150, 150, 255),
-	             active_pressed_text_color: tuple|None = (200, 200, 200, 255),
-	             active_unpressed_background_color: tuple|None = (50, 50, 50, 255),
-	             disabled_unpressed_background_color: tuple|None = (30, 30, 30, 255),
-	             active_hover_background_color: tuple|None = (70, 70, 70, 255),
-	             disabled_hover_background_color: tuple|None = (30, 30, 30, 255),
-	             active_pressed_background_color: tuple|None = (40, 40, 40, 255),
-	             active_unpressed_border_color: tuple|None = (100, 100, 100, 255),
-	             disabled_unpressed_border_color: tuple|None = (60, 60, 60, 255),
-	             active_hover_border_color: tuple|None = (150, 150, 150, 255),
-	             disabled_hover_border_color: tuple|None = (60, 60, 60, 255),
-	             active_pressed_border_color: tuple|None = (50, 50, 50, 255),
+	             state: str | None = None,
+	             active_unpressed_text_color: tuple | None = (255, 255, 255, 255),
+	             disabled_unpressed_text_color: tuple | None = (150, 150, 150, 255),
+	             active_hover_text_color: tuple | None = (255, 255, 255, 255),
+	             disabled_hover_text_color: tuple | None = (150, 150, 150, 255),
+	             active_pressed_text_color: tuple | None = (200, 200, 200, 255),
+	             active_unpressed_background_color: tuple | None = (50, 50, 50, 255),
+	             disabled_unpressed_background_color: tuple | None = (30, 30, 30, 255),
+	             active_hover_background_color: tuple | None = (70, 70, 70, 255),
+	             disabled_hover_background_color: tuple | None = (30, 30, 30, 255),
+	             active_pressed_background_color: tuple | None = (40, 40, 40, 255),
+	             active_unpressed_border_color: tuple | None = (100, 100, 100, 255),
+	             disabled_unpressed_border_color: tuple | None = (60, 60, 60, 255),
+	             active_hover_border_color: tuple | None = (150, 150, 150, 255),
+	             disabled_hover_border_color: tuple | None = (60, 60, 60, 255),
+	             active_pressed_border_color: tuple | None = (50, 50, 50, 255),
 	             border_thickness: int = 2,
-	             hide_text: bool = False,
-	             hide_background: bool = False,
-	             hide_border: bool = False,
-	             active_hover_cursor: pygame.Cursor|None = None,
-	             disabled_hover_cursor: pygame.Cursor|None = None,
-	             active_pressed_cursor: pygame.Cursor|None = None,
-	             font: pygame.font.Font|pygame.font.SysFont = font.default_font, alignment: str = "center",
-	             command: Callable|None = None, alignment_spacing: int = 40, corner_radius: int = 25,
-	             layer=1000,
-	             line_spacing: int = 30,
-	             tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int|None = None,
-	             max_width: int|None = None, min_height: int|None = None, max_height: int|None = None,
-	             anchor_x: str = "left", anchor_y: str = "top", visible: bool|None = None, data: Any = None):
+	             hide_text: bool = False, hide_background: bool = False, hide_border: bool = False,
+	             active_hover_cursor: pygame.Cursor | None = None, disabled_hover_cursor: pygame.Cursor | None = None,
+	             active_pressed_cursor: pygame.Cursor | None = None,
+	             font: pygame.font.Font | pygame.font.SysFont = font.default_font, alignment: str = "center",
+	             command: Callable | None = None, alignment_spacing: int = 40, corner_radius: int = 25,
+	             layer=1000, line_spacing: int = 30,
+	             tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
+	             max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
+	             anchor_x: str = "left", anchor_y: str = "top", visible: bool | None = None, data: Any = None) -> None:
+		"""
+		Initializes a Button widget.
+
+		Args:
+			screen: The Screen this button is attached to. If None, the button is created without a parent screen.
+			auto_size: If True, width and height are computed from the rendered text instead of using the given
+				width/height.
+			width: Fixed button width in pixels. Ignored if auto_size is True.
+			height: Fixed button height in pixels. Ignored if auto_size is True.
+			text: The text displayed on the button. Supports multi-line text via '\n'.
+			state: Initial state, 'enabled' or 'disabled'. Defaults to 'enabled' if not given.
+			active_unpressed_text_color: RGBA text color while enabled, not pressed, not hovered.
+			disabled_unpressed_text_color: RGBA text color while disabled, not hovered.
+			active_hover_text_color: RGBA text color while enabled and hovered.
+			disabled_hover_text_color: RGBA text color while disabled and hovered.
+			active_pressed_text_color: RGBA text color while enabled and pressed.
+			active_unpressed_background_color: RGBA background color while enabled, not pressed, not hovered.
+			disabled_unpressed_background_color: RGBA background color while disabled, not hovered.
+			active_hover_background_color: RGBA background color while enabled and hovered.
+			disabled_hover_background_color: RGBA background color while disabled and hovered.
+			active_pressed_background_color: RGBA background color while enabled and pressed.
+			active_unpressed_border_color: RGBA border color while enabled, not pressed, not hovered.
+			disabled_unpressed_border_color: RGBA border color while disabled, not hovered.
+			active_hover_border_color: RGBA border color while enabled and hovered.
+			disabled_hover_border_color: RGBA border color while disabled and hovered.
+			active_pressed_border_color: RGBA border color while enabled and pressed.
+			border_thickness: Border width in pixels.
+			hide_text: If True, text is not rendered.
+			hide_background: If True, the background fill is not rendered.
+			hide_border: If True, the border is not rendered.
+			active_hover_cursor: Custom cursor shown on hover while enabled.
+			disabled_hover_cursor: Custom cursor shown on hover while disabled.
+			active_pressed_cursor: Custom cursor shown while pressed.
+			font: The pygame font used to render the button text.
+			alignment: Text alignment: 'left', 'right', 'center', or 'stretched'.
+			command: Callback bound to the '<RELEASE>' event.
+			alignment_spacing: Horizontal padding reserved around aligned text.
+			corner_radius: Corner radius in pixels for the button shape.
+			layer: Draw order layer; higher values draw on top.
+			line_spacing: Line height in pixels for multi-line text.
+			tooltip: A Tooltip widget shown on hover, if given.
+			min_width: Minimum width in pixels when auto_size is True.
+			max_width: Maximum width in pixels when auto_size is True.
+			min_height: Minimum height in pixels when auto_size is True.
+			max_height: Maximum height in pixels when auto_size is True.
+			anchor_x: Horizontal anchor point: 'left', 'center', or 'right'.
+			anchor_y: Vertical anchor point: 'top', 'center', or 'bottom'.
+			visible: Initial visibility. Defaults to True if not given.
+			data: Arbitrary user data attached to the widget.
+
+		Raises:
+			ValueError: If a *_cursor argument is given but is not a pygame.Cursor instance.
+		"""
 		super().__init__()
 		self._bindings = {}
 		if screen:
@@ -124,8 +178,9 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
 				self._cursors[name] = cursor
 			else:
 				if cursor is not None:
-					print(
-						f"No custom cursor is used for the button {text} because it's not a pygame.Cursor object. ({cursor})"
+					raise ValueError(
+						f"No custom cursor is used for the button '{text}' because it's not a pygame.Cursor object. "
+						f"{cursor} is a {type(cursor)}"
 					)
 				self._cursors[name] = None
 		self._font = font
@@ -171,7 +226,7 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
 		self._current_rotation = 0
 		self._rotation_step = 0
 		self._target_offset = (0, 0)
-		self._current_offset = [0, 0]
+		self._current_offset = [0.0, 0.0]
 		self._offset_step = [0, 0]
 		self._use_rotozoom = False
 		self._dialog = None
@@ -737,14 +792,22 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
 	def dialog(self, value):
 		self._dialog = value
 
-	def configure(self, **kwargs: Unpack[TypeHints.ButtonConfig]):
+	def configure(self, **kwargs: Unpack[TypeHints.ButtonConfig]) -> Button:
+		"""
+		Updates one or more of the button's attributes.
+
+		Args:
+			**kwargs: Button attributes to update as defined in TypeHints.ButtonConfig
+
+		Returns:
+			Button (Button): This button instance to allow method chaining.
+		"""
 		for key, value in kwargs.items():
 			setattr(self, key, value)
 		self._needs_redraw = True
 		self._needs_transform = True
 		if any(
-				k in kwargs for k in
-				(
+				k in kwargs for k in (
 						'auto_size', 'x', 'y', 'width', 'height', 'text', 'font', 'max_width', 'min_width',
 						'max_height',
 						'min_height', 'line_spacing', 'alignment_spacing', 'anchor_x', 'anchor_y'
@@ -777,46 +840,97 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
 			self._font.set_linesize(self._line_spacing)
 		return self
 
-	def config(self, **kwargs: Unpack[TypeHints.ButtonConfig]):
+	def config(self, **kwargs: Unpack[TypeHints.ButtonConfig]) -> Button:
+		"""
+		Updates one or more of the button's attributes.
+
+		Args:
+			**kwargs: Button attributes to update as defined in TypeHints.ButtonConfig
+
+		Returns:
+			Button (Button): This button instance to allow method chaining.
+		"""
 		return self.configure(**kwargs)
 
-	def scale(self, value=None, frames_to_finish=1):
+	def scale(self, value: int | float = 1, frames_to_finish: int = 1) -> Button:
+		"""
+		Scale the button by a factor. It's only a visual scale so upscaling could look pixelated.
+
+		Args:
+			 value (int|float): the scale factor
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Button (Button): This button instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		self._target_scale = 1 if value is None else value
+		self._target_scale = value
 		self._scale_step = (self._target_scale-self._current_scale)/frames_to_finish
-		self.update_animation()
+		self._update_animation()
 		return self
 
-	def rotate(self, value=None, frames_to_finish=1):
+	def rotate(self, value: int | float = 0, frames_to_finish: int = 1) -> Button:
+		"""
+		Rotate the button by a degree.
+
+		Args:
+			 value (int|float): the rotation degree
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Button (Button): This button instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		self._target_rotation = 0 if value is None else value
+		self._target_rotation = value
 		self._rotation_step = (self._target_rotation-self._current_rotation)/frames_to_finish
-		self.update_animation()
+		self._update_animation()
 		return self
 
-	def rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
+	def rotozoom(self, scale: int | float = 1, rotation: int = 0, frames_to_finish: int = 1) -> Button:
+		"""
+		Rotate the button by a degree and scale it.
+
+		Args:
+			 scale (int|float): the scale factor
+			 rotation (int): the rotation degree
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Button (Button): This button instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		self._target_scale = 1 if scale is None else scale
+		self._target_scale = scale
 		self._scale_step = (self._target_scale-self._current_scale)/frames_to_finish
-		self._target_rotation = 0 if rotation is None else rotation
+		self._target_rotation = rotation
 		self._rotation_step = (self._target_rotation-self._current_rotation)/frames_to_finish
 		self._use_rotozoom = True
-		self.update_animation()
+		self._update_animation()
 		return self
 
-	def offset(self, value: tuple[int, int], frames_to_finish=1):
+	def offset(self, value: tuple[int, int], frames_to_finish=1) -> Button:
+		"""
+		Offset the button by an x and y value.
+
+		Args:
+			 value: an iterable thing with two values. The first being the x and the second the y offset.
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Button (Button): This button instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
 		self._target_offset = (0, 0) if value is None else value
 		self._offset_step[0] = (self._target_offset[0]-self._current_offset[0])/frames_to_finish
 		self._offset_step[1] = (self._target_offset[1]-self._current_offset[1])/frames_to_finish
-		self.update_animation()
+		self._update_animation()
 		return self
 
-	def update_animation(self):
+	def _update_animation(self) -> None:
+		"""This function is only used internally to update the animation until it's finished."""
 		scale_changed = False
 		rotation_changed = False
 		if self._current_scale!=self._target_scale:
@@ -840,13 +954,19 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
 		if scale_changed or rotation_changed:
 			self._needs_transform = True
 
-	def draw(self, surface: pygame.Surface):
+	def _draw(self, surface: pygame.Surface) -> None:
+		"""
+		This function is only used internally to draw the button.
+
+		Args:
+			surface (pygame.Surface): The surface to draw the button on.
+		"""
 		if not self._alive or not self._visible: return
 		mouse_pos = pygame.mouse.get_pos()
 		is_hovering = misc._is_point_over_widget(self, mouse_pos)
 		current_visual_state = (self._pressed, is_hovering)
 		if self._needs_redraw or self._last_visual_state!=current_visual_state:
-			render_button_surface(self, is_hovering)
+			_render_button_surface(self, is_hovering)
 			self._last_visual_state = current_visual_state
 			self._needs_redraw = True
 			self._needs_transform = True
@@ -913,7 +1033,13 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
 			if self._tooltip:
 				self._tooltip.hide()
 
-	def react(self, event=None):
+	def _react(self, event: pygame.Event | None = None) -> None:
+		"""
+		This function is only used internally to react to events.
+
+		Args:
+			event (pygame.Event, optional): The event to react to.
+		"""
 		if self._state!="enabled" or not self._visible:
 			self._pressed = False
 			return
@@ -946,7 +1072,14 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
 					self._pressed = False
 
 
-def render_button_surface(button, is_hovering):
+def _render_button_surface(button: Button, is_hovering: bool) -> None:
+	"""
+	This function is only used internally to render the button surface once and cache it.
+
+	Args:
+		 button (Button): the widget to render the surface for
+		 is_hovering (bool): whether the mouse is hovering over the widget
+	"""
 	if button.state=="enabled":
 		if button.pressed and is_hovering:
 			text_color = button.active_pressed_text_color
@@ -987,7 +1120,7 @@ def render_button_surface(button, is_hovering):
 		descent = abs(button.font.get_descent())
 		optical_centre_offset = ascent-(ascent-descent)//2
 		font_line_h = button.font.get_height()
-		effective_line_h = max(font_line_h, button.line_spacing)
+		effective_line_h = int(max(font_line_h, button.line_spacing))
 		if button.alignment=="stretched" and len(button.text)>1 and not button.auto_size:
 			total_char_width = sum(button.font.render(char, True, text_color).get_width() for char in button.text)
 			available_width = local_rect.width-button.alignment_spacing

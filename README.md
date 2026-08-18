@@ -174,7 +174,7 @@ epw.set_appearance_mode(mode)
 # schedule something callable
 epw.schedule(function, time_to_execute, unit, fps)
 
-# turn a folder into a list of pygame surfaces that can be used for an animated Surface widget
+# turn a folder, video, image, pygame surface into a list of pygame surfaces that can be used for an animated Surface widget
 epw.create_frames(path)
 ```
 

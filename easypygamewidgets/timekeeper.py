@@ -26,11 +26,11 @@ pygame.init()
 
 class Timekeeper(Widget, Tooltipable, Screenable, Deletable):
 	def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
-	             height: int = 80, start_at: float|int = 60, end_at: float|int|None = None,
+	             height: int = 80, start_at: float | int = 60, end_at: float | int | None = None,
 	             show_milliseconds: bool = False, show_seconds: bool = True,
 	             show_minutes: bool = False, smart_minutes: bool = True, show_hours: bool = False,
 	             smart_hours: bool = True,
-	             state: str|None = None,
+	             state: str | None = None,
 	             active_unpressed_text_color: tuple = (255, 255, 255),
 	             disabled_unpressed_text_color: tuple = (150, 150, 150),
 	             active_hover_text_color: tuple = (255, 255, 255),
@@ -50,15 +50,15 @@ class Timekeeper(Widget, Tooltipable, Screenable, Deletable):
 	             hide_text: bool = False,
 	             hide_background: bool = False,
 	             hide_border: bool = False,
-	             active_hover_cursor: pygame.Cursor|None = None,
-	             disabled_hover_cursor: pygame.Cursor|None = None,
-	             active_pressed_cursor: pygame.Cursor|None = None,
-	             font: pygame.font.Font|pygame.font.SysFont = font.default_font, alignment: str = "center",
+	             active_hover_cursor: pygame.Cursor | None = None,
+	             disabled_hover_cursor: pygame.Cursor | None = None,
+	             active_pressed_cursor: pygame.Cursor | None = None,
+	             font: pygame.font.Font | pygame.font.SysFont = font.default_font, alignment: str = "center",
 	             alignment_spacing: int = 20, corner_radius: int = 14, ticking: bool = False,
 	             type_order: list[str] = ("h", ":", "m", ":", "s", ".", "ms"), reversed: bool = False, layer=1000,
-	             tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int|None = None,
-	             max_width: int|None = None, min_height: int|None = None, max_height: int|None = None,
-	             anchor_x: str = "left", anchor_y: str = "top", visible: bool|None = None, data: Any = None):
+	             tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
+	             max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
+	             anchor_x: str = "left", anchor_y: str = "top", visible: bool | None = None, data: Any = None):
 		super().__init__()
 		if screen:
 			screen.add_widget(self)
@@ -806,7 +806,7 @@ class Timekeeper(Widget, Tooltipable, Screenable, Deletable):
 		split_to_values(self, curr)
 		return self
 
-	def draw(self, surface: pygame.Surface):
+	def _draw(self, surface: pygame.Surface):
 		if not self._alive or not self._visible:
 			return
 		offset_x, offset_y = misc._get_offset(self)
@@ -911,14 +911,17 @@ class Timekeeper(Widget, Tooltipable, Screenable, Deletable):
 				self._last_text_x = text_rect.x
 				surface.set_clip(old_clip)
 
-	def react(self, event=None):
+	def _react(self, event=None):
 		if self._state!="enabled" or not self._visible:
+			self._pressed = False
 			return
 		is_inside = misc._is_point_over_widget(self, pygame.mouse.get_pos())
 		if event:
 			if event.type==pygame.MOUSEBUTTONDOWN and event.button==1 and is_inside:
+				self._pressed = True
 				self.trigger_event("<PRESS>")
-			elif event.type==pygame.MOUSEBUTTONUP and event.button==1 and is_inside:
+			elif event.type==pygame.MOUSEBUTTONUP and event.button==1 and self._pressed:
+				self._pressed = False
 				self.trigger_event("<RELEASE>")
 			elif event.type==pygame.KEYDOWN:
 				self.trigger_event("<KEY>")

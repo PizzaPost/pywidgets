@@ -1,31 +1,35 @@
 # misc.py
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
+"""Miscellaneous functions and variables that are building the core structure of the library."""
+
 import ctypes
 import os
 import queue
 import re
 import threading
 import time
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from concurrent.futures.thread import ThreadPoolExecutor
+from typing import Any
 
 import cv2
 import pygame
 import requests
 from PIL import Image
 
-pg = None
-check_disabled = False
-all_widgets = []
-_scheduled_functions = []
-_last_tick = None
-_dt = 0
-SYNC_FRAME_LOAD_LIMIT = 600
-_pending_frame_queues = []
+_pg: pygame.Surface | None = None
+_check_disabled: bool = False
+_all_widgets = []
+_scheduled_functions: list[tuple[Callable, int]] = []
+_last_tick: int | float | None = None
+_dt: int | float = 0
+SYNC_FRAME_LOAD_LIMIT: int = 600
+_pending_frame_queues: tuple[queue.Queue, list[pygame.Surface]] | list = []
 
 
-def _update_clock():
+def _update_clock() -> None:
+	"""Internally used to calculate the delta time."""
 	global _last_tick, _dt
 	now = time.time()
 	if _last_tick is None:
@@ -36,16 +40,17 @@ def _update_clock():
 	_drain_frame_queues()
 
 
-def _check_update():
-	global check_disabled
-	if check_disabled: return
+def _check_update() -> None:
+	"""Internally used to check for library updates."""
+	global _check_disabled
+	if _check_disabled: return
 	url = "https://raw.githubusercontent.com/PizzaPost/pywidgets/master/info.json"
 	try:
 		response = requests.get(url)
 		response.raise_for_status()
 		data = response.json()
 		latest_version = data["version"]
-		current_version = "26.36"
+		current_version = "26.37"
 		if latest_version!=current_version:
 			print(
 				f"\033[31mAn update is available. Download it now with 'pip install --upgrade easypygamewidgets'\n"
@@ -56,18 +61,21 @@ def _check_update():
 		print(f"easypygamewidgets: Failed to check for updates: {e}")
 
 
-def disable_update_check():
-	global check_disabled
-	check_disabled = True
+def disable_update_check() -> None:
+	"""Disable the update check for faster startup time and no text in the console."""
+	global _check_disabled
+	_check_disabled = True
 
 
-def _check_linked():
-	if not isinstance(pg, pygame.Surface):
+def _check_linked() -> None:
+	"""Internally used to check if a pygame window is linked."""
+	if not isinstance(_pg, pygame.Surface):
 		print("Please link a pygame window first:\n    easypygamewidgets.link_pygame_window(window)")
 		exit(0)
 
 
-def _check_pygame_version():
+def _check_pygame_version() -> None:
+	"""Internally used to check if pygame-ce is installed instead of pygame."""
 	try:
 		import pygame
 		if not hasattr(pygame, "IS_CE"): raise ImportError
@@ -86,35 +94,71 @@ def _check_pygame_version():
 		exit(1)
 
 
-def link_pygame_window(window: pygame.Surface, layer=500):
-	global pg
+def link_pygame_window(window: pygame.Surface) -> None:
+	"""
+	Link a pygame window to the library. This will be the window where all widgets are drawn.
+
+	Args:
+		window (pygame.Surface): The pygame window to link.
+	"""
+	global _pg
 	_check_pygame_version()
 	_check_update()
-	pg = window
-	all_widgets.append((pg, layer))
+	_pg = window
 
 
-def _add_widget(widget):
-	all_widgets.append(widget)
+def _add_widget(widget: "Widget") -> None:
+	"""
+	Internally used to add a widget to the list.
+
+	Args:
+		widget (Widget): The widget to add.
+	"""
+	_all_widgets.append(widget)
 	_resort_layers()
 
 
-def create_pygame_layer(function, layer):
-	all_widgets.append((function, layer))
+def create_pygame_layer(function: Callable, layer: int) -> None:
+	"""
+	Execute the content of a function at a specific layer. This can be useful if you want to draw default pygame
+	elements between two widgets.
+
+	Args:
+		function (Callable): The function to execute.
+		layer (int): The layer at which the function should be executed.
+	"""
+	_all_widgets.append((function, layer))
 	_resort_layers()
 
 
-def _resort_layers():
-	all_widgets.sort(key=lambda w: w[1] if isinstance(w, tuple) else w.layer)
+def _resort_layers() -> None:
+	"""Internally used to sort the widgets/functions by their layer."""
+	_all_widgets.sort(key=lambda w: w[1] if isinstance(w, tuple) else w.layer)
 
 
-def set_appearance_mode(mode):
+def set_appearance_mode(mode: int) -> None:
+	"""
+	Set the appearance mode of the window title bar.
+
+	Args:
+		mode (int): The appearance mode to set. (0: Light, 1: Dark, 2: System)
+	"""
 	hwnd = pygame.display.get_wm_info()["window"]
 	tmp = ctypes.c_int(mode)
 	ctypes.windll.dwmapi.DwmSetWindowAttribute(hwnd, 20, ctypes.byref(tmp), ctypes.sizeof(tmp))
 
 
-def schedule(function, time_to_execute: int, unit: str = "seconds", fps: float = 60):
+def schedule(function: Callable, time_to_execute: int, unit: str = "seconds", fps: int = 60) -> None:
+	"""
+	Schedule a function to execute it later.
+
+	Args:
+		 function (Callable): the function that should be scheduled.
+		 time_to_execute (int): the time it should take to execute the function.
+		 unit (str): the unit of time.
+		             (frames: "f", "frames"; seconds: "s", "sec", "seconds"; minutes: "m", "min", "minutes")
+		 fps (float): the frames per second. (Only useful if you use frames as unit)
+	"""
 	if time_to_execute<1:
 		time_to_execute = 1
 	if fps<=0:
@@ -127,10 +171,19 @@ def schedule(function, time_to_execute: int, unit: str = "seconds", fps: float =
 		...
 	else:
 		print(f"Invalid time unit: {unit}\nFallback: seconds")
-	_scheduled_functions.append([function, time_to_execute])
+	_scheduled_functions.append((function, int(time_to_execute)))
 
 
-def _get_offset(widget):
+def _get_offset(widget: "Widget") -> tuple[int, int]:
+	"""
+	Internally used to get the total amount of offset per widget.
+
+	Args:
+		 widget (Widget): The widget to get the offset for.
+
+	Returns:
+		 tuple[int, int]: The total amount of offset per widget. first number = x and second number = y
+	"""
 	offset_x = offset_y = 0
 	if getattr(widget, "screen", None):
 		offset_x = widget.screen.current_offset[0]
@@ -141,8 +194,22 @@ def _get_offset(widget):
 	return offset_x, offset_y
 
 
-def _is_point_over_widget(widget, point):
+def _is_point_over_widget(widget: "Widget", point: tuple[int, int]) -> bool:
+	"""
+	Internally used to check if the mouse is hovering over the widget.
+
+	Args:
+		widget (Widget): the widget it should check
+		point (tuple[int, int]): the (mouse) position it should check for hovering
+
+	Returns:
+		bool: True if the point is hovering else False
+
+	Raises:
+		ValueError: if the widget type is not supported
+	"""
 	class_name = widget.__class__.__name__
+	x, y = point
 	if class_name=="Entry" or class_name=="Label":
 		offset_x, offset_y = _get_offset(widget)
 		total_offset_x = offset_x+round(widget.current_offset[0])
@@ -150,7 +217,6 @@ def _is_point_over_widget(widget, point):
 		rect = widget.rect.move(total_offset_x, total_offset_y)
 		if not rect.collidepoint(point):
 			return False
-		x, y = point
 		geom_rect = rect
 		scale = widget.current_scale
 		rotation = widget.current_rotation
@@ -194,7 +260,6 @@ def _is_point_over_widget(widget, point):
 		rect = widget.rect.move(total_offset_x, total_offset_y)
 		if not rect.collidepoint(point):
 			return False
-		x, y = point
 		geom_rect = rect
 		scale = widget.current_scale
 		rotation = widget.current_rotation
@@ -233,7 +298,6 @@ def _is_point_over_widget(widget, point):
 		rect = widget.rect.move(total_offset_x, total_offset_y)
 		if not rect.collidepoint(point):
 			return False
-		x, y = point
 		geom_rect = rect
 		scale = widget.current_scale
 		rotation = widget.current_rotation
@@ -268,7 +332,6 @@ def _is_point_over_widget(widget, point):
 		total_offset_x = offset_x+round(widget.current_offset[0])
 		total_offset_y = offset_y+round(widget.current_offset[1])
 		draw_rect = widget.rect.move(total_offset_x, total_offset_y)
-		x, y = point
 		scale = widget.current_scale
 		rotation = widget.current_rotation
 		cx, cy = draw_rect.center
@@ -358,37 +421,89 @@ def _is_point_over_widget(widget, point):
 		for cx, cy in centers:
 			if ((x-cx)**2+(y-cy)**2)<=r**2: return True
 		return False
+	else:
+		raise ValueError(f"Invalid widget type: {class_name}")
 
 
-def normalize_color(color: tuple[int, int, int]|tuple[int, int, int, int]|str|None):
+def normalize_color(color: tuple[int, int, int] | tuple[int, int, int, int] | str | None) -> tuple[int, int, int, int]:
+	"""
+	Converts different color formats into an rgba color value.
+
+	Args:
+		  color (tuple[int, int, int] | tuple[int, int, int, int] | str | None): The color to convert.
+		                                                                         (Allowed color formats are rgb,
+		                                                                         rgba, #hex, hex or None. None
+		                                                                         returns an invisible color.)
+
+	Returns:
+		  tuple[int, int, int, int]: The normalized rgba color value.
+
+	Raises:
+		  ValueError: If the color format is invalid.
+	"""
 	if color is None:
 		return 0, 0, 0, 0
-	# rgb
-	if len(color)==3:
-		return *color, 255
-	# rgba
-	if len(color)==4:
-		return color
-	# #hex or hex
-	if len(color)==7 and len(color.removeprefix("#"))==6 or len(color)==6 and len(color.removeprefix("#"))==6:
+	if isinstance(color, tuple):
+		if len(color)==3 and all(isinstance(c, int) and 0<=c<=255 for c in color):
+			return *color, 255
+		if len(color)==4 and all(isinstance(c, int) and 0<=c<=255 for c in color):
+			return color  # type: ignore
+	elif isinstance(color, str):
 		color = color.removeprefix("#")
-		return int(color[0:2], 16), int(color[2:4], 16), int(color[4:6], 16), 255
+		if len(color)==6 and all(c.lower() in "0123456789abcdef" for c in color):
+			return int(color[0:2], 16), int(color[2:4], 16), int(color[4:6], 16), 255
 	raise ValueError("Invalid color format. Supported formats: (r, g, b), (r, g, b, a), #hex, hex")
 
 
-def _natural_key(s):
+def _natural_key(s) -> list[int | str]:
+	"""
+	Internally used to sort strings in a natural order.
+
+	Args:
+		s (str): The string to sort.
+
+	Returns:
+		list[int| str]: The sorted string.
+	"""
 	return [int(t) if t.isdigit() else t.lower() for t in re.split(r'(\d+)', s)]
 
 
-def _load_image(full_path):
+def _load_image(full_path) -> pygame.Surface:
+	"""
+	Internally used to load an image.
+
+	Args:
+		full_path (str): The path to the image file.
+
+	Returns:
+		pygame.Surface: The loaded image surface.
+	"""
 	return pygame.image.load(full_path)
 
 
-def _decode_image_worker(full_paths, raw_queue, worker_count):
-	def _decode(full_path):
-		with Image.open(full_path) as img:
+def _decode_image_worker(full_paths: list[str], raw_queue: queue.Queue, worker_count: int) -> None:
+	"""
+	Internally used to decode images in a separate thread.
+
+	Args:
+		full_paths (list[str]): The paths to the image files.
+		raw_queue (queue.Queue): The queue to store the decoded images.
+		worker_count (int): The number of workers to use.
+	"""
+
+	def _decode(path: str) -> tuple[Any, tuple[int, int], bytes]:
+		"""
+		Internally used to decode an image file.
+
+		Args:
+			path (str): The path to the image file.
+
+		Returns:
+			tuple[Any, tuple[int, int], bytes]: The decoded image.
+		"""
+		with Image.open(path) as img:
 			img = img.convert("RGBA")
-			return full_path, img.size, img.tobytes()
+			return path, img.size, img.tobytes()
 
 	with ThreadPoolExecutor(max_workers=worker_count) as pool:
 		for full_path, size, data in pool.map(_decode, full_paths):
@@ -396,7 +511,14 @@ def _decode_image_worker(full_paths, raw_queue, worker_count):
 	raw_queue.put(None)
 
 
-def _read_video_bytes_worker(vidcap, raw_queue):
+def _read_video_bytes_worker(vidcap: cv2.VideoCapture, raw_queue: queue.Queue) -> None:
+	"""
+	Internally used to read video frames in a separate thread.
+
+	Args:
+		 vidcap (cv2.VideoCapture): the video capture object.
+		 raw_queue (queue.Queue): The queue to store the decoded video frames.
+	"""
 	continue_grabbing, frame = vidcap.read()
 	while continue_grabbing:
 		frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -408,7 +530,8 @@ def _read_video_bytes_worker(vidcap, raw_queue):
 	raw_queue.put(None)
 
 
-def _drain_frame_queues():
+def _drain_frame_queues() -> None:
+	"""Internally used to drain the frame queues."""
 	if not _pending_frame_queues: return
 	for raw_queue, frames_list in _pending_frame_queues[:]:
 		while True:
@@ -426,43 +549,68 @@ def _drain_frame_queues():
 				frames_list.append(pygame.image.frombuffer(data, (width, height), "RGB"))
 
 
-def create_frames(path: str|os.PathLike) -> Iterable[pygame.Surface]:
-	if os.path.isdir(path):
-		filenames = sorted(os.listdir(path), key=_natural_key)
-		full_paths = [os.path.join(path, filename) for filename in filenames]
-		worker_count = min(32, (os.cpu_count() or 4)*4)
-		sync_paths = full_paths[:SYNC_FRAME_LOAD_LIMIT]
-		async_paths = full_paths[SYNC_FRAME_LOAD_LIMIT:]
-		with ThreadPoolExecutor(max_workers=worker_count) as pool:
-			frames_list = list(pool.map(_load_image, sync_paths))
-		if async_paths:
-			raw_queue = queue.Queue(maxsize=64)
-			reader_thread = threading.Thread(
-				target=_decode_image_worker,
-				args=(async_paths, raw_queue, worker_count), daemon=True
-			)
-			reader_thread.start()
-			_pending_frame_queues.append((raw_queue, frames_list))
-		return frames_list
-	elif isinstance(path, str) and path.endswith((".mov", ".mp4", ".webm")):
-		frames_list = []
-		vidcap = cv2.VideoCapture(path)
-		continue_grabbing, frame = vidcap.read()
-		while continue_grabbing and len(frames_list)<SYNC_FRAME_LOAD_LIMIT:
-			frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-			width = frame.shape[1]
-			height = frame.shape[0]
-			frames_list.append(pygame.image.frombuffer(frame.tobytes(), (width, height), "RGB"))
+def create_frames(path: str | os.PathLike | pygame.Surface) -> Iterable[pygame.Surface]:
+	"""
+	Build an Iterable element that can be used for animated Surfaces.
+
+	Args:
+		 path (str | os.PathLike | pygame.Surface): The path to the image files.
+		                                            (directory, image/video file or pygame.Surface)
+
+	Returns:
+		 Iterable[pygame.Surface]: An Iterable of Surfaces.
+
+	Raises:
+		 ValueError: If the path is invalid. If you think that your path is valid check if the file format is supported.
+
+
+	Supported image formats:
+		.png, .jpg, .jpeg, .webp
+
+	Supported video formats:
+		.mov, .mp4, .webm
+	"""
+	if isinstance(path, pygame.Surface):
+		return [path]
+	elif isinstance(path, str):
+		if os.path.isdir(path):
+			filenames = sorted(os.listdir(path), key=_natural_key)
+			full_paths = [os.path.join(path, filename) for filename in filenames]
+			worker_count = min(32, (os.cpu_count() or 4)*4)
+			sync_paths = full_paths[:SYNC_FRAME_LOAD_LIMIT]
+			async_paths = full_paths[SYNC_FRAME_LOAD_LIMIT:]
+			with ThreadPoolExecutor(max_workers=worker_count) as pool:
+				frames_list = list(pool.map(_load_image, sync_paths))
+			if async_paths:
+				raw_queue = queue.Queue(maxsize=64)
+				reader_thread = threading.Thread(
+					target=_decode_image_worker,
+					args=(async_paths, raw_queue, worker_count), daemon=True
+				)
+				reader_thread.start()
+				_pending_frame_queues.append((raw_queue, frames_list))
+			return frames_list
+		if os.path.isfile(path) and path.endswith((".mov", ".mp4", ".webm")):
+			frames_list = []
+			vidcap = cv2.VideoCapture(path)
 			continue_grabbing, frame = vidcap.read()
-		if continue_grabbing:
-			raw_queue = queue.Queue(maxsize=64)
-			reader_thread = threading.Thread(target=_read_video_bytes_worker, args=(vidcap, raw_queue), daemon=True)
-			reader_thread.start()
-			_pending_frame_queues.append((raw_queue, frames_list))
+			while continue_grabbing and len(frames_list)<SYNC_FRAME_LOAD_LIMIT:
+				frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+				width = frame.shape[1]
+				height = frame.shape[0]
+				frames_list.append(pygame.image.frombuffer(frame.tobytes(), (width, height), "RGB"))
+				continue_grabbing, frame = vidcap.read()
+			if continue_grabbing:
+				raw_queue = queue.Queue(maxsize=64)
+				reader_thread = threading.Thread(target=_read_video_bytes_worker, args=(vidcap, raw_queue), daemon=True)
+				reader_thread.start()
+				_pending_frame_queues.append((raw_queue, frames_list))
+			else:
+				vidcap.release()
+			return frames_list
+		elif os.path.isfile(path) and path.endswith((".png", ".jpg", ".jpeg", ".webp")):
+			return [pygame.image.load(path)]
 		else:
-			vidcap.release()
-		return frames_list
-	elif isinstance(path, pygame.Surface):
-		return [pygame.image.load(path)]
+			raise ValueError("Invalid path format. Please provide a directory, video file path, or image file path.")
 	else:
 		raise ValueError("Invalid path format. Please provide a directory, video file path, or image file path.")

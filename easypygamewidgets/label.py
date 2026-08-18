@@ -28,36 +28,36 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 	def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
 	             height: int = 80,
 	             text: str = "easypygamewidgets Label", state="enabled",
-	             active_hover_text_color: tuple|None = (255, 255, 255, 255),
-	             active_hover_shadow_color: tuple|None = (50, 50, 50, 200),
-	             active_hover_background_color: tuple|None = None,
-	             active_hover_underline_color: tuple|None = None,
-	             active_hover_strikethrough_color: tuple|None = None,
-	             active_hover_border_color: tuple|None = None,
-	             active_pressed_text_color: tuple|None = (255, 255, 255, 255),
-	             active_pressed_shadow_color: tuple|None = (50, 50, 50, 200),
-	             active_pressed_background_color: tuple|None = None,
-	             active_pressed_underline_color: tuple|None = None,
-	             active_pressed_strikethrough_color: tuple|None = None,
-	             active_pressed_border_color: tuple|None = None,
-	             active_unpressed_text_color: tuple|None = (255, 255, 255, 255),
-	             active_unpressed_shadow_color: tuple|None = (50, 50, 50, 200),
-	             active_unpressed_background_color: tuple|None = None,
-	             active_unpressed_underline_color: tuple|None = None,
-	             active_unpressed_strikethrough_color: tuple|None = None,
-	             active_unpressed_border_color: tuple|None = None,
-	             disabled_hover_text_color: tuple|None = (150, 150, 150, 255),
-	             disabled_hover_shadow_color: tuple|None = (50, 50, 50, 200),
-	             disabled_hover_background_color: tuple|None = None,
-	             disabled_hover_underline_color: tuple|None = None,
-	             disabled_hover_strikethrough_color: tuple|None = None,
-	             disabled_hover_border_color: tuple|None = None,
-	             disabled_unpressed_text_color: tuple|None = (150, 150, 150, 255),
-	             disabled_unpressed_shadow_color: tuple|None = (50, 50, 50, 200),
-	             disabled_unpressed_background_color: tuple|None = None,
-	             disabled_unpressed_underline_color: tuple|None = None,
-	             disabled_unpressed_strikethrough_color: tuple|None = None,
-	             disabled_unpressed_border_color: tuple|None = None,
+	             active_hover_text_color: tuple | None = (255, 255, 255, 255),
+	             active_hover_shadow_color: tuple | None = (50, 50, 50, 200),
+	             active_hover_background_color: tuple | None = None,
+	             active_hover_underline_color: tuple | None = None,
+	             active_hover_strikethrough_color: tuple | None = None,
+	             active_hover_border_color: tuple | None = None,
+	             active_pressed_text_color: tuple | None = (255, 255, 255, 255),
+	             active_pressed_shadow_color: tuple | None = (50, 50, 50, 200),
+	             active_pressed_background_color: tuple | None = None,
+	             active_pressed_underline_color: tuple | None = None,
+	             active_pressed_strikethrough_color: tuple | None = None,
+	             active_pressed_border_color: tuple | None = None,
+	             active_unpressed_text_color: tuple | None = (255, 255, 255, 255),
+	             active_unpressed_shadow_color: tuple | None = (50, 50, 50, 200),
+	             active_unpressed_background_color: tuple | None = None,
+	             active_unpressed_underline_color: tuple | None = None,
+	             active_unpressed_strikethrough_color: tuple | None = None,
+	             active_unpressed_border_color: tuple | None = None,
+	             disabled_hover_text_color: tuple | None = (150, 150, 150, 255),
+	             disabled_hover_shadow_color: tuple | None = (50, 50, 50, 200),
+	             disabled_hover_background_color: tuple | None = None,
+	             disabled_hover_underline_color: tuple | None = None,
+	             disabled_hover_strikethrough_color: tuple | None = None,
+	             disabled_hover_border_color: tuple | None = None,
+	             disabled_unpressed_text_color: tuple | None = (150, 150, 150, 255),
+	             disabled_unpressed_shadow_color: tuple | None = (50, 50, 50, 200),
+	             disabled_unpressed_background_color: tuple | None = None,
+	             disabled_unpressed_underline_color: tuple | None = None,
+	             disabled_unpressed_strikethrough_color: tuple | None = None,
+	             disabled_unpressed_border_color: tuple | None = None,
 	             border_thickness: int = 2,
 	             hide_text: bool = False,
 	             hide_shadow: bool = False,
@@ -65,16 +65,16 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 	             hide_strikethrough: bool = False,
 	             hide_background: bool = False,
 	             hide_border: bool = False,
-	             active_hover_cursor: pygame.Cursor|None = None,
-	             disabled_hover_cursor: pygame.Cursor|None = None,
-	             active_pressed_cursor: pygame.Cursor|None = None,
-	             font: pygame.font.Font|pygame.font.SysFont = font.default_font, alignment: str = "center",
+	             active_hover_cursor: pygame.Cursor | None = None,
+	             disabled_hover_cursor: pygame.Cursor | None = None,
+	             active_pressed_cursor: pygame.Cursor | None = None,
+	             font: pygame.font.Font | pygame.font.SysFont = font.default_font, alignment: str = "center",
 	             alignment_spacing: int = 40, dragable: bool = False, top_left_corner_radius: int = 25,
 	             top_right_corner_radius: int = 25, bottom_left_corner_radius: int = 25,
 	             bottom_right_corner_radius: int = 25, layer=1000, line_spacing=30,
-	             tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int|None = None,
-	             max_width: int|None = None, min_height: int|None = None, max_height: int|None = None,
-	             anchor_x: str = "left", anchor_y: str = "top", visible: bool|None = None, data: Any = None):
+	             tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
+	             max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
+	             anchor_x: str = "left", anchor_y: str = "top", visible: bool | None = None, data: Any = None):
 		super().__init__()
 		safe_set_linesize(font, line_spacing)
 		lines = str(text).split("\n")
@@ -1111,7 +1111,7 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 		else:
 			self._target_scale = value
 		self._scale_step = (self._target_scale-self._current_scale)/frames_to_finish
-		self.update_animation()
+		self._update_animation()
 		return self
 
 	def rotate(self, value=None, frames_to_finish=1):
@@ -1122,7 +1122,7 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 		else:
 			self._target_rotation = value
 		self._rotation_step = (self._target_rotation-self._current_rotation)/frames_to_finish
-		self.update_animation()
+		self._update_animation()
 		return self
 
 	def rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
@@ -1133,7 +1133,7 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 		self._target_rotation = 0 if rotation is None else rotation
 		self._rotation_step = (self._target_rotation-self._current_rotation)/frames_to_finish
 		self._use_rotozoom = True
-		self.update_animation()
+		self._update_animation()
 		return self
 
 	def offset(self, value: tuple[int, int], frames_to_finish=1):
@@ -1145,10 +1145,10 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 			self._target_offset = value
 		self._offset_step[0] = (self._target_offset[0]-self._current_offset[0])/frames_to_finish
 		self._offset_step[1] = (self._target_offset[1]-self._current_offset[1])/frames_to_finish
-		self.update_animation()
+		self._update_animation()
 		return self
 
-	def update_animation(self):
+	def _update_animation(self):
 		scale_changed = False
 		rotation_changed = False
 		if self._current_scale!=self._target_scale:
@@ -1173,7 +1173,7 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 		if scale_changed or rotation_changed:
 			self._needs_transform = True
 
-	def draw(self, surface: pygame.Surface):
+	def _draw(self, surface: pygame.Surface):
 		if not self._alive or not self._visible:
 			return
 		offset_x, offset_y = misc._get_offset(self)
@@ -1241,7 +1241,7 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 			if self._tooltip:
 				self._tooltip.hide()
 
-	def react(self, event=None):
+	def _react(self, event=None):
 		if self._state!="enabled" or not self._visible:
 			self._pressed = False
 			return
@@ -1275,8 +1275,8 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 						mouse_pos[1]-(self._y+total_offset_y)
 					)
 					self.trigger_event("<PRESS>")
-			elif event.type==pygame.MOUSEBUTTONUP and is_inside:
-				if event.button==1:
+			elif event.type==pygame.MOUSEBUTTONUP:
+				if event.button==1 and self._pressed:
 					self._pressed = False
 					self._is_dragging = False
 					self.trigger_event("<RELEASE>")

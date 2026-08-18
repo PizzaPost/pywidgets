@@ -1,3 +1,11 @@
+# TypeHints.py
+# by PizzaPost
+# https://github.com/PizzaPost/easypygamewidgets
+"""
+This file contains type hints for the easypygamewidgets library.
+They're used for the config and configure commands on widgets.
+"""
+
 from collections.abc import Callable
 from typing import Any, TypedDict
 
@@ -5,11 +13,13 @@ import pygame
 
 
 class BindingConfig(TypedDict):
-	command: Callable|None
+	"""TypeHints for Bindings"""
+	command: Callable | None
 	require_hover: bool
 
 
 class ButtonConfig(TypedDict, total=False):
+	"""TypeHints for Buttons"""
 	bindings: dict[str, BindingConfig]
 	width: int
 	height: int
@@ -17,21 +27,21 @@ class ButtonConfig(TypedDict, total=False):
 	state: str
 	auto_size: bool
 	text: str
-	active_unpressed_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_unpressed_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_unpressed_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
+	active_unpressed_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
 	border_thickness: int
 	hide_text: bool
 	hide_background: bool
@@ -40,10 +50,10 @@ class ButtonConfig(TypedDict, total=False):
 	disabled_hover_cursor: pygame.Cursor
 	active_pressed_cursor: pygame.Cursor
 	cursors: dict[str, pygame.Cursor]
-	font: pygame.font.Font|pygame.font.SysFont
+	font: pygame.font.Font | pygame.font.SysFont
 	alignment: str
 	alignment_spacing: int
-	command: Callable|None
+	command: Callable | None
 	corner_radius: int
 	layer: int
 	tooltip: "easypygamewidgets.Tooltip"
@@ -54,7 +64,7 @@ class ButtonConfig(TypedDict, total=False):
 	max_height: int
 	anchor_x: str
 	anchor_y: str
-	visible: bool|None
+	visible: bool | None
 	data: Any
 	x: int
 	y: int
@@ -68,12 +78,98 @@ class ButtonConfig(TypedDict, total=False):
 	cached_surface: pygame.Surface
 	needs_transform: bool
 	original_surface: pygame.Surface
-	target_scale: float|int
-	current_scale: float|int
-	scale_step: float|int
-	target_rotation: float|int
-	current_rotation: float|int
-	rotation_step: float|int
+	target_scale: float | int
+	current_scale: float | int
+	scale_step: float | int
+	target_rotation: float | int
+	current_rotation: float | int
+	rotation_step: float | int
+	target_offset: tuple[int, int]
+	current_offset: tuple[int, int]
+	offset_step: tuple[int, int]
+	use_rotozoom: bool
+	dialog: "easypygamewidgets.Dialog | None"
+
+
+class CheckboxConfig(TypedDict, total=False):
+	"""TypeHints for Checkboxes"""
+	bindings: dict[str, BindingConfig]
+	width: int
+	height: int
+	screen: "easypygamewidgets.Screen"
+	state: str
+	auto_size: bool
+	text: str
+	checked: bool
+	active_unpressed_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_mark_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_mark_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_mark_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_mark_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_mark_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_mark_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_mark_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_mark_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_mark_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_mark_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	border_thickness: int
+	hide_text: bool
+	hide_background: bool
+	hide_border: bool
+	active_hover_cursor: pygame.Cursor
+	disabled_hover_cursor: pygame.Cursor
+	active_pressed_cursor: pygame.Cursor
+	cursors: dict[str, pygame.Cursor]
+	font: pygame.font.Font | pygame.font.SysFont
+	alignment: str
+	alignment_spacing: int
+	command: Callable | None
+	check_command: Callable | None
+	uncheck_command: Callable | None
+	corner_radius: int
+	layer: int
+	tooltip: "easypygamewidgets.Tooltip"
+	line_spacing: int
+	min_width: int
+	max_width: int
+	min_height: int
+	max_height: int
+	anchor_x: str
+	anchor_y: str
+	visible: bool | None
+	data: Any
+	x: int
+	y: int
+	alive: bool
+	pressed: bool
+	rect: pygame.Rect
+	original_cursor: pygame.Cursor
+	is_hovered: bool
+	last_visual_state: tuple[bool, bool]
+	needs_redraw: bool
+	cached_surface: pygame.Surface
+	needs_transform: bool
+	original_surface: pygame.Surface
+	target_scale: float | int
+	current_scale: float | int
+	scale_step: float | int
+	target_rotation: float | int
+	current_rotation: float | int
+	rotation_step: float | int
 	target_offset: tuple[int, int]
 	current_offset: tuple[int, int]
 	offset_step: tuple[int, int]
@@ -82,6 +178,7 @@ class ButtonConfig(TypedDict, total=False):
 
 
 class DialogConfig(TypedDict, total=False):
+	"""TypeHints for Dialoges"""
 	screen: "easypygamewidgets.Screen"
 	state: str
 	auto_size: bool
@@ -93,26 +190,26 @@ class DialogConfig(TypedDict, total=False):
 	widgets: "list[easypygamewidgets.Button]"
 	widgets_spacing: int
 	widget_alignment: str
-	active_unpressed_title_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_title_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_title_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_title_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_title_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_unpressed_description_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_description_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_description_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_description_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_description_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_unpressed_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_unpressed_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
+	active_unpressed_title_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_title_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_title_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_title_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_title_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_description_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_description_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_description_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_description_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_description_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
 	border_thickness: int
 	hide_text: bool
 	hide_background: bool
@@ -121,10 +218,10 @@ class DialogConfig(TypedDict, total=False):
 	disabled_hover_cursor: pygame.Cursor
 	active_pressed_cursor: pygame.Cursor
 	cursors: dict[str, pygame.Cursor]
-	title_font: pygame.font.Font|pygame.font.SysFont
+	title_font: pygame.font.Font | pygame.font.SysFont
 	title_alignment: str
 	title_alignment_spacing: int
-	description_font: pygame.font.Font|pygame.font.SysFont
+	description_font: pygame.font.Font | pygame.font.SysFont
 	description_alignment: str
 	description_alignment_spacing: int
 	corner_radius: int
@@ -138,7 +235,7 @@ class DialogConfig(TypedDict, total=False):
 	max_height: int
 	anchor_x: str
 	anchor_y: str
-	visible: bool|None
+	visible: bool | None
 	data: Any
 	x: int
 	y: int
@@ -152,12 +249,12 @@ class DialogConfig(TypedDict, total=False):
 	cached_surface: pygame.Surface
 	needs_transform: bool
 	original_surface: pygame.Surface
-	target_scale: float|int
-	current_scale: float|int
-	scale_step: float|int
-	target_rotation: float|int
-	current_rotation: float|int
-	rotation_step: float|int
+	target_scale: float | int
+	current_scale: float | int
+	scale_step: float | int
+	target_rotation: float | int
+	current_rotation: float | int
+	rotation_step: float | int
 	target_offset: tuple[int, int]
 	current_offset: tuple[int, int]
 	offset_step: tuple[int, int]
@@ -166,6 +263,7 @@ class DialogConfig(TypedDict, total=False):
 
 
 class EntryConfig(TypedDict, total=False):
+	"""TypeHints for Entries"""
 	screen: "easypygamewidgets.Screen"
 	state: str
 	auto_size: bool
@@ -173,25 +271,25 @@ class EntryConfig(TypedDict, total=False):
 	height: int
 	placeholder_text: str
 	text: str
-	char_limit: int|None
+	char_limit: int | None
 	show: str
-	active_unpressed_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_unpressed_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_unpressed_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	selection_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_selection_color: tuple[int, int, int]|tuple[int, int, int, int]|None
+	active_unpressed_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	selection_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_selection_color: tuple[int, int, int] | tuple[int, int, int, int] | None
 	border_thickness: int
 	hide_text: bool
 	hide_background: bool
@@ -203,7 +301,7 @@ class EntryConfig(TypedDict, total=False):
 	cursors: dict[str, pygame.Cursor]
 	blinking_cursor: str
 	blinking_speed: int
-	font: pygame.font.Font|pygame.font.SysFont
+	font: pygame.font.Font | pygame.font.SysFont
 	alignment: str
 	alignment_spacing: int
 	top_left_corner_radius: int
@@ -221,7 +319,7 @@ class EntryConfig(TypedDict, total=False):
 	max_height: int
 	anchor_x: str
 	anchor_y: str
-	visible: bool|None
+	visible: bool | None
 	data: Any
 	x: int
 	y: int
@@ -248,12 +346,12 @@ class EntryConfig(TypedDict, total=False):
 	local_text_x: int
 	needs_transform: bool
 	original_surface: pygame.Surface
-	target_scale: float|int
-	current_scale: float|int
-	scale_step: float|int
-	target_rotation: float|int
-	current_rotation: float|int
-	rotation_step: float|int
+	target_scale: float | int
+	current_scale: float | int
+	scale_step: float | int
+	target_rotation: float | int
+	current_rotation: float | int
+	rotation_step: float | int
 	target_offset: tuple[int, int]
 	current_offset: tuple[int, int]
 	offset_step: tuple[int, int]
@@ -261,6 +359,7 @@ class EntryConfig(TypedDict, total=False):
 
 
 class LabelConfig(TypedDict, total=False):
+	"""TypeHints for Labels"""
 	screen: "easypygamewidgets.Screen"
 	state: str
 	strikethrough: bool
@@ -269,36 +368,36 @@ class LabelConfig(TypedDict, total=False):
 	width: int
 	height: int
 	text: str
-	active_unpressed_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_unpressed_shadow_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_shadow_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_shadow_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_shadow_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_shadow_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_unpressed_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_unpressed_underline_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_underline_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_underline_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_underline_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_underline_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_unpressed_strikethrough_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_strikethrough_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_strikethrough_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_strikethrough_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_strikethrough_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_unpressed_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
+	active_unpressed_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_shadow_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_shadow_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_shadow_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_shadow_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_shadow_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_underline_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_underline_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_underline_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_underline_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_underline_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_strikethrough_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_strikethrough_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_strikethrough_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_strikethrough_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_strikethrough_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
 	border_thickness: int
 	hide_text: bool
 	hide_shadow: bool
@@ -310,7 +409,7 @@ class LabelConfig(TypedDict, total=False):
 	disabled_hover_cursor: pygame.Cursor
 	active_pressed_cursor: pygame.Cursor
 	cursors: dict[str, pygame.Cursor]
-	font: pygame.font.Font|pygame.font.SysFont
+	font: pygame.font.Font | pygame.font.SysFont
 	alignment: str
 	alignment_spacing: int
 	dragable: bool
@@ -327,7 +426,7 @@ class LabelConfig(TypedDict, total=False):
 	max_height: int
 	anchor_x: str
 	anchor_y: str
-	visible: bool|None
+	visible: bool | None
 	data: Any
 	x: int
 	y: int
@@ -337,19 +436,19 @@ class LabelConfig(TypedDict, total=False):
 	original_cursor: pygame.Cursor
 	drag_offset: tuple[int, int]
 	is_dragging: bool
-	last_checked_dragging: float|int
+	last_checked_dragging: float | int
 	bindings: dict[str, BindingConfig]
 	needs_redraw: bool
 	needs_transform: bool
 	last_visual_state: tuple[bool, bool]
 	original_surface: pygame.Surface
 	cached_surface: pygame.Surface
-	target_scale: float|int
-	current_scale: float|int
-	scale_step: float|int
-	target_rotation: float|int
-	current_rotation: float|int
-	rotation_step: float|int
+	target_scale: float | int
+	current_scale: float | int
+	scale_step: float | int
+	target_rotation: float | int
+	current_rotation: float | int
+	rotation_step: float | int
 	target_offset: tuple[int, int]
 	current_offset: tuple[int, int]
 	offset_step: tuple[int, int]
@@ -358,6 +457,7 @@ class LabelConfig(TypedDict, total=False):
 
 
 class SliderConfig(TypedDict, total=False):
+	"""TypeHints for Sliders"""
 	bindings: dict[str, BindingConfig]
 	width: int
 	height: int
@@ -365,9 +465,9 @@ class SliderConfig(TypedDict, total=False):
 	state: str
 	auto_size: bool
 	text: str
-	start: int|float
-	end: int|float
-	initial_value: int|float
+	start: int | float
+	end: int | float
+	initial_value: int | float
 	top_left_corner_radius: int
 	top_right_corner_radius: int
 	bottom_left_corner_radius: int
@@ -375,36 +475,36 @@ class SliderConfig(TypedDict, total=False):
 	dot_radius: int
 	max_extra_dot_radius: int
 	move_text_with_dot_radius: bool
-	active_unpressed_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_text_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_unpressed_used_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_used_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_used_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_used_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_used_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_unpressed_unused_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_unused_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_unused_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_unused_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_unused_background_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_unpressed_dot_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_dot_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_dot_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_dot_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_dot_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_unpressed_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_border_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_unpressed_display_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_unpressed_display_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_hover_display_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	disabled_hover_display_color: tuple[int, int, int]|tuple[int, int, int, int]|None
-	active_pressed_display_color: tuple[int, int, int]|tuple[int, int, int, int]|None
+	active_unpressed_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_text_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_used_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_used_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_used_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_used_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_used_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_unused_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_unused_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_unused_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_unused_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_unused_background_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_dot_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_dot_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_dot_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_dot_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_dot_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_unpressed_display_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_unpressed_display_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_hover_display_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	disabled_hover_display_color: tuple[int, int, int] | tuple[int, int, int, int] | None
+	active_pressed_display_color: tuple[int, int, int] | tuple[int, int, int, int] | None
 	border_width: int
 	hide_text: bool
 	hide_used_background: bool
@@ -416,7 +516,7 @@ class SliderConfig(TypedDict, total=False):
 	disabled_hover_cursor: pygame.Cursor
 	active_pressed_cursor: pygame.Cursor
 	cursors: dict[str, pygame.Cursor]
-	font: pygame.font.Font|pygame.font.SysFont
+	font: pygame.font.Font | pygame.font.SysFont
 	alignment: str
 	alignment_spacing: int
 	show_value_when_pressed: bool
@@ -451,12 +551,12 @@ class SliderConfig(TypedDict, total=False):
 	cached_surface: pygame.Surface
 	needs_transform: bool
 	original_surface: pygame.Surface
-	target_scale: float|int
-	current_scale: float|int
-	scale_step: float|int
-	target_rotation: float|int
-	current_rotation: float|int
-	rotation_step: float|int
+	target_scale: float | int
+	current_scale: float | int
+	scale_step: float | int
+	target_rotation: float | int
+	current_rotation: float | int
+	rotation_step: float | int
 	target_offset: tuple[int, int]
 	current_offset: tuple[int, int]
 	offset_step: tuple[int, int]

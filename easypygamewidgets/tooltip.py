@@ -30,19 +30,19 @@ class Tooltip(Widget, Deletable):
 	             auto_size: bool = True, width: int = 180,
 	             height: int = 80,
 	             text: str = "easypygamewidgets Tooltip",
-	             active_unpressed_text_color: tuple|None = None,
-	             active_unpressed_background_color: tuple|None = None,
-	             active_unpressed_border_color: tuple|None = None,
+	             active_unpressed_text_color: tuple | None = None,
+	             active_unpressed_background_color: tuple | None = None,
+	             active_unpressed_border_color: tuple | None = None,
 	             border_thickness: int = 2,
 	             hide_text: bool = False,
 	             hide_background: bool = False,
 	             hide_border: bool = False,
-	             active_hover_cursor: pygame.Cursor|None = None,
-	             font: pygame.font.Font|pygame.font.SysFont = font.tooltip_font, alignment: str = "center",
-	             alignment_spacing: int = 20, corner_radius: int = 25, layer=1000, style: str|None = None,
+	             active_hover_cursor: pygame.Cursor | None = None,
+	             font: pygame.font.Font | pygame.font.SysFont = font.tooltip_font, alignment: str = "center",
+	             alignment_spacing: int = 20, corner_radius: int = 25, layer=1000, style: str | None = None,
 	             suppress_icon=False, icon: "pygame.Surface | easypygamewidgets.Surface | None" = None,
-	             line_spacing: int = 30, min_width: int|None = None, max_width: int|None = None,
-	             min_height: int|None = None, max_height: int|None = None, anchor_x: str = "left",
+	             line_spacing: int = 30, min_width: int | None = None, max_width: int | None = None,
+	             min_height: int | None = None, max_height: int | None = None, anchor_x: str = "left",
 	             anchor_y: str = "top", visible: bool = False, data: Any = None):
 		super().__init__()
 		self._bindings = {}
@@ -552,7 +552,7 @@ class Tooltip(Widget, Deletable):
 		widget.remove_tooltip()
 		return self
 
-	def draw(self, surface: pygame.Surface):
+	def _draw(self, surface: pygame.Surface):
 		if not self._visible:
 			return
 		safe_set_linesize(self._font, self._line_spacing)
