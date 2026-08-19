@@ -1,4 +1,10 @@
+# masterWidgets.py
+# by PizzaPost
+# https://github.com/PizzaPost/easypygamewidgets
+""""Internally used to reduce duplicate code across different widgets."""
+
 import copy
+from collections.abc import Callable
 from typing import Any
 
 import pygame
@@ -7,14 +13,37 @@ from easypygamewidgets import misc
 
 
 class Widget:
-	def clone(self):
+	"""Initializes a default widget."""
+
+	def clone(self) -> "Widget":
+		"""
+		Clones the widget.
+
+		Returns:
+			Widget: the cloned widget
+		"""
 		copied_widget = copy.deepcopy(self)
 		misc._all_widgets.append(copied_widget)
 		misc._resort_layers()
 		return copied_widget
 
-	def bind(self, event: str, command, require_hover: bool = True, widget_boolean_value=None,
-	         required_value_for_widget_boolean_value: Any = True):
+	def bind(self, event: str, command: Callable | None = None, require_hover: bool = True,
+	         widget_boolean_value: Callable | None = None,
+	         required_value_for_widget_boolean_value: Any = True) -> "Widget":
+		"""
+		Bind an event to a widget.
+
+		Args:
+			event (str): the event to bind
+			command (Callable|None): the command to execute when the event is triggered
+			require_hover (bool, optional): whether the event should be triggered only when the mouse is over the widget
+			widget_boolean_value (Callable|None): an attribute/function that returns a boolean value to check for the
+				required value
+			required_value_for_widget_boolean_value (Any, optional): the value to check for in the widget_boolean_value
+
+		Returns:
+			Widget (Widget): This widget instance to allow method chaining.
+		"""
 		if command is None:
 			self.unbind(event)
 			return self
@@ -30,7 +59,15 @@ class Widget:
 		}
 		return self
 
-	def trigger_event(self, event: str, *args, **kwargs):
+	def trigger_event(self, event: str, *args: Any, **kwargs: Any) -> None:
+		"""
+		Internally used to trigger events.
+
+		Args:
+			event (str): the event to check for
+			*args (Any, optional): additional keyword arguments to pass to the command
+			**kwargs (Any, optional): additional arguments to pass to the command
+		"""
 		if event in self._bindings:
 			binding_data = self._bindings[event]
 			command = binding_data["command"]
@@ -45,16 +82,45 @@ class Widget:
 					except TypeError:
 						command(*args, **kwargs)
 
-	def unbind(self, event: str):
+	def unbind(self, event: str) -> "Widget":
+		"""
+		Unbind an event from a widget.
+
+		Args:
+			event (str): the event to unbind
+
+		Returns:
+			Widget (Widget): This widget instance to allow method chaining.
+		"""
 		if event in self._bindings:
 			del self._bindings[event]
 		return self
 
-	def unbind_all(self):
+	def unbind_all(self) -> "Widget":
+		"""
+		Unbinds all bindings from a widget.
+
+		Returns:
+			Widget (Widget): This widget instance to allow method chaining.
+		"""
 		self._bindings.clear()
 		return self
 
-	def place(self, x: int, y: int, mode: str = "px", suppress_anchor: bool = False):
+	def place(self, x: int, y: int, mode: str = "px", suppress_anchor: bool = False) -> "Widget":
+		"""
+		Place a widget on the screen at specific coordinate. This function will consider the anchor that was set with
+		.anchor by default.
+
+		Args:
+			x (int): the x coordinate
+			y (int): the y coordinate
+			mode (str, optional): the mode to use for the coordinates (default: px)
+				(options: px, %, percent, percentage)
+			suppress_anchor (bool, optional): whether to ignore the anchors (default: False)
+
+		Returns:
+			Widget (Widget): This widget instance to allow method chaining.
+		"""
 		if mode=="px":
 			self._x = x
 			self._y = y
@@ -87,13 +153,38 @@ class Widget:
 		self._needs_transform = True
 		return self
 
-	def anchor(self, anchor_x: str = "left", anchor_y: str = "top"):
+	def anchor(self, anchor_x: str = "left", anchor_y: str = "top") -> "Widget":
+		"""
+		Set an anchor to the widget that should be used when using .place on it.
+
+		Args:
+			anchor_x (str, optional): the x anchor (default: left) (options: left, center, right)
+			anchor_y (str, optional): the y anchor (default: top) (options: top, center, bottom)
+
+		Returns:
+			Widget (Widget): This widget instance to allow method chaining.
+		"""
 		self._anchor_x = anchor_x
 		self._anchor_y = anchor_y
 		self.place(self._x, self._y)
 		return self
 
-	def grid(self, screen: "easypygamewidgets.Screen", row: int, column: int, rowspan: int = 1, columnspan: int = 1):
+	def grid(self, screen: "easypygamewidgets.Screen", row: int, column: int, rowspan: int = 1,
+	         columnspan: int = 1) -> "Widget":
+		"""
+		Place a widget on the screen using a grid system. This function will ignore the anchor that was set with
+		.anchor.
+
+		Args:
+			screen (easypygamewidget.Screen): the screen that should be used as a grid
+			row (int): the row in which is should be placed
+			column (int): the column in which is should be placed
+			rowspan (int, optional): the number of rows the widget should span (default: 1)
+			columnspan (int, optional): the number of columns the widget should span (default: 1)
+
+		Returns:
+			Widget (Widget): This widget instance to allow method chaining.
+		"""
 		if rowspan<1:
 			rowspan = 1
 		if columnspan<1:
@@ -107,7 +198,14 @@ class Widget:
 		screen.recalculate_grid()
 		return self
 
-	def remove_grid(self):
+	def remove_grid(self) -> "Widget":
+		"""
+		Remove the grid bounding from a widget. This will not move the widget to a different position. The widget
+		will just not be part of the grid system anymore. -> It won't replace when resizing the grid.
+
+		Returns:
+			Widget (Widget): This widget instance to allow method chaining.
+		"""
 		if hasattr(self, "_grid_row"):
 			del self._grid_row
 			del self._grid_column
@@ -118,18 +216,42 @@ class Widget:
 			screen.recalculate_grid()
 		return self
 
-	def _update_animation(self):
-		pass
+	def _update_animation(self) -> None:
+		"""Internally used to update the animation until it's finished."""
+		...
 
-	def _draw(self, surface: pygame.Surface):
-		pass
+	def _draw(self, surface: pygame.Surface) -> None:
+		"""
+		Internally used to draw the widget.
 
-	def _react(self, event=None):
-		pass
+		Args:
+			surface (pygame.Surface): The surface to draw the widget on.
+		"""
+		...
+
+	def _react(self, event=None) -> None:
+		"""
+		Internally used to react to events.
+
+		Args:
+			event (pygame.Event, optional): The event to react to.
+		"""
+		...
 
 
 class Tooltipable:
-	def set_tooltip(self, tooltip):
+	"""A template to add tooltip functionality to a widget."""
+
+	def set_tooltip(self, tooltip: "easypygamewidgets.Tooltip") -> "Widget":
+		"""
+		Bind a tooltip to a widget.
+
+		Args:
+			tooltip (easypygamewidgets.Tooltip): The tooltip to bind to the widget.
+
+		Returns:
+			Widget (Widget): This widget instance to allow method chaining.
+		"""
 		self._tooltip = tooltip
 		tooltip.configure(layer=self._layer+1)
 		if not tooltip.style:
@@ -140,7 +262,13 @@ class Tooltipable:
 			)
 		return self
 
-	def remove_tooltip(self):
+	def remove_tooltip(self) -> "Widget":
+		"""
+		Unbind a tooltip from a widget.
+
+		Returns:
+			Widget (Widget): This widget instance to allow method chaining.
+		"""
 		if self._tooltip:
 			self._tooltip.visible = False
 			self._tooltip = None
@@ -148,7 +276,18 @@ class Tooltipable:
 
 
 class Screenable:
-	def set_screen(self, screen):
+	"""A template to add screen functionality to a widget."""
+
+	def set_screen(self, screen: "easypygamewidgets.Screen") -> "Widget":
+		"""
+		Bind a screen to a widget.
+
+		Args:
+			screen (easypygamewidgets.Screen): The screen to bind to the widget.
+
+		Returns:
+			Widget (Widget): This widget instance to allow method chaining.
+		"""
 		if screen is None:
 			self._screen = None
 			return self
@@ -160,7 +299,10 @@ class Screenable:
 
 
 class Deletable:
-	def delete(self):
+	"""A template to add deletion functionality to a widget."""
+
+	def delete(self) -> None:
+		"""Delete a widget from the screen and internal list."""
 		self._alive = False
 		if self in misc._all_widgets:
 			misc._all_widgets.remove(self)

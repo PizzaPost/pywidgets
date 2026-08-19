@@ -1,6 +1,7 @@
 # entry.py
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
+"""An entry widget for pygame."""
 
 import sys
 from typing import Any, Unpack
@@ -15,6 +16,8 @@ pygame.init()
 
 
 class Entry(Widget, Tooltipable, Screenable, Deletable):
+	"""Initializes an entry widget for pygame."""
+
 	def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
 	             height: int = 80, placeholder_text: str = "",
 	             text: str = "", char_limit: int | None = None,
@@ -48,10 +51,76 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 	             font: pygame.font.Font | pygame.font.SysFont = font.default_font, alignment: str = "left",
 	             alignment_spacing: int = 20, top_left_corner_radius: int = 25, top_right_corner_radius: int = 25,
 	             bottom_left_corner_radius: int = 25, bottom_right_corner_radius: int = 25, repeat_delay: int = 500,
-	             repeat_interval: int = 50, layer=1000, line_spacing: int = 30,
+	             repeat_interval: int = 50, layer: int = 1000, line_spacing: int = 30,
 	             tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
 	             max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
-	             anchor_x: str = "left", anchor_y: str = "top", visible: bool | None = None, data: Any = None):
+	             anchor_x: str = "left", anchor_y: str = "top", visible: bool | None = None,
+	             data: Any = None) -> None:
+		"""
+		Initializes an Entry widget.
+
+		Args:
+			screen: The Screen this entry is attached to. If None, the entry is created without a parent screen.
+			auto_size: If True, width and height are computed from the text or placeholder text instead of using the
+				given width/height.
+			width: Fixed entry width in pixels. Ignored if auto_size is True.
+			height: Fixed entry height in pixels. Ignored if auto_size is True.
+			placeholder_text: Text shown when the entry is empty and not focused.
+			text: Initial text content.
+			char_limit: Maximum number of characters allowed. None means no limit.
+			show: If given, each character is masked and displayed as this character (e.g. for password fields).
+			state: Initial state, 'enabled' or 'disabled'. Defaults to 'enabled' if not given.
+			active_unpressed_text_color: RGBA text color while enabled, not pressed, not hovered.
+			disabled_unpressed_text_color: RGBA text color while disabled, not hovered.
+			active_hover_text_color: RGBA text color while enabled and hovered.
+			disabled_hover_text_color: RGBA text color while disabled and hovered.
+			active_pressed_text_color: RGBA text color while enabled and pressed.
+			active_unpressed_background_color: RGBA background color while enabled, not pressed, not hovered.
+			disabled_unpressed_background_color: RGBA background color while disabled, not hovered.
+			active_hover_background_color: RGBA background color while enabled and hovered.
+			disabled_hover_background_color: RGBA background color while disabled and hovered.
+			active_pressed_background_color: RGBA background color while enabled and pressed.
+			active_unpressed_border_color: RGBA border color while enabled, not pressed, not hovered.
+			disabled_unpressed_border_color: RGBA border color while disabled, not hovered.
+			active_hover_border_color: RGBA border color while enabled and hovered.
+			disabled_hover_border_color: RGBA border color while disabled and hovered.
+			active_pressed_border_color: RGBA border color while enabled and pressed.
+			selection_color: RGBA background color for selected text while enabled.
+			disabled_selection_color: RGBA background color for selected text while disabled.
+			border_thickness: Border width in pixels.
+			hide_text: If True, text is not rendered.
+			hide_background: If True, the background fill is not rendered.
+			hide_border: If True, the border is not rendered.
+			hide_selection: If True, the text selection highlight is not rendered.
+			active_hover_cursor: Custom cursor shown on hover while enabled.
+			disabled_hover_cursor: Custom cursor shown on hover while disabled.
+			active_pressed_cursor: Custom cursor shown while pressed.
+			blinking_cursor: The character used to render the blinking text cursor.
+			blinking_speed: Time in milliseconds between blink toggles.
+			font: The pygame font used to render the entry text.
+			alignment: Text alignment: 'left', 'right', or 'center'.
+			alignment_spacing: Horizontal padding reserved around the aligned text.
+			top_left_corner_radius: Corner radius in pixels for the top-left corner.
+			top_right_corner_radius: Corner radius in pixels for the top-right corner.
+			bottom_left_corner_radius: Corner radius in pixels for the bottom-left corner.
+			bottom_right_corner_radius: Corner radius in pixels for the bottom-right corner.
+			repeat_delay: Time in milliseconds before a held key starts repeating.
+			repeat_interval: Time in milliseconds between repeats of a held key.
+			layer: Draw order layer; higher values draw on top.
+			line_spacing: Line height in pixels for multi-line text.
+			tooltip: A Tooltip widget shown on hover, if given.
+			min_width: Minimum width in pixels when auto_size is True.
+			max_width: Maximum width in pixels when auto_size is True.
+			min_height: Minimum height in pixels when auto_size is True.
+			max_height: Maximum height in pixels when auto_size is True.
+			anchor_x: Horizontal anchor point: 'left', 'center', or 'right'.
+			anchor_y: Vertical anchor point: 'top', 'center', or 'bottom'.
+			visible: Initial visibility. Defaults to True if not given.
+			data: Arbitrary user data attached to the widget.
+
+		Raises:
+			ValueError: If a *_cursor argument is given but is not a pygame.Cursor instance.
+		"""
 		super().__init__()
 		if screen:
 			screen.add_widget(self)
@@ -135,8 +204,9 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 				self._cursors[name] = cursor
 			else:
 				if cursor is not None:
-					print(
-						f"No custom cursor is used for the entry {placeholder_text} because it's not a pygame.Cursor object. ({cursor})"
+					raise ValueError(
+						f"No custom cursor is used for the entry '{placeholder_text}' because it's not a "
+						f"pygame.Cursor object. {cursor} is a {type(cursor)}"
 					)
 				self._cursors[name] = None
 		self._blinking_cursor = blinking_cursor
@@ -952,7 +1022,16 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 	def dialog(self, value):
 		self._dialog = value
 
-	def configure(self, **kwargs: Unpack[TypeHints.EntryConfig]):
+	def configure(self, **kwargs: Unpack[TypeHints.EntryConfig]) -> "Entry":
+		"""
+		Updates one or more of the entry's attributes.
+
+		Args:
+			**kwargs: Entry attributes to update as defined in TypeHints.EntryConfig
+
+		Returns:
+			Entry (Entry): This entry instance to allow method chaining.
+		"""
 		for key, value in kwargs.items():
 			setattr(self, key, value)
 		self._needs_redraw = True
@@ -997,13 +1076,35 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 			self.set_screen(kwargs["screen"])
 		return self
 
-	def config(self, **kwargs: Unpack[TypeHints.EntryConfig]):
+	def config(self, **kwargs: Unpack[TypeHints.EntryConfig]) -> "Entry":
+		"""
+		Updates one or more of the entry's attributes.
+
+		Args:
+			**kwargs: Entry attributes to update as defined in TypeHints.EntryConfig
+
+		Returns:
+			Entry (Entry): This entry instance to allow method chaining.
+		"""
 		return self.configure(**kwargs)
 
-	def get(self):
+	def get(self) -> str:
+		"""
+		Returns the entry's current text content.
+
+		Returns:
+			str: The entry's current text.
+		"""
 		return self._text
 
-	def text_delete(self, position_start: int = 0, position_end: int | None = None):
+	def text_delete(self, position_start: int = 0, position_end: int | None = None) -> None:
+		"""
+		Deletes text between two character positions.
+
+		Args:
+			position_start: The start index of the range to delete inclusively.
+			position_end: The end index of the range to delete exclusively. if None: deletes to the end of the text.
+		"""
 		if position_end is None:
 			position_end = len(self._text)
 		position_start = max(0, min(position_start, len(self._text)))
@@ -1016,7 +1117,17 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 				self._cursor_position = position_start
 		self.reset_cursor_blink()
 
-	def text_insert(self, text: str, position: int = None):
+	def text_insert(self, text: str, position: int | None = None) -> None:
+		"""
+		Inserts text at a given character position.
+
+		Args:
+			text: The text to insert.
+			position: The character index to insert at. if None: inserts at the end of the text.
+
+		Note:
+			If char_limit is set and the resulting text would exceed it, the insertion is skipped entirely.
+		"""
 		if position is None:
 			position = len(self._text)
 		if self._char_limit is not None and len(self._text)+len(text)>self._char_limit:
@@ -1025,25 +1136,35 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 		self._cursor_position += len(text)
 		self.reset_cursor_blink()
 
-	def text_select(self, position_start: int = 0, position_end: int | None = None):
+	def text_select(self, position_start: int = 0, position_end: int | None = None) -> None:
+		"""
+		Selects text between two character positions.
+
+		Args:
+			position_start: The start index of the selection.
+			position_end: The end index of the selection. if None: selects to the end of the text.
+		"""
 		if position_end is None:
 			position_end = len(self._text)
 		self._selected_text = [min(position_start, position_end), max(position_start, position_end)]
 		self.reset_cursor_blink()
 
-	def text_copy(self):
+	def text_copy(self) -> None:
+		"""Copies the currently selected text to the system clipboard if any text is selected."""
 		if self._selected_text and self._selected_text[0]!=self._selected_text[1]:
 			start, end = self._selected_text
 			clipboard_text = self._text[start:end]
 			pygame.scrap.put(pygame.SCRAP_TEXT, clipboard_text.encode('utf-8'))
 
-	def text_cut(self):
+	def text_cut(self) -> None:
+		"""Copies the currently selected text to the system clipboard and removes it from the entry."""
 		if self._selected_text and self._selected_text[0]!=self._selected_text[1]:
 			self.text_copy()
 			self.text_delete(self._selected_text[0], self._selected_text[1])
 			self._selected_text = None
 
-	def text_paste(self):
+	def text_paste(self) -> None:
+		"""Pastes text from the system clipboard at the cursor position replacing any current selection."""
 		if not pygame.scrap.get_init():
 			pygame.scrap.init()
 		if self._selected_text:
@@ -1057,11 +1178,19 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 			except Exception as e:
 				print(f"Paste error: {e}")
 
-	def reset_cursor_blink(self):
+	def reset_cursor_blink(self) -> None:
+		"""Makes the blinking text cursor visible and restarts its blink timer."""
 		self._cursor_visible = True
 		self._last_blink_time = pygame.time.get_ticks()
 
-	def get_display_text(self):
+	def get_display_text(self) -> str:
+		"""
+		Returns the text that should currently be displayed, considering for masking (show attribute) and the
+		placeholder text.
+
+		Returns:
+			str: the masked text
+		"""
 		if self._text:
 			if self._show:
 				return self._show*len(self._text)
@@ -1070,43 +1199,85 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 			return self._placeholder_text
 		return ""
 
-	def scale(self, value=None, frames_to_finish=1):
+	def scale(self, value: int | float = 1, frames_to_finish: int = 1) -> "Entry":
+		"""
+		Scale the entry by a factor. It's only a visual scale so upscaling could look pixelated.
+
+		Args:
+			 value (int|float): the scale factor
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Entry (Entry): This entry instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		self._target_scale = 1 if value is None else value
+		self._target_scale = value
 		self._scale_step = (self._target_scale-self._current_scale)/frames_to_finish
 		self._update_animation()
 		return self
 
-	def rotate(self, value=None, frames_to_finish=1):
+	def rotate(self, value: int | float = 0, frames_to_finish: int = 1) -> "Entry":
+		"""
+		Rotate the entry by a degree.
+
+		Args:
+			 value (int|float): the rotation degree
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Entry (Entry): This entry instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		self._target_rotation = 0 if value is None else value
+		self._target_rotation = value
 		self._rotation_step = (self._target_rotation-self._current_rotation)/frames_to_finish
 		self._update_animation()
 		return self
 
-	def rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
+	def rotozoom(self, scale: int | float = 1, rotation: int = 0, frames_to_finish: int = 1) -> "Entry":
+		"""
+		Rotate the entry by a degree and scale it.
+
+		Args:
+			 scale (int|float): the scale factor
+			 rotation (int): the rotation degree
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Entry (Entry): This entry instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		self._target_scale = 1 if scale is None else scale
+		self._target_scale = scale
 		self._scale_step = (self._target_scale-self._current_scale)/frames_to_finish
-		self._target_rotation = 0 if rotation is None else rotation
+		self._target_rotation = rotation
 		self._rotation_step = (self._target_rotation-self._current_rotation)/frames_to_finish
 		self._use_rotozoom = True
 		self._update_animation()
 		return self
 
-	def offset(self, value: tuple[int, int], frames_to_finish=1):
+	def offset(self, value: tuple[int, int] = (0, 0), frames_to_finish: int = 1) -> "Entry":
+		"""
+		Offset the entry by an x and y value.
+
+		Args:
+			 value: an iterable thing with two values. The first being the x and the second the y offset.
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Entry (Entry): This entry instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		self._target_offset = (0, 0) if value is None else value
+		self._target_offset = value
 		self._offset_step[0] = (self._target_offset[0]-self._current_offset[0])/frames_to_finish
 		self._offset_step[1] = (self._target_offset[1]-self._current_offset[1])/frames_to_finish
 		self._update_animation()
 		return self
 
-	def _update_animation(self):
+	def _update_animation(self) -> None:
+		"""Internally used to update the animation until it's finished."""
 		scale_changed = False
 		rotation_changed = False
 		if self._current_scale!=self._target_scale:
@@ -1130,14 +1301,20 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 		if scale_changed or rotation_changed:
 			self._needs_transform = True
 
-	def _draw(self, surface: pygame.Surface):
+	def _draw(self, surface: pygame.Surface) -> None:
+		"""
+		Internally used to draw the entry.
+
+		Args:
+			surface (pygame.Surface): The surface to draw the entry on.
+		"""
 		if not self._alive or not self._visible:
 			return
 		if self._focused and self._held_key_info:
 			current_time = pygame.time.get_ticks()
 			if current_time>=self._next_repeat_time:
 				key, unicode_char = self._held_key_info
-				process_key_action(self, key, unicode_char)
+				_process_key_action(self, key, unicode_char)
 				self._next_repeat_time = current_time+self._repeat_interval
 
 		if not pygame.scrap.get_init():
@@ -1188,7 +1365,7 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 			temp_topleft = self._rect.topleft
 			self._rect.size = (self._width, self._height)
 			self._rect.topleft = temp_topleft
-			render_entry_surface(self, is_hovering)
+			_render_entry_surface(self, is_hovering)
 			self._last_visual_state = current_visual_state
 			self._needs_redraw = True
 			self._needs_transform = True
@@ -1256,7 +1433,13 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 			if self._tooltip:
 				self._tooltip.hide()
 
-	def _react(self, event=None):
+	def _react(self, event: pygame.Event | None = None) -> None:
+		"""
+		Internally used to react to events.
+
+		Args:
+			event (pygame.Event, optional): The event to react to.
+		"""
 		if self._state!="enabled" or not self._visible:
 			self._pressed = False
 			self._focused = False
@@ -1264,7 +1447,16 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 		display_text = self.get_display_text()
 		is_inside = misc._is_point_over_widget(self, pygame.mouse.get_pos())
 
-		def get_idx_at_mouse(mouse_x):
+		def get_idx_at_mouse(mouse_x: int) -> int:
+			"""
+			Internally used to get the index position where the mouse currently is.
+
+			Args:
+				 mouse_x (int): The x-coordinate of the mouse.
+
+			Returns:
+				 int: The index position where the mouse currently is.
+			"""
 			curr_x = self._last_text_x
 			for i, char in enumerate(display_text):
 				char_w = self._font.size(char)[0]
@@ -1304,7 +1496,7 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 					self.reset_cursor_blink()
 			elif event.type==pygame.KEYDOWN:
 				if self._focused:
-					process_key_action(self, event.key, event.unicode)
+					_process_key_action(self, event.key, event.unicode)
 					self._held_key_info = (event.key, event.unicode)
 					self._next_repeat_time = pygame.time.get_ticks()+self._repeat_delay
 				self.trigger_event("<KEY>")
@@ -1317,7 +1509,16 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 					self._held_key_info = None
 
 
-def process_key_action(entry, key, unicode_char):
+def _process_key_action(entry: Entry, key: int, unicode_char: str) -> None:
+	"""
+	Internally used to handle a single keydown/repeat action for an entry, covering
+	cursor movement, selection, clipboard shortcuts, deletion, and character insertion.
+
+	Args:
+		entry (Entry): The entry receiving the key action.
+		key (int): The pygame key constant that was pressed.
+		unicode_char (str): The Unicode character produced by the key press, if any.
+	"""
 	is_linux = sys.platform.startswith("linux")
 	mods = pygame.key.get_mods()
 	ctrl = (mods & pygame.KMOD_CTRL) or (mods & pygame.KMOD_META)
@@ -1379,7 +1580,14 @@ def process_key_action(entry, key, unicode_char):
 		entry.trigger_event("<TYPING>")
 
 
-def render_entry_surface(entry, is_hovering):
+def _render_entry_surface(entry: Entry, is_hovering: bool) -> None:
+	"""
+	Internally used to draw the entry.
+
+	Args:
+		entry (Entry): The entry to draw.
+		is_hovering (bool): Whether the mouse is currently hovering over the entry.
+	"""
 	if entry.state=="enabled":
 		if entry.pressed and is_hovering:
 			text_color = entry.active_pressed_text_color

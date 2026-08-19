@@ -1,9 +1,7 @@
 # button.py
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
-"""
-A button widget for pygame.
-"""
+"""A button widget for pygame."""
 
 from collections.abc import Callable
 from typing import Any, Unpack
@@ -930,7 +928,7 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
 		return self
 
 	def _update_animation(self) -> None:
-		"""This function is only used internally to update the animation until it's finished."""
+		"""Internally used to update the animation until it's finished."""
 		scale_changed = False
 		rotation_changed = False
 		if self._current_scale!=self._target_scale:
@@ -956,7 +954,7 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
 
 	def _draw(self, surface: pygame.Surface) -> None:
 		"""
-		This function is only used internally to draw the button.
+		Internally used to draw the button.
 
 		Args:
 			surface (pygame.Surface): The surface to draw the button on.
@@ -1035,7 +1033,7 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
 
 	def _react(self, event: pygame.Event | None = None) -> None:
 		"""
-		This function is only used internally to react to events.
+		Internally used to react to events.
 
 		Args:
 			event (pygame.Event, optional): The event to react to.
@@ -1074,7 +1072,7 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
 
 def _render_button_surface(button: Button, is_hovering: bool) -> None:
 	"""
-	This function is only used internally to render the button surface once and cache it.
+	Internally used to render the button surface once and cache it.
 
 	Args:
 		 button (Button): the widget to render the surface for

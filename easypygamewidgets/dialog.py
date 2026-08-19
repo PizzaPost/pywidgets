@@ -1,9 +1,7 @@
 # dialog.py
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
-"""
-A dialog widget for pygame.
-"""
+"""A dialog widget for pygame."""
 
 from typing import Any, Unpack
 
@@ -1098,7 +1096,7 @@ class Dialog(Widget, Screenable, Deletable):
 		return self
 
 	def _update_animation(self) -> None:
-		"""This function is only used internally to update the animation until it's finished."""
+		"""Internally used to update the animation until it's finished."""
 		scale_changed = False
 		rotation_changed = False
 		if self._current_scale!=self._target_scale:
@@ -1124,7 +1122,7 @@ class Dialog(Widget, Screenable, Deletable):
 
 	def _draw(self, surface: pygame.Surface) -> None:
 		"""
-		This function is only used internally to draw the dialog.
+		Internally used to draw the dialog.
 
 		Args:
 			surface (pygame.Surface): The surface to draw the dialog on.
@@ -1197,7 +1195,7 @@ class Dialog(Widget, Screenable, Deletable):
 
 	def _react(self, event: pygame.Event | None = None) -> None:
 		"""
-		This function is only used internally to react to events.
+		Internally used to react to events.
 
 		Args:
 			event (pygame.Event, optional): The event to react to.
@@ -1236,7 +1234,7 @@ class Dialog(Widget, Screenable, Deletable):
 
 def _safe_set_linesize(dialog: Dialog) -> None:
 	"""
-	This function is only used internally to sync the title and description fonts' linesize with the
+	Internally used to sync the title and description fonts' linesize with the
 	dialog's configured line spacing.
 
 	Args:
@@ -1250,7 +1248,7 @@ def _render_text_block(surface: pygame.Surface, text: str, font_obj: pygame.font
                        color: tuple[int, int, int, int], alignment: str, alignment_spacing: int,
                        line_spacing: int, block_rect: pygame.Rect) -> None:
 	"""
-	This function is only used internally to draw a block of (possibly multi-line) text centered vertically
+	Internally used to draw a block of (possibly multi-line) text centered vertically
 	within a rect.
 
 	Args:
@@ -1286,7 +1284,7 @@ def _render_text_block(surface: pygame.Surface, text: str, font_obj: pygame.font
 
 def _render_dialog_surface(dialog: Dialog, is_hovering: bool) -> None:
 	"""
-	This function is only used internally to draw the dialog.
+	Internally used to draw the dialog.
 
 	Args:
 		dialog (Dialog): The dialog to draw.

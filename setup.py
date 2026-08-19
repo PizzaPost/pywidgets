@@ -6,13 +6,13 @@ from setuptools import find_packages, setup
 
 setup(
 	name="easypygamewidgets",
-	version="26.38",
+	version="26.39",
 	author="PizzaPost",
 	author_email="pizzapost.mail@gmail.com",
 	description="Create GUIs for pygame.",
 	long_description=open("README.md", encoding="utf-8").read(),
 	long_description_content_type="text/markdown",
-	url="https://github.com/PizzaPost/pywidgets ",
+	url="https://github.com/PizzaPost/easypygamewidgets",
 	license="MIT",
 	license_files=[
 		"LICENSE",
@@ -45,21 +45,14 @@ setup(
 	install_requires=[
 		"pygame-ce",
 		"requests",
-		"typing",
 		"opencv-python"
 	],
 	packages=find_packages(),
+	entry_points={
+		"pyinstaller40": ["hook-dirs = easypygamewidgets.__pyinstaller__:get_hook_dirs"]
+	},
 	include_package_data=True,
 	package_data={
-		"easypygamewidgets": [
-			"assets/fonts/roboto mono/RobotoMono-Regular.ttf",
-			"assets/fonts/roboto mono/OFL.txt",
-			"assets/fonts/emoji/NotoEmoji-Regular.ttf",
-			"assets/fonts/emoji/OFL.txt",
-			"assets/tooltip/info.png",
-			"assets/tooltip/warning.png",
-			"assets/tooltip/blocked.png",
-			"assets/TypeHints.py"
-		]
+		"easypygamewidgets": ["assets/**/*"]
 	}
 )

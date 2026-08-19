@@ -1,9 +1,7 @@
 # checkbox.py
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
-"""
-A checkbox widget for pygame.
-"""
+"""A checkbox widget for pygame."""
 
 from collections.abc import Callable
 from typing import Any, Unpack
@@ -1077,7 +1075,7 @@ class Checkbox(Widget, Tooltipable, Screenable, Deletable):
 		return self
 
 	def _update_animation(self) -> None:
-		"""This function is only used internally to update the animation until it's finished."""
+		"""Internally used to update the animation until it's finished."""
 		scale_changed = False
 		rotation_changed = False
 		if self._current_scale!=self._target_scale:
@@ -1103,7 +1101,7 @@ class Checkbox(Widget, Tooltipable, Screenable, Deletable):
 
 	def _draw(self, surface: pygame.Surface) -> None:
 		"""
-		This function is only used internally to draw the checkbox.
+		Internally used to draw the checkbox.
 
 		Args:
 			surface (pygame.Surface): The surface to draw the checkbox on.
@@ -1182,7 +1180,7 @@ class Checkbox(Widget, Tooltipable, Screenable, Deletable):
 
 	def _react(self, event: pygame.Event | None = None) -> None:
 		"""
-		This function is only used internally to react to events.
+		Internally used to react to events.
 
 		Args:
 			event (pygame.Event, optional): The event to react to.
