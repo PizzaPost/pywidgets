@@ -19,7 +19,7 @@ setup(
 		"easypygamewidgets/assets/fonts/roboto mono/OFL.txt",
 		"easypygamewidgets/assets/fonts/emoji/OFL.txt"
 	],
-	keywords=["pygame", "gui", "widgets", "library", "pygame library", "pygame widgets"],
+	keywords=["pygame", "gui", "widget", "widgets", "library", "pygame library", "pygame widget", "pygame widgets"],
 	platforms=["any"],
 	project_urls={
 		"Examples": "https://github.com/PizzaPost/pywidgets/tree/master/examples",
@@ -45,7 +45,8 @@ setup(
 	install_requires=[
 		"pygame-ce",
 		"requests",
-		"typing"
+		"typing",
+		"opencv-python"
 	],
 	packages=find_packages(),
 	include_package_data=True,
