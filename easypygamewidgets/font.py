@@ -5,17 +5,13 @@
 
 import os
 import pathlib
-import sys
 from typing import Any
 
 import pygame
 
 pygame.init()
 
-if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
-	pack_font_path = pathlib.Path(sys._MEIPASS)/"easypygamewidgets"/"assets"/"fonts"
-else:
-	pack_font_path = pathlib.Path(__file__).resolve().parent/"assets"/"fonts"
+pack_font_path = pathlib.Path(__file__).resolve().parent/"assets"/"fonts"
 default_font_path = os.path.join(pack_font_path/"roboto mono"/"RobotoMono-Regular.ttf")
 default_emoji_font_path = os.path.join(pack_font_path/"emoji"/"NotoEmoji-Regular.ttf")
 
