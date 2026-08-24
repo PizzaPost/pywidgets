@@ -456,6 +456,46 @@ class LabelConfig(TypedDict, total=False):
 	is_hovered: bool
 
 
+class ScreenConfig(TypedDict, total=False):
+	"""TypeHints for Screens"""
+	bindings: dict[str, BindingConfig]
+	auto_size: bool
+	width: int | None
+	height: int | None
+	row_spacing: int
+	column_spacing: int
+	min_width: int | None
+	max_width: int | None
+	min_height: int | None
+	max_height: int | None
+	fill_width: bool
+	fill_height: bool
+	active_hover_cursor: pygame.Cursor
+	disabled_hover_cursor: pygame.Cursor
+	active_pressed_cursor: pygame.Cursor
+	cursors: dict[str, pygame.Cursor]
+	widgets: "list[easypygamewidgets.Button | easypygamewidgets.Checkbox | easypygamewidgets.Dialog | easypygamewidgets.Entry | easypygamewidgets.Label | easypygamewidgets.Slider | easypygamewidgets.Surface | easypygamewidgets.Timekeeper | easypygamewidgets.Tooltip]"
+	darken_background_with_alpha: int
+	anchor_x: str
+	anchor_y: str
+	visible: bool
+	state: str
+	x: int
+	y: int
+	layer: int
+	ignore_empty_cells: bool
+	data: Any
+	last_pg_size: tuple[int, int] | None
+	alive: bool
+	pressed: bool
+	rect: pygame.Rect
+	original_cursor: pygame.Cursor
+	is_hovered: bool
+	target_offset: tuple[int, int]
+	current_offset: tuple[int, int]
+	offset_step: tuple[int, int]
+
+
 class SliderConfig(TypedDict, total=False):
 	"""TypeHints for Sliders"""
 	bindings: dict[str, BindingConfig]

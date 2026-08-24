@@ -1,6 +1,7 @@
 # label.py
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
+"""A label widget for pygame."""
 
 import time
 from typing import Any, Unpack
@@ -25,9 +26,11 @@ pygame.init()
 # four different corner radius ✅
 
 class Label(Widget, Tooltipable, Screenable, Deletable):
+	"""Initializes a label widget for pygame."""
+
 	def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
 	             height: int = 80,
-	             text: str = "easypygamewidgets Label", state="enabled",
+	             text: str = "easypygamewidgets Label", state: str = "enabled",
 	             active_hover_text_color: tuple | None = (255, 255, 255, 255),
 	             active_hover_shadow_color: tuple | None = (50, 50, 50, 200),
 	             active_hover_background_color: tuple | None = None,
@@ -71,12 +74,97 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 	             font: pygame.font.Font | pygame.font.SysFont = font.default_font, alignment: str = "center",
 	             alignment_spacing: int = 40, dragable: bool = False, top_left_corner_radius: int = 25,
 	             top_right_corner_radius: int = 25, bottom_left_corner_radius: int = 25,
-	             bottom_right_corner_radius: int = 25, layer=1000, line_spacing=30,
+	             bottom_right_corner_radius: int = 25, layer: int = 1000, line_spacing: int = 30,
 	             tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
 	             max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
-	             anchor_x: str = "left", anchor_y: str = "top", visible: bool | None = None, data: Any = None):
+	             anchor_x: str = "left", anchor_y: str = "top", visible: bool | None = None,
+	             data: Any = None) -> None:
+		"""
+		Initializes a Label widget.
+
+		Args:
+			screen: The Screen this label is attached to. If None, the label is created without a parent screen.
+			auto_size: If True, width and height are computed from the rendered text instead of using the given
+				width/height.
+			width: Fixed label width in pixels. Ignored if auto_size is True.
+			height: Fixed label height in pixels. Ignored if auto_size is True.
+			text: The label's text. Supports multi-line text via '\\n'.
+			state: Initial state, 'enabled' or 'disabled'. Defaults to 'enabled' if not given.
+			active_hover_text_color: RGBA text color while enabled and hovered.
+			active_hover_shadow_color: RGBA shadow color while enabled and hovered.
+			active_hover_background_color: RGBA background color while enabled and hovered.
+			active_hover_underline_color: RGBA underline color while enabled and hovered. Setting a value enables the
+				underline.
+			active_hover_strikethrough_color: RGBA strikethrough color while enabled and hovered. Setting a value
+				enables the strikethrough.
+			active_hover_border_color: RGBA border color while enabled and hovered.
+			active_pressed_text_color: RGBA text color while enabled and pressed.
+			active_pressed_shadow_color: RGBA shadow color while enabled and pressed.
+			active_pressed_background_color: RGBA background color while enabled and pressed.
+			active_pressed_underline_color: RGBA underline color while enabled and pressed. Setting a value enables the
+				underline.
+			active_pressed_strikethrough_color: RGBA strikethrough color while enabled and pressed. Setting a value
+				enables the strikethrough.
+			active_pressed_border_color: RGBA border color while enabled and pressed.
+			active_unpressed_text_color: RGBA text color while enabled, not pressed, not hovered.
+			active_unpressed_shadow_color: RGBA shadow color while enabled, not pressed, not hovered.
+			active_unpressed_background_color: RGBA background color while enabled, not pressed, not hovered.
+			active_unpressed_underline_color: RGBA underline color while enabled, not pressed, not hovered. Setting a
+				value enables the underline.
+			active_unpressed_strikethrough_color: RGBA strikethrough color while enabled, not pressed, not hovered.
+				Setting a value enables the strikethrough.
+			active_unpressed_border_color: RGBA border color while enabled, not pressed, not hovered.
+			disabled_hover_text_color: RGBA text color while disabled and hovered.
+			disabled_hover_shadow_color: RGBA shadow color while disabled and hovered.
+			disabled_hover_background_color: RGBA background color while disabled and hovered.
+			disabled_hover_underline_color: RGBA underline color while disabled and hovered. Setting a value enables
+				the underline.
+			disabled_hover_strikethrough_color: RGBA strikethrough color while disabled and hovered. Setting a value
+				enables the strikethrough.
+			disabled_hover_border_color: RGBA border color while disabled and hovered.
+			disabled_unpressed_text_color: RGBA text color while disabled, not hovered.
+			disabled_unpressed_shadow_color: RGBA shadow color while disabled, not hovered.
+			disabled_unpressed_background_color: RGBA background color while disabled, not hovered.
+			disabled_unpressed_underline_color: RGBA underline color while disabled, not hovered. Setting a value
+				enables the underline.
+			disabled_unpressed_strikethrough_color: RGBA strikethrough color while disabled, not hovered. Setting a
+				value enables the strikethrough.
+			disabled_unpressed_border_color: RGBA border color while disabled, not hovered.
+			border_thickness: Border width in pixels.
+			hide_text: If True, text is not rendered.
+			hide_shadow: If True, the text shadow is not rendered.
+			hide_underline: If True, the underline is not rendered.
+			hide_strikethrough: If True, the strikethrough is not rendered.
+			hide_background: If True, the background fill is not rendered.
+			hide_border: If True, the border is not rendered.
+			active_hover_cursor: Custom cursor shown on hover while enabled.
+			disabled_hover_cursor: Custom cursor shown on hover while disabled.
+			active_pressed_cursor: Custom cursor shown while pressed.
+			font: The pygame font used to render the label text.
+			alignment: Text alignment: 'left', 'right', 'center' or 'stretched'.
+			alignment_spacing: Horizontal padding reserved around the aligned text.
+			dragable: If True, the label can be dragged with the mouse.
+			top_left_corner_radius: Corner radius in pixels for the top-left corner.
+			top_right_corner_radius: Corner radius in pixels for the top-right corner.
+			bottom_left_corner_radius: Corner radius in pixels for the bottom-left corner.
+			bottom_right_corner_radius: Corner radius in pixels for the bottom-right corner.
+			layer: Draw order layer; higher values draw on top.
+			line_spacing: Line height in pixels for multi-line text.
+			tooltip: A Tooltip widget shown on hover, if given.
+			min_width: Minimum width in pixels when auto_size is True.
+			max_width: Maximum width in pixels when auto_size is True.
+			min_height: Minimum height in pixels when auto_size is True.
+			max_height: Maximum height in pixels when auto_size is True.
+			anchor_x: Horizontal anchor point: 'left', 'center', or 'right'.
+			anchor_y: Vertical anchor point: 'top', 'center', or 'bottom'.
+			visible: Initial visibility. Defaults to True if not given.
+			data: Arbitrary user data attached to the widget.
+
+		Raises:
+			ValueError: If a *_cursor argument is given but is not a pygame.Cursor instance.
+		"""
 		super().__init__()
-		safe_set_linesize(font, line_spacing)
+		_safe_set_linesize(font, line_spacing)
 		lines = str(text).split("\n")
 		if lines==[""]:
 			lines = [" "]
@@ -205,8 +293,9 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 				self._cursors[name] = cursor
 			else:
 				if cursor is not None:
-					print(
-						f"No custom cursor is used for the label {self._text} because it's not a pygame.Cursor object. ({cursor})"
+					raise ValueError(
+						f"No custom cursor is used for the label '{self._text}' because it's not a pygame.Cursor "
+						f"object. {cursor} is a {type(cursor)}"
 					)
 				self._cursors[name] = None
 		self._font = font
@@ -1039,7 +1128,16 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 	def dialog(self, value):
 		self._dialog = value
 
-	def configure(self, **kwargs: Unpack[TypeHints.LabelConfig]):
+	def configure(self, **kwargs: Unpack[TypeHints.LabelConfig]) -> "Label":
+		"""
+		Updates one or more of the label's attributes.
+
+		Args:
+			**kwargs: Label attributes to update as defined in TypeHints.LabelConfig
+
+		Returns:
+			Label (Label): This label instance to allow method chaining.
+		"""
 		for key, value in kwargs.items():
 			setattr(self, key, value)
 		self._needs_redraw = True
@@ -1048,7 +1146,7 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 			'max_width', 'min_width', 'max_height', 'min_height', 'anchor_x', 'anchor_y'
 		)
 		if any(k in kwargs for k in layout_keys):
-			safe_set_linesize(self._font, self._line_spacing)
+			_safe_set_linesize(self._font, self._line_spacing)
 			lines = str(self._text).split("\n")
 			max_w = max(
 				(self._font.render(line, True, (255, 255, 255)).get_width() for line in lines),
@@ -1072,23 +1170,59 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 		if 'layer' in kwargs:
 			misc._resort_layers()
 		if 'line_spacing' in kwargs:
-			safe_set_linesize(self._font, self._line_spacing)
+			_safe_set_linesize(self._font, self._line_spacing)
 		return self
 
-	def config(self, **kwargs: Unpack[TypeHints.LabelConfig]):
+	def config(self, **kwargs: Unpack[TypeHints.LabelConfig]) -> "Label":
+		"""
+		Updates one or more of the label's attributes.
+
+		Args:
+			**kwargs: Label attributes to update as defined in TypeHints.LabelConfig
+
+		Returns:
+			Label (Label): This label instance to allow method chaining.
+		"""
 		return self.configure(**kwargs)
 
-	def set_strikethrough(self, value: bool):
+	def set_strikethrough(self, value: bool) -> "Label":
+		"""
+		Enables or disables the strikethrough line.
+
+		Args:
+			value: True to show the strikethrough, False to hide it.
+
+		Returns:
+			Label (Label): This label instance to allow method chaining.
+		"""
 		self._strikethrough = value
 		self._needs_redraw = True
 		return self
 
-	def set_underline(self, value: bool):
+	def set_underline(self, value: bool) -> "Label":
+		"""
+		Enables or disables the underline.
+
+		Args:
+			value: True to show the underline, False to hide it.
+
+		Returns:
+			Label (Label): This label instance to allow method chaining.
+		"""
 		self._underline = value
 		self._needs_redraw = True
 		return self
 
-	def set_tooltip(self, tooltip):
+	def set_tooltip(self, tooltip: "easypygamewidgets.Tooltip") -> "Label":
+		"""
+		Bind a tooltip to a widget.
+
+		Args:
+			tooltip (easypygamewidgets.Tooltip): The tooltip to bind to the widget.
+
+		Returns:
+			Widget (Widget): This widget instance to allow method chaining.
+		"""
 		self._tooltip = tooltip
 		tooltip.configure(layer=self._layer+1)
 		if not tooltip.style:
@@ -1103,52 +1237,85 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 			)
 		return self
 
-	def scale(self, value=None, frames_to_finish=1):
+	def scale(self, value: int | float = 1, frames_to_finish: int = 1) -> "Label":
+		"""
+		Scale the label by a factor. It's only a visual scale so upscaling could look pixelated.
+
+		Args:
+			 value (int|float): the scale factor
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Label (Label): This label instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		if value is None:
-			self._target_scale = 1
-		else:
-			self._target_scale = value
+		self._target_scale = value
 		self._scale_step = (self._target_scale-self._current_scale)/frames_to_finish
 		self._update_animation()
 		return self
 
-	def rotate(self, value=None, frames_to_finish=1):
+	def rotate(self, value: int | float = 0, frames_to_finish: int = 1) -> "Label":
+		"""
+		Rotate the label by a degree.
+
+		Args:
+			 value (int|float): the rotation degree
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Label (Label): This label instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		if value is None:
-			self._target_rotation = 0
-		else:
-			self._target_rotation = value
+		self._target_rotation = value
 		self._rotation_step = (self._target_rotation-self._current_rotation)/frames_to_finish
 		self._update_animation()
 		return self
 
-	def rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
+	def rotozoom(self, scale: int | float = 1, rotation: int | float = 0, frames_to_finish: int = 1) -> "Label":
+		"""
+		Rotate the label by a degree and scale it.
+
+		Args:
+			 scale (int|float): the scale factor
+			 rotation (int|float): the rotation degree
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Label (Label): This label instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		self._target_scale = 1 if scale is None else scale
+		self._target_scale = scale
 		self._scale_step = (self._target_scale-self._current_scale)/frames_to_finish
-		self._target_rotation = 0 if rotation is None else rotation
+		self._target_rotation = rotation
 		self._rotation_step = (self._target_rotation-self._current_rotation)/frames_to_finish
 		self._use_rotozoom = True
 		self._update_animation()
 		return self
 
-	def offset(self, value: tuple[int, int], frames_to_finish=1):
+	def offset(self, value: tuple[int, int] = (0, 0), frames_to_finish: int = 1) -> "Label":
+		"""
+		Offset the label by an x and y value.
+
+		Args:
+			 value: an iterable thing with two values. The first being the x and the second the y offset.
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Label (Label): This label instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		if value is None:
-			self._target_offset = (0, 0)
-		else:
-			self._target_offset = value
+		self._target_offset = value
 		self._offset_step[0] = (self._target_offset[0]-self._current_offset[0])/frames_to_finish
 		self._offset_step[1] = (self._target_offset[1]-self._current_offset[1])/frames_to_finish
 		self._update_animation()
 		return self
 
-	def _update_animation(self):
+	def _update_animation(self) -> None:
+		"""Internally used to update the animation until it's finished."""
 		scale_changed = False
 		rotation_changed = False
 		if self._current_scale!=self._target_scale:
@@ -1173,7 +1340,13 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 		if scale_changed or rotation_changed:
 			self._needs_transform = True
 
-	def _draw(self, surface: pygame.Surface):
+	def _draw(self, surface: pygame.Surface) -> None:
+		"""
+		Internally used to draw the label.
+
+		Args:
+			surface (pygame.Surface): The surface to draw the label on.
+		"""
 		if not self._alive or not self._visible:
 			return
 		offset_x, offset_y = misc._get_offset(self)
@@ -1183,7 +1356,7 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 		is_hovering = misc._is_point_over_widget(self, mouse_pos)
 		current_visual_state = (is_hovering)
 		if self._needs_redraw or current_visual_state!=self._last_visual_state:
-			render_base_surface(self, is_hovering)
+			_render_base_surface(self, is_hovering)
 		if self._needs_transform:
 			if self._current_scale!=1 or self._current_rotation!=0:
 				new_width = int(self._original_surface.get_width()*self._current_scale)
@@ -1241,7 +1414,13 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 			if self._tooltip:
 				self._tooltip.hide()
 
-	def _react(self, event=None):
+	def _react(self, event: pygame.Event | None = None) -> None:
+		"""
+		Internally used to react to events.
+
+		Args:
+			event (pygame.Event, optional): The event to react to.
+		"""
 		if self._state!="enabled" or not self._visible:
 			self._pressed = False
 			return
@@ -1289,12 +1468,27 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 			self.trigger_event("<DRAG>")
 
 
-def safe_set_linesize(font, line_spacing):
+def _safe_set_linesize(font: pygame.font.Font | pygame.font.SysFont, line_spacing: int) -> None:
+	"""
+	Internally used to set a font's linesize while compensating for the font's descent, so multi-line text
+	spacing stays visually consistent across different fonts.
+
+	Args:
+		font (pygame.font.Font | pygame.font.SysFont): The font to update.
+		line_spacing (int): The desired line spacing in pixels.
+	"""
 	descent = abs(font.get_descent())
 	font.set_linesize(line_spacing+descent)
 
 
-def render_base_surface(label, is_hovering):
+def _render_base_surface(label: Label, is_hovering: bool) -> None:
+	"""
+	Internally used to draw the label.
+
+	Args:
+		label (Label): The label to draw.
+		is_hovering (bool): Whether the mouse is currently hovering over the label.
+	"""
 	if label.state=="enabled":
 		if label.pressed:
 			text_color = label.active_pressed_text_color
@@ -1334,7 +1528,7 @@ def render_base_surface(label, is_hovering):
 			brd_color = label.disabled_unpressed_border_color
 
 	if label.auto_size:
-		safe_set_linesize(label.font, label.line_spacing)
+		_safe_set_linesize(label.font, label.line_spacing)
 		lines = str(label.text).split("\n")
 		if lines==[""]:
 			lines = [" "]
@@ -1376,7 +1570,8 @@ def render_base_surface(label, is_hovering):
 		shape_surf.set_alpha(brd_color[3])
 		label.original_surface.blit(shape_surf, (0, 0))
 
-	def render_text_line(txt, color, rect_ref, offset=(0, 0)):
+	def _render_text_line(txt: str, color: tuple[int, int, int, int], rect_ref: pygame.Rect,
+	                      offset: tuple[int, int] = (0, 0)) -> pygame.Rect | None:
 		lines = str(txt).split("\n")
 		if not lines: return None
 		total_height = sum(label.font.render(line, True, color).get_height() for line in lines)
@@ -1428,9 +1623,9 @@ def render_base_surface(label, is_hovering):
 
 	surface_rect = label.original_surface.get_rect()
 	if not label.hide_shadow and shadow_color and shadow_color[3]>0:
-		render_text_line(label.text, shadow_color, surface_rect, offset=(2, 2))
+		_render_text_line(label.text, shadow_color, surface_rect, offset=(2, 2))
 	if not label.hide_text:
-		final_text_rect = render_text_line(label.text, text_color, surface_rect)
+		final_text_rect = _render_text_line(label.text, text_color, surface_rect)
 	else:
 		final_text_rect = None
 	if final_text_rect:

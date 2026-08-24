@@ -1033,13 +1033,13 @@ class Checkbox(Widget, Tooltipable, Screenable, Deletable):
 		self._update_animation()
 		return self
 
-	def rotozoom(self, scale: int | float = 1, rotation: int = 0, frames_to_finish: int = 1) -> "Checkbox":
+	def rotozoom(self, scale: int | float = 1, rotation: int | float = 0, frames_to_finish: int = 1) -> "Checkbox":
 		"""
 		Rotate the checkbox by a degree and scale it.
 
 		Args:
 			 scale (int|float): the scale factor
-			 rotation (int): the rotation degree
+			 rotation (int|float): the rotation degree
 			 frames_to_finish (int): the number of frames to finish the animation
 
 		Returns:

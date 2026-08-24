@@ -1,33 +1,71 @@
 # screen.py
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
+"""A screen container widget for pygame used to group and grid-layout other widgets."""
 
-from typing import Any
+from typing import Any, Unpack
 
 import pygame
 
 from easypygamewidgets import misc
+from easypygamewidgets.assets import TypeHints
 from easypygamewidgets.masterWidgets import Deletable, Widget
 
 pygame.init()
 
 
 # PERFECTION
-# TypeHints ❌
 # missing three animations ❔
 
 class Screen(Widget, Deletable):
+	"""Initializes a screen container widget for pygame used to group and grid-layout other widgets."""
+
 	def __init__(self, auto_size: bool = True, width: int | None = None, height: int | None = None,
 	             min_width: int | None = None, max_width: int | None = None, min_height: int | None = None,
 	             max_height: int | None = None, fill_width: bool = False, fill_height: bool = False,
 	             active_hover_cursor: pygame.Cursor | None = None,
 	             disabled_hover_cursor: pygame.Cursor | None = None,
 	             active_pressed_cursor: pygame.Cursor | None = None,
-	             widgets: "list[easypygamewidgets.Button | easypygamewidgets.Entry | easypygamewidget.Label | easypygamewidgets.Slider | easypygamewidgets.Surface | easypygamewidgets.Timekeeper | easypygamewidgets.Tooltip]" = None,
+	             widgets: "list[easypygamewidgets.Button | easypygamewidgets.Checkbox | easypygamewidgets.Dialog | easypygamewidgets.Entry | easypygamewidgets.Label | easypygamewidgets.Slider | easypygamewidgets.Surface | easypygamewidgets.Timekeeper | easypygamewidgets.Tooltip] | None" = None,
 	             darken_background_with_alpha: int = 0, anchor_x: str = "left", anchor_y: str = "top",
 	             visible: bool = False, state: str = "enabled", x: int = 0,
-	             y: int = 0, layer=1000, ignore_empty_cells: bool = False, row_spacing: int = 10,
-	             column_spacing: int = 10, data: Any = None):
+	             y: int = 0, layer: int = 1000, ignore_empty_cells: bool = False, row_spacing: int = 10,
+	             column_spacing: int = 10, data: Any = None) -> None:
+		"""
+		Initializes a Screen widget.
+
+		Args:
+			auto_size: If True, width and height are computed from the gridded widgets instead of using the
+				given width/height. Ignored if fill_width or fill_height is True.
+			width: Fixed screen width in pixels. Ignored if auto_size is True.
+			height: Fixed screen height in pixels. Ignored if auto_size is True.
+			min_width: Minimum width in pixels when auto_size is True.
+			max_width: Maximum width in pixels when auto_size is True.
+			min_height: Minimum height in pixels when auto_size is True.
+			max_height: Maximum height in pixels when auto_size is True.
+			fill_width: If True, the screen always fills the full window width.
+			fill_height: If True, the screen always fills the full window height.
+			active_hover_cursor: Custom cursor shown on hover while enabled.
+			disabled_hover_cursor: Custom cursor shown on hover while disabled.
+			active_pressed_cursor: Custom cursor shown while pressed.
+			widgets: A list of widgets already attached to this screen.
+			darken_background_with_alpha: Alpha value (0-255) for a full-window black overlay drawn behind this
+				screen while visible. 0 disables the overlay.
+			anchor_x: Horizontal anchor point: 'left', 'center', or 'right'.
+			anchor_y: Vertical anchor point: 'top', 'center', or 'bottom'.
+			visible: Initial visibility.
+			state: Initial state, 'enabled' or 'disabled'.
+			x: Initial x position in pixels.
+			y: Initial y position in pixels.
+			layer: Draw order layer; higher values draw on top.
+			ignore_empty_cells: If True, empty rows/columns in the grid are collapsed instead of taking up space.
+			row_spacing: Vertical spacing in pixels between grid rows.
+			column_spacing: Horizontal spacing in pixels between grid columns.
+			data: Arbitrary user data attached to the widget.
+
+		Raises:
+			ValueError: If a *_cursor argument is given but is not a pygame.Cursor instance.
+		"""
 		super().__init__()
 		self._bindings = {}
 		self._row_spacing = row_spacing
@@ -57,7 +95,10 @@ class Screen(Widget, Deletable):
 				self._cursors[name] = cursor
 			else:
 				if cursor is not None:
-					print(f"No custom cursor is used for a grid because it's not a pygame.Cursor object. ({cursor})")
+					raise ValueError(
+						f"No custom cursor is used for this screen because it's not a pygame.Cursor object. "
+						f"{cursor} is a {type(cursor)}"
+					)
 				self._cursors[name] = None
 		self._widgets = widgets if widgets is not None else []
 		self._darken_background_with_alpha = max(min(darken_background_with_alpha, 255), 0)
@@ -398,16 +439,53 @@ class Screen(Widget, Deletable):
 	def offset_step(self, value):
 		self._offset_step = value
 
-	def offset(self, value: tuple[int, int], frames_to_finish=1):
+	def configure(self, **kwargs: Unpack[TypeHints.ScreenConfig]) -> "Screen":
+		"""
+		Updates one or more of the screen's attributes.
+
+		Args:
+			**kwargs: Screen attributes to update as defined in TypeHints.ScreenConfig
+
+		Returns:
+			Screen (Screen): This screen instance to allow method chaining.
+		"""
+		for key, value in kwargs.items():
+			setattr(self, key, value)
+		return self
+
+	def config(self, **kwargs: Unpack[TypeHints.ScreenConfig]) -> "Screen":
+		"""
+		Updates one or more of the screen's attributes.
+
+		Args:
+			**kwargs: Screen attributes to update as defined in TypeHints.ScreenConfig
+
+		Returns:
+			Screen (Screen): This screen instance to allow method chaining.
+		"""
+		return self.configure(**kwargs)
+
+	def offset(self, value: tuple[int, int] = (0, 0), frames_to_finish: int = 1) -> "Screen":
+		"""
+		Offset the screen by an x and y value.
+
+		Args:
+			 value: an iterable thing with two values. The first being the x and the second the y offset.
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Screen (Screen): This screen instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		self._target_offset = (0, 0) if value is None else value
+		self._target_offset = value
 		self._offset_step[0] = (self._target_offset[0]-self._current_offset[0])/frames_to_finish
 		self._offset_step[1] = (self._target_offset[1]-self._current_offset[1])/frames_to_finish
 		self._update_animation()
 		return self
 
-	def _update_animation(self):
+	def _update_animation(self) -> None:
+		"""Internally used to update the animation until it's finished."""
 		for x in range(2):
 			if self._current_offset[x]!=self._target_offset[x]:
 				if abs(self._current_offset[x]-self._target_offset[x])<=abs(self._offset_step[x]):
@@ -415,7 +493,18 @@ class Screen(Widget, Deletable):
 				else:
 					self._current_offset[x] += self._offset_step[x]
 
-	def add_widget(self, widget):
+	def add_widget(self,
+	               widget: "easypygamewidgets.Button | easypygamewidgets.Checkbox | easypygamewidgets.Dialog | easypygamewidgets.Entry | easypygamewidgets.Label | easypygamewidgets.Slider | easypygamewidgets.Surface | easypygamewidgets.Timekeeper | easypygamewidgets.Tooltip") -> "Screen":
+		"""
+		Attaches a widget to this screen. If the widget is already attached to a different screen, it's moved
+		over.
+
+		Args:
+			widget: The widget to add.
+
+		Returns:
+			Screen (Screen): This screen instance to allow method chaining.
+		"""
 		if widget in self.widgets:
 			widget.screen.remove_widget(widget)
 		self.widgets.append(widget)
@@ -424,34 +513,75 @@ class Screen(Widget, Deletable):
 		widget.state = self._state
 		return self
 
-	def remove_widget(self, widget):
+	def remove_widget(self,
+	                  widget: "easypygamewidgets.Button | easypygamewidgets.Checkbox | easypygamewidgets.Dialog | easypygamewidgets.Entry | easypygamewidgets.Label | easypygamewidgets.Slider | easypygamewidgets.Surface | easypygamewidgets.Timekeeper | easypygamewidgets.Tooltip") -> "Screen":
+		"""
+		Detaches a widget from this screen and, if it was placed in the grid, recalculates the grid.
+
+		Args:
+			widget: The widget to remove.
+
+		Returns:
+			Screen (Screen): This screen instance to allow method chaining.
+		"""
 		if widget in self.widgets:
 			self.widgets.remove(widget)
 		if hasattr(widget, "_grid_row"):
 			self.recalculate_grid()
 		return self
 
-	def show(self):
+	def show(self) -> "Screen":
+		"""
+		Shows this screen and its widgets.
+
+		Returns:
+			Screen (Screen): This screen instance to allow method chaining.
+		"""
 		self.visible = True
 		self.update_widget_state(True, False)
 		return self
 
-	def hide(self):
+	def hide(self) -> "Screen":
+		"""
+		Hides this screen and its widgets.
+
+		Returns:
+			Screen (Screen): This screen instance to allow method chaining.
+		"""
 		self.visible = False
 		self.update_widget_state(True, False)
 		return self
 
-	def enable(self):
+	def enable(self) -> "Screen":
+		"""
+		Enables this screen and its widgets.
+
+		Returns:
+			Screen (Screen): This screen instance to allow method chaining.
+		"""
 		self._state = "enabled"
 		self.update_widget_state(False, True)
 		return self
 
-	def disable(self):
+	def disable(self) -> "Screen":
+		"""
+		Disables this screen and its widgets.
+
+		Returns:
+			Screen (Screen): This screen instance to allow method chaining.
+		"""
 		self._state = "disabled"
 		self.update_widget_state(False, True)
 		return self
 
-	def update_widget_state(self, update_visibility: bool = True, update_state: bool = True):
+	def update_widget_state(self, update_visibility: bool = True, update_state: bool = True) -> None:
+		"""
+		Updates the visibility and/or state of the screens widgets to match what the screen has set.
+
+		Args:
+			update_visibility: If True, sets every widget's visible attribute to match this screen's.
+			update_state: If True, sets every widget's state attribute to match this screen's.
+		"""
 		for widget in self._widgets:
 			if update_visibility:
 				if self._visible:
@@ -464,7 +594,8 @@ class Screen(Widget, Deletable):
 				else:
 					widget.configure(state="disabled")
 
-	def delete(self):
+	def delete(self) -> None:
+		"""Delete this screen AND all the widgets attached to it."""
 		if self in misc._all_widgets:
 			misc._all_widgets.remove(self)
 		for widget in self._widgets:
@@ -472,7 +603,8 @@ class Screen(Widget, Deletable):
 			widget.delete()
 		self.widgets.clear()
 
-	def recalculate_grid(self):
+	def recalculate_grid(self) -> None:
+		"""Internally used to recompute the position and size of every gridded widget on this screen."""
 		grid_widgets = [w for w in self._widgets if hasattr(w, "_grid_row")]
 		if not grid_widgets: return
 		occupied_rows = []
@@ -568,7 +700,13 @@ class Screen(Widget, Deletable):
 			target_y = int(self._y+cell_y+offset_y)
 			w.place(target_x, target_y, suppress_anchor=True)
 
-	def _draw(self, surface: pygame.Surface):
+	def _draw(self, surface: pygame.Surface) -> None:
+		"""
+		Internally used to draw the button. Widgets attached to this screen are drawn separately.
+
+		Args:
+			surface (pygame.Surface): The surface to draw on.
+		"""
 		if not self._alive or not self._visible: return
 		mouse_pos = pygame.mouse.get_pos()
 		is_hovering = misc._is_point_over_widget(self, mouse_pos)
@@ -613,7 +751,13 @@ class Screen(Widget, Deletable):
 			self._is_hovered = False
 			self.trigger_event("<MOUSE-OUT>")
 
-	def _react(self, event=None):
+	def _react(self, event: pygame.Event | None = None) -> None:
+		"""
+		Internally used to react to events.
+
+		Args:
+			event (pygame.Event, optional): The event to react to.
+		"""
 		if self._state!="enabled" or not self._visible:
 			self._pressed = False
 			return

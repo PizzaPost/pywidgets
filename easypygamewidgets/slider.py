@@ -1,6 +1,7 @@
 # slider.py
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
+"""A slider widget for pygame."""
 
 import math
 from typing import Any, Unpack
@@ -18,6 +19,8 @@ pygame.init()
 # better 'width' and 'height' calculations ❌
 
 class Slider(Widget, Tooltipable, Screenable, Deletable):
+	"""Initializes a slider widget for pygame."""
+
 	def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
 	             height: int = 16,
 	             text: str = "easypygamewidgets Slider", start: int | float = 0,
@@ -59,7 +62,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 	             active_unpressed_display_color: tuple | None = (190, 190, 190, 255),
 	             disabled_hover_display_color: tuple | None = (150, 150, 150, 255),
 	             disabled_unpressed_display_color: tuple | None = (150, 150, 150, 255),
-	             border_width: int = 2,
+	             border_thickness: int = 2,
 	             hide_text: bool = False,
 	             hide_used_background: bool = False,
 	             hide_unused_background: bool = False,
@@ -73,11 +76,102 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 	             alignment_spacing: int = 20, show_value_when_pressed: bool = True,
 	             show_value_when_hovered: bool = True, show_value_when_unpressed: bool = False,
 	             show_value_when_disabled: bool = False, round_display_value: int = 0,
-	             show_full_rounding_of_whole_numbers: bool = False, trigger_hold_delay: int = 150, layer=1000,
-	             tooltip: "easypygamewidgets.Tooltip | None" = None, line_spacing: int = 30,
+	             show_full_rounding_of_whole_numbers: bool = False, trigger_hold_delay: int = 150, layer: int = 1000,
+	             line_spacing: int = 30, tooltip: "easypygamewidgets.Tooltip | None" = None,
 	             min_width: int | None = None, max_width: int | None = None, min_height: int | None = None,
 	             max_height: int | None = None, anchor_x: str = "left", anchor_y: str = "top",
-	             visible: bool | None = None, data: Any = None):
+	             visible: bool | None = None, data: Any = None) -> None:
+		"""
+		Initializes a Slider widget.
+
+		Args:
+			screen: The Screen this slider is attached to. If None, the slider is created without a parent screen.
+			auto_size: If True, width and height are computed from the required space instead of using the given
+				width/height.
+			width: Fixed slider width in pixels. Ignored if auto_size is True.
+			height: Fixed slider height in pixels. Ignored if auto_size is True.
+			text: The slider's label text. Supports multi-line text via '\n'.
+			start: The minimum value of the slider's range.
+			end: The maximum value of the slider's range.
+			initial_value: The slider's starting value. Defaults to start if not given.
+			state: Initial state, 'enabled' or 'disabled'. Defaults to 'enabled' if not given.
+			top_left_corner_radius: Corner radius in pixels for the top-left corner.
+			top_right_corner_radius: Corner radius in pixels for the top-right corner.
+			bottom_left_corner_radius: Corner radius in pixels for the bottom-left corner.
+			bottom_right_corner_radius: Corner radius in pixels for the bottom-right corner.
+			dot_radius: Radius in pixels of the draggable dot. Defaults to half the slider height if not given.
+			max_extra_dot_radius: Maximum extra radius in pixels the dot grows while hovered or pressed.
+			move_text_with_dot_radius: If True, the label text shifts vertically to stay unoccupied by the dot when it
+				grows.
+			active_unpressed_text_color: RGBA text color while enabled, not pressed, not hovered.
+			disabled_unpressed_text_color: RGBA text color while disabled, not hovered.
+			active_hover_text_color: RGBA text color while enabled and hovered.
+			disabled_hover_text_color: RGBA text color while disabled and hovered.
+			active_pressed_text_color: RGBA text color while enabled and pressed.
+			active_unpressed_used_background_color: RGBA color of the filled (used) track while enabled, not pressed,
+				not hovered.
+			disabled_unpressed_used_background_color: RGBA color of the filled (used) track while disabled, not hovered.
+			active_hover_used_background_color: RGBA color of the filled (used) track while enabled and hovered.
+			disabled_hover_used_background_color: RGBA color of the filled (used) track while disabled and hovered.
+			active_pressed_used_background_color: RGBA color of the filled (used) track while enabled and pressed.
+			active_unpressed_unused_background_color: RGBA color of the empty (unused) track while enabled, not
+				pressed, not hovered.
+			disabled_unpressed_unused_background_color: RGBA color of the empty (unused) track while disabled,
+				not hovered.
+			active_hover_unused_background_color: RGBA color of the empty (unused) track while enabled and hovered.
+			disabled_hover_unused_background_color: RGBA color of the empty (unused) track while disabled and hovered.
+			active_pressed_unused_background_color: RGBA color of the empty (unused) track while enabled and pressed.
+			active_unpressed_dot_color: RGBA dot color while enabled, not pressed, not hovered.
+			disabled_unpressed_dot_color: RGBA dot color while disabled, not hovered.
+			active_hover_dot_color: RGBA dot color while enabled and hovered.
+			disabled_hover_dot_color: RGBA dot color while disabled and hovered.
+			active_pressed_dot_color: RGBA dot color while enabled and pressed.
+			active_unpressed_border_color: RGBA border color while enabled, not pressed, not hovered.
+			disabled_unpressed_border_color: RGBA border color while disabled, not hovered.
+			active_hover_border_color: RGBA border color while enabled and hovered.
+			disabled_hover_border_color: RGBA border color while disabled and hovered.
+			active_pressed_border_color: RGBA border color while enabled and pressed.
+			active_pressed_display_color: RGBA color of the value display while enabled and pressed.
+			active_hover_display_color: RGBA color of the value display while enabled and hovered.
+			active_unpressed_display_color: RGBA color of the value display while enabled, not pressed, not hovered.
+			disabled_hover_display_color: RGBA color of the value display while disabled and hovered.
+			disabled_unpressed_display_color: RGBA color of the value display while disabled, not hovered.
+			border_thickness: Border width in pixels.
+			hide_text: If True, the label text is not rendered.
+			hide_used_background: If True, the filled (used) track is not rendered.
+			hide_unused_background: If True, the empty (unused) track is not rendered.
+			hide_dot: If True, the dot is not rendered.
+			hide_border: If True, the border is not rendered.
+			hide_display: If True, the value display is not rendered.
+			active_hover_cursor: Custom cursor shown on hover while enabled.
+			disabled_hover_cursor: Custom cursor shown on hover while disabled.
+			active_pressed_cursor: Custom cursor shown while pressed.
+			font: The pygame font used to render the label and value display text.
+			alignment: Label text alignment: 'left', 'right', 'center' or 'stretched'.
+			alignment_spacing: Horizontal padding reserved around aligned text.
+			show_value_when_pressed: If True, the value display is shown while the slider is pressed.
+			show_value_when_hovered: If True, the value display is shown while the slider is hovered.
+			show_value_when_unpressed: If True, the value display is shown while the slider is not pressed.
+			show_value_when_disabled: If True, the value display is shown while the slider is disabled.
+			round_display_value: Number of decimal places to round the displayed value to.
+			show_full_rounding_of_whole_numbers: If True, whole numbers keep their trailing zeros when rounded
+				(e.g. '5.00' instead of '5').
+			trigger_hold_delay: Time in milliseconds before a held drag starts triggering the HOLD event.
+			layer: Draw order layer; higher values draw on top.
+			line_spacing: Line height in pixels for multi-line text.
+			tooltip: A Tooltip widget shown on hover, if given.
+			min_width: Minimum width in pixels when auto_size is True.
+			max_width: Maximum width in pixels when auto_size is True.
+			min_height: Minimum height in pixels when auto_size is True.
+			max_height: Maximum height in pixels when auto_size is True.
+			anchor_x: Horizontal anchor point: 'left', 'center', or 'right'.
+			anchor_y: Vertical anchor point: 'top', 'center', or 'bottom'.
+			visible: Initial visibility. Defaults to True if not given.
+			data: Arbitrary user data attached to the widget.
+
+		Raises:
+			ValueError: If a *_cursor argument is given but is not a pygame.Cursor instance.
+		"""
 		super().__init__()
 		if screen:
 			screen.add_widget(self)
@@ -155,7 +249,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 		self._active_unpressed_display_color = misc.normalize_color(active_unpressed_display_color)
 		self._disabled_hover_display_color = misc.normalize_color(disabled_hover_display_color)
 		self._disabled_unpressed_display_color = misc.normalize_color(disabled_unpressed_display_color)
-		self._border_width = border_width
+		self._border_thickness = border_thickness
 		self._hide_text = hide_text
 		self._hide_used_background = hide_used_background
 		self._hide_unused_background = hide_unused_background
@@ -173,8 +267,9 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 				self._cursors[name] = cursor
 			else:
 				if cursor is not None:
-					print(
-						f"No custom cursor is used for the slider {text} because it's not a pygame.Cursor object. ({cursor})"
+					raise ValueError(
+						f"No custom cursor is used for the slider '{text}' because it's not a pygame.Cursor "
+						f"object. {cursor} is a {type(cursor)}"
 					)
 				self._cursors[name] = None
 		self._font = font
@@ -233,7 +328,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 		self._offset_step = [0, 0]
 		self._use_rotozoom = False
 
-		safe_set_linesize(font, line_spacing)
+		_safe_set_linesize(font, line_spacing)
 
 		misc._add_widget(self)
 
@@ -614,12 +709,12 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 		self._disabled_unpressed_display_color = misc.normalize_color(value)
 
 	@property
-	def border_width(self):
-		return self._border_width
+	def border_thickness(self):
+		return self._border_thickness
 
-	@border_width.setter
-	def border_width(self, value):
-		self._border_width = value
+	@border_thickness.setter
+	def border_thickness(self, value):
+		self._border_thickness = value
 
 	@property
 	def hide_text(self):
@@ -1082,7 +1177,16 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 	def use_rotozoom(self, value):
 		self._use_rotozoom = value
 
-	def configure(self, **kwargs: Unpack[TypeHints.SliderConfig]):
+	def configure(self, **kwargs: Unpack[TypeHints.SliderConfig]) -> "Slider":
+		"""
+		Updates one or more of the slider's attributes.
+
+		Args:
+			**kwargs: Slider attributes to update as defined in TypeHints.SliderConfig
+
+		Returns:
+			Slider (Slider): This slider instance to allow method chaining.
+		"""
 		for key, value in kwargs.items():
 			setattr(self, key, value)
 		self._needs_redraw = True
@@ -1109,56 +1213,119 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 		if 'layer' in kwargs:
 			misc._resort_layers()
 		if 'line_spacing' in kwargs or 'font' in kwargs:
-			safe_set_linesize(self._font, self._line_spacing)
+			_safe_set_linesize(self._font, self._line_spacing)
 		return self
 
-	def config(self, **kwargs: Unpack[TypeHints.SliderConfig]):
+	def config(self, **kwargs: Unpack[TypeHints.SliderConfig]) -> "Slider":
+		"""
+		Updates one or more of the slider's attributes.
+
+		Args:
+			**kwargs: Slider attributes to update as defined in TypeHints.SliderConfig
+
+		Returns:
+			Slider (Slider): This slider instance to allow method chaining.
+		"""
 		return self.configure(**kwargs)
 
-	def get(self):
+	def get(self) -> int | float:
+		"""
+		Returns the slider's current value.
+
+		Returns:
+			int | float: The slider's current value.
+		"""
 		return self._value
 
-	def set(self, value):
+	def set(self, value: int | float) -> None:
+		"""
+		Sets the slider's current value inbounds of the slider's start/end range.
+
+		Args:
+			value: The value to set.
+		"""
 		self._value = min(max(value, self._start), self._end)
 		self._needs_redraw = True
 
-	def scale(self, value=None, frames_to_finish=1):
+	def scale(self, value: int | float = 1, frames_to_finish: int = 1) -> "Slider":
+		"""
+		Scale the slider by a factor. It's only a visual scale so upscaling could look pixelated.
+
+		Args:
+			 value (int|float): the scale factor
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Slider (Slider): This slider instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		self._target_scale = 1 if value is None else value
+		self._target_scale = value
 		self._scale_step = (self._target_scale-self._current_scale)/frames_to_finish
 		self._update_animation()
 		return self
 
-	def rotate(self, value=None, frames_to_finish=1):
+	def rotate(self, value: int | float = 0, frames_to_finish: int = 1) -> "Slider":
+		"""
+		Rotate the slider by a degree.
+
+		Args:
+			 value (int|float): the rotation degree
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Slider (Slider): This slider instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		self._target_rotation = 0 if value is None else value
+		self._target_rotation = value
 		self._rotation_step = (self._target_rotation-self._current_rotation)/frames_to_finish
 		self._update_animation()
 		return self
 
-	def rotozoom(self, scale=None, rotation=None, frames_to_finish=1):
+	def rotozoom(self, scale: int | float = 1, rotation: int | float = 0, frames_to_finish: int = 1) -> "Slider":
+		"""
+		Rotate the slider by a degree and scale it.
+
+		Args:
+			 scale (int|float): the scale factor
+			 rotation (int|float): the rotation degree
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Slider (Slider): This slider instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		self._target_scale = 1 if scale is None else scale
+		self._target_scale = scale
 		self._scale_step = (self._target_scale-self._current_scale)/frames_to_finish
-		self._target_rotation = 0 if rotation is None else rotation
+		self._target_rotation = rotation
 		self._rotation_step = (self._target_rotation-self._current_rotation)/frames_to_finish
 		self._use_rotozoom = True
 		self._update_animation()
 		return self
 
-	def offset(self, value: tuple[int, int], frames_to_finish=1):
+	def offset(self, value: tuple[int, int] = (0, 0), frames_to_finish: int = 1) -> "Slider":
+		"""
+		Offset the slider by an x and y value.
+
+		Args:
+			 value: an iterable thing with two values. The first being the x and the second the y offset.
+			 frames_to_finish (int): the number of frames to finish the animation
+
+		Returns:
+			Slider (Slider): This slider instance to allow method chaining.
+		"""
 		if frames_to_finish<=0:
 			frames_to_finish = 1
-		self._target_offset = (0, 0) if value is None else value
+		self._target_offset = value
 		self._offset_step[0] = (self._target_offset[0]-self._current_offset[0])/frames_to_finish
 		self._offset_step[1] = (self._target_offset[1]-self._current_offset[1])/frames_to_finish
 		self._update_animation()
 		return self
 
-	def _update_animation(self):
+	def _update_animation(self) -> None:
+		"""Internally used to update the animation until it's finished."""
 		scale_changed = False
 		rotation_changed = False
 		if self._current_scale!=self._target_scale:
@@ -1182,7 +1349,13 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 		if scale_changed or rotation_changed:
 			self._needs_transform = True
 
-	def _draw(self, surface: pygame.Surface):
+	def _draw(self, surface: pygame.Surface) -> None:
+		"""
+		Internally used to draw the slider.
+
+		Args:
+			surface (pygame.Surface): The surface to draw the slider on.
+		"""
 		if not self._alive or not self._visible:
 			return
 		mouse_pos = pygame.mouse.get_pos()
@@ -1202,7 +1375,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 			self._rect = pygame.Rect(self._x, self._y, self._width, self._height)
 		current_visual_state = (self._pressed, is_hovering)
 		if self._needs_redraw or self._last_visual_state!=current_visual_state:
-			render_slider_surface(self, is_hovering)
+			_render_slider_surface(self, is_hovering)
 			self._last_visual_state = current_visual_state
 			self._needs_redraw = True
 			self._needs_transform = True
@@ -1273,13 +1446,19 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 				if not self._pressed and not is_hovering:
 					self._tooltip.hide()
 
-	def _react(self, event=None):
+	def _react(self, event: pygame.Event | None = None) -> None:
+		"""
+		Internally used to react to events.
+
+		Args:
+			event (pygame.Event, optional): The event to react to.
+		"""
 		if self._state!="enabled" or not self._visible:
 			return
 		mouse_pos = pygame.mouse.get_pos()
 		is_inside = misc._is_point_over_widget(self, mouse_pos)
 
-		def update_value():
+		def update_value() -> None:
 			offset_x, offset_y = misc._get_offset(self)
 			total_offset_x = offset_x+round(self._current_offset[0])
 			total_offset_y = offset_y+round(self._current_offset[1])
@@ -1366,7 +1545,14 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 			self._extra_dot_radius = max(0, self._extra_dot_radius-pulse)
 
 
-def render_slider_surface(slider, is_hovering):
+def _render_slider_surface(slider: Slider, is_hovering: bool) -> None:
+	"""
+	Internally used to draw the slider.
+
+	Args:
+		slider (Slider): The slider to draw.
+		is_hovering (bool): Whether the mouse is currently hovering over the slider.
+	"""
 	if slider.state=="enabled":
 		if slider.pressed:
 			text_color = slider.active_pressed_text_color
@@ -1459,7 +1645,7 @@ def render_slider_surface(slider, is_hovering):
 		cached.blit(clip_surf, track_rect.topleft)
 	if brd_color and not slider.hide_border:
 		pygame.draw.rect(
-			cached, brd_color, track_rect, width=slider.border_width, border_top_left_radius=tl,
+			cached, brd_color, track_rect, width=slider.border_thickness, border_top_left_radius=tl,
 			border_top_right_radius=tr, border_bottom_left_radius=bl,
 			border_bottom_right_radius=br
 		)
@@ -1528,6 +1714,14 @@ def render_slider_surface(slider, is_hovering):
 	slider.cached_surface = cached
 
 
-def safe_set_linesize(font, line_spacing):
+def _safe_set_linesize(font: pygame.font.Font | pygame.font.SysFont, line_spacing: int) -> None:
+	"""
+	Internally used to set a font's linesize while compensating for the font's descent, so multi-line text
+	spacing stays visually consistent across different fonts.
+
+	Args:
+		font (pygame.font.Font | pygame.font.SysFont): The font to update.
+		line_spacing (int): The desired line spacing in pixels.
+	"""
 	descent = abs(font.get_descent())
 	font.set_linesize(line_spacing+descent)
