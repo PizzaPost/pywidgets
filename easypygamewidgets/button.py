@@ -3,14 +3,19 @@
 # https://github.com/PizzaPost/easypygamewidgets
 """A button widget for pygame."""
 
+from __future__ import annotations
+
 from collections.abc import Callable
-from typing import Any, Unpack
+from typing import Any, TYPE_CHECKING, Unpack
 
 import pygame
 
 from easypygamewidgets import font, misc
-from easypygamewidgets.assets import TypeHints
+from easypygamewidgets.assets import epw_types, TypeHints
 from easypygamewidgets.masterWidgets import Deletable, Screenable, Tooltipable, Widget
+
+if TYPE_CHECKING:
+	import easypygamewidgets
 
 pygame.init()
 
@@ -21,7 +26,7 @@ pygame.init()
 class Button(Widget, Tooltipable, Screenable, Deletable):
 	"""Initializes a button widget for pygame."""
 
-	def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
+	def __init__(self, screen: easypygamewidgets.Screen | None = None, auto_size: bool = True, width: int = 180,
 	             height: int = 80,
 	             text: str = "easypygamewidgets Button",
 	             state: str | None = None,
@@ -47,7 +52,7 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
 	             font: pygame.font.Font | pygame.font.SysFont = font.default_font, alignment: str = "center",
 	             command: Callable | None = None, alignment_spacing: int = 40, corner_radius: int = 25,
 	             layer=1000, line_spacing: int = 30,
-	             tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
+	             tooltip: easypygamewidgets.Tooltip | None = None, min_width: int | None = None,
 	             max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
 	             anchor_x: str = "left", anchor_y: str = "top", visible: bool | None = None, data: Any = None) -> None:
 		"""
@@ -185,7 +190,7 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
 		self._alignment = alignment
 		self._alignment_spacing = alignment_spacing
 		if command:
-			self.bind("<RELEASE>", command)
+			self.bind(epw_types.RELEASE, command)
 		self._corner_radius = corner_radius
 		self._layer = layer
 		self._tooltip = tooltip
@@ -500,11 +505,11 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
 
 	@property
 	def command(self):
-		return self._bindings["<RELEASE>"]
+		return self._bindings[epw_types.RELEASE]
 
 	@command.setter
 	def command(self, value):
-		self.bind("<RELEASE>", value)
+		self.bind(epw_types.RELEASE, value)
 
 	@property
 	def alignment_spacing(self):
@@ -1019,15 +1024,15 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
 
 		if is_hovering and not self._is_hovered:
 			self._is_hovered = True
-			self.trigger_event("<MOUSE-IN>")
+			self.trigger_event(epw_types.MOUSE_IN)
 			if self._tooltip:
 				self._tooltip.show()
 		elif is_hovering and self._is_hovered:
 			self._is_hovered = True
-			self.trigger_event("<HOVER>")
+			self.trigger_event(epw_types.HOVER)
 		elif not is_hovering and self._is_hovered:
 			self._is_hovered = False
-			self.trigger_event("<MOUSE-OUT>")
+			self.trigger_event(epw_types.MOUSE_OUT)
 			if self._tooltip:
 				self._tooltip.hide()
 
@@ -1045,28 +1050,28 @@ class Button(Widget, Tooltipable, Screenable, Deletable):
 		is_inside = misc._is_point_over_widget(self, mouse_pos)
 		if not event:
 			if pygame.mouse.get_pressed()[0]:
-				self.trigger_event("<HOLD>")
+				self.trigger_event(epw_types.HOLD)
 				if is_inside:
 					self._pressed = True
 			elif not pygame.mouse.get_pressed()[0]:
 				if self._pressed:
-					self.trigger_event("<RELEASE>")
+					self.trigger_event(epw_types.RELEASE)
 					self._pressed = False
 		else:
 			if event.type==pygame.KEYDOWN:
-				self.trigger_event("<KEY>")
+				self.trigger_event(epw_types.KEY)
 				if event.unicode:
 					self.trigger_event(event.unicode)
 				keyname = pygame.key.name(event.key)
 				self.trigger_event(f"<{keyname.upper()}>")
 			elif event.type==pygame.MOUSEBUTTONDOWN:
 				if event.button==1:
-					self.trigger_event("<PRESS>")
+					self.trigger_event(epw_types.PRESS)
 					if is_inside:
 						self._pressed = True
 			elif event.type==pygame.MOUSEBUTTONUP:
 				if event.button==1:
-					self.trigger_event("<RELEASE>")
+					self.trigger_event(epw_types.RELEASE)
 					self._pressed = False
 
 

@@ -2,14 +2,20 @@
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
 
+from __future__ import annotations
+
 import math
 import time
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 import pygame
 
 from easypygamewidgets import font, misc
+from easypygamewidgets.assets import epw_types
 from easypygamewidgets.masterWidgets import Deletable, Screenable, Tooltipable, Widget
+
+if TYPE_CHECKING:
+	import easypygamewidgets
 
 pygame.init()
 
@@ -25,7 +31,7 @@ pygame.init()
 # four different corner radii ❌
 
 class Timekeeper(Widget, Tooltipable, Screenable, Deletable):
-	def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
+	def __init__(self, screen: easypygamewidgets.Screen | None = None, auto_size: bool = True, width: int = 180,
 	             height: int = 80, start_at: float | int = 60, end_at: float | int | None = None,
 	             show_milliseconds: bool = False, show_seconds: bool = True,
 	             show_minutes: bool = False, smart_minutes: bool = True, show_hours: bool = False,
@@ -56,7 +62,7 @@ class Timekeeper(Widget, Tooltipable, Screenable, Deletable):
 	             font: pygame.font.Font | pygame.font.SysFont = font.default_font, alignment: str = "center",
 	             alignment_spacing: int = 20, corner_radius: int = 14, ticking: bool = False,
 	             type_order: list[str] = ("h", ":", "m", ":", "s", ".", "ms"), reversed: bool = False, layer=1000,
-	             tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
+	             tooltip: easypygamewidgets.Tooltip | None = None, min_width: int | None = None,
 	             max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
 	             anchor_x: str = "left", anchor_y: str = "top", visible: bool | None = None, data: Any = None):
 		super().__init__()
@@ -857,15 +863,15 @@ class Timekeeper(Widget, Tooltipable, Screenable, Deletable):
 
 		if is_hovering and not getattr(self, "is_hovered", False):
 			self._is_hovered = True
-			self.trigger_event("<MOUSE-IN>")
+			self.trigger_event(epw_types.MOUSE_IN)
 			if self._tooltip:
 				self._tooltip.show()
 		elif is_hovering and getattr(self, "is_hovered", False):
 			self._is_hovered = True
-			self.trigger_event("<HOVER>")
+			self.trigger_event(epw_types.HOVER)
 		elif not is_hovering and getattr(self, "is_hovered", False):
 			self._is_hovered = False
-			self.trigger_event("<MOUSE-OUT>")
+			self.trigger_event(epw_types.MOUSE_OUT)
 			if self._tooltip:
 				self._tooltip.hide()
 
@@ -919,12 +925,12 @@ class Timekeeper(Widget, Tooltipable, Screenable, Deletable):
 		if event:
 			if event.type==pygame.MOUSEBUTTONDOWN and event.button==1 and is_inside:
 				self._pressed = True
-				self.trigger_event("<PRESS>")
+				self.trigger_event(epw_types.PRESS)
 			elif event.type==pygame.MOUSEBUTTONUP and event.button==1 and self._pressed:
 				self._pressed = False
-				self.trigger_event("<RELEASE>")
+				self.trigger_event(epw_types.RELEASE)
 			elif event.type==pygame.KEYDOWN:
-				self.trigger_event("<KEY>")
+				self.trigger_event(epw_types.KEY)
 				if event.unicode:
 					self.trigger_event(event.unicode)
 				keyname = pygame.key.name(event.key)
@@ -950,7 +956,7 @@ class Timekeeper(Widget, Tooltipable, Screenable, Deletable):
 					if reached_limit:
 						split_to_values(self, self._end_at)
 						self.stop()
-						self.trigger_event("<FINISHED>")
+						self.trigger_event(epw_types.FINISHED)
 						return
 				split_to_values(self, next_value)
 
@@ -974,6 +980,7 @@ def update_size(timekeeper):
 
 
 def split_to_values(widget, total_seconds):
+	old_display_text = widget.get_display_text()
 	base_seconds = math.floor(total_seconds)
 	widget.is_negative = base_seconds<0
 	abs_secs = abs(base_seconds)
@@ -982,3 +989,5 @@ def split_to_values(widget, total_seconds):
 	widget.seconds = int(abs_secs%60)
 	widget.milliseconds = abs(total_seconds)-int(abs(abs_secs))
 	update_size(widget)
+	if widget.get_display_text()!=old_display_text:
+		widget.trigger_event(epw_types.TICKING)

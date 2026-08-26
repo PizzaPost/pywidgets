@@ -3,13 +3,18 @@
 # https://github.com/PizzaPost/easypygamewidgets
 """A screen container widget for pygame used to group and grid-layout other widgets."""
 
-from typing import Any, Unpack
+from __future__ import annotations
+
+from typing import Any, TYPE_CHECKING, Unpack
 
 import pygame
 
 from easypygamewidgets import misc
-from easypygamewidgets.assets import TypeHints
+from easypygamewidgets.assets import epw_types, TypeHints
 from easypygamewidgets.masterWidgets import Deletable, Widget
+
+if TYPE_CHECKING:
+	import easypygamewidgets
 
 pygame.init()
 
@@ -26,7 +31,10 @@ class Screen(Widget, Deletable):
 	             active_hover_cursor: pygame.Cursor | None = None,
 	             disabled_hover_cursor: pygame.Cursor | None = None,
 	             active_pressed_cursor: pygame.Cursor | None = None,
-	             widgets: "list[easypygamewidgets.Button | easypygamewidgets.Checkbox | easypygamewidgets.Dialog | easypygamewidgets.Entry | easypygamewidgets.Label | easypygamewidgets.Slider | easypygamewidgets.Surface | easypygamewidgets.Timekeeper | easypygamewidgets.Tooltip] | None" = None,
+	             widgets: list[easypygamewidgets.Button | easypygamewidgets.Checkbox | easypygamewidgets.Dialog |
+	                           easypygamewidgets.Entry | easypygamewidgets.Label | easypygamewidgets.Slider |
+	                           easypygamewidgets.Surface | easypygamewidgets.Timekeeper |
+	                           easypygamewidgets.Tooltip] | None = None,
 	             darken_background_with_alpha: int = 0, anchor_x: str = "left", anchor_y: str = "top",
 	             visible: bool = False, state: str = "enabled", x: int = 0,
 	             y: int = 0, layer: int = 1000, ignore_empty_cells: bool = False, row_spacing: int = 10,
@@ -493,8 +501,10 @@ class Screen(Widget, Deletable):
 				else:
 					self._current_offset[x] += self._offset_step[x]
 
-	def add_widget(self,
-	               widget: "easypygamewidgets.Button | easypygamewidgets.Checkbox | easypygamewidgets.Dialog | easypygamewidgets.Entry | easypygamewidgets.Label | easypygamewidgets.Slider | easypygamewidgets.Surface | easypygamewidgets.Timekeeper | easypygamewidgets.Tooltip") -> "Screen":
+	def add_widget(self, widget: easypygamewidgets.Button | easypygamewidgets.Checkbox | easypygamewidgets.Dialog |
+	                             easypygamewidgets.Entry | easypygamewidgets.Label | easypygamewidgets.Slider |
+	                             easypygamewidgets.Surface | easypygamewidgets.Timekeeper | easypygamewidgets.Tooltip
+	               ) -> "Screen":
 		"""
 		Attaches a widget to this screen. If the widget is already attached to a different screen, it's moved
 		over.
@@ -513,8 +523,10 @@ class Screen(Widget, Deletable):
 		widget.state = self._state
 		return self
 
-	def remove_widget(self,
-	                  widget: "easypygamewidgets.Button | easypygamewidgets.Checkbox | easypygamewidgets.Dialog | easypygamewidgets.Entry | easypygamewidgets.Label | easypygamewidgets.Slider | easypygamewidgets.Surface | easypygamewidgets.Timekeeper | easypygamewidgets.Tooltip") -> "Screen":
+	def remove_widget(self, widget: easypygamewidgets.Button | easypygamewidgets.Checkbox | easypygamewidgets.Dialog |
+	                                easypygamewidgets.Entry | easypygamewidgets.Label | easypygamewidgets.Slider |
+	                                easypygamewidgets.Surface | easypygamewidgets.Timekeeper | easypygamewidgets.Tooltip
+	                  ) -> "Screen":
 		"""
 		Detaches a widget from this screen and, if it was placed in the grid, recalculates the grid.
 
@@ -743,13 +755,13 @@ class Screen(Widget, Deletable):
 
 		if is_hovering and not self._is_hovered:
 			self._is_hovered = True
-			self.trigger_event("<MOUSE-IN>")
+			self.trigger_event(epw_types.MOUSE_IN)
 		elif is_hovering and self._is_hovered:
 			self._is_hovered = True
-			self.trigger_event("<HOVER>")
+			self.trigger_event(epw_types.HOVER)
 		elif not is_hovering and self._is_hovered:
 			self._is_hovered = False
-			self.trigger_event("<MOUSE-OUT>")
+			self.trigger_event(epw_types.MOUSE_OUT)
 
 	def _react(self, event: pygame.Event | None = None) -> None:
 		"""
@@ -765,20 +777,20 @@ class Screen(Widget, Deletable):
 		is_inside = misc._is_point_over_widget(self, mouse_pos)
 		if not event:
 			if pygame.mouse.get_pressed()[0] and is_inside and self._pressed:
-				self.trigger_event("<HOLD>")
+				self.trigger_event(epw_types.HOLD)
 		else:
 			if event.type==pygame.KEYDOWN:
-				self.trigger_event("<KEY>")
+				self.trigger_event(epw_types.KEY)
 				if event.unicode:
 					self.trigger_event(event.unicode)
 				keyname = pygame.key.name(event.key)
 				self.trigger_event(f"<{keyname.upper()}>")
 			elif event.type==pygame.MOUSEBUTTONDOWN:
 				if event.button==1:
-					self.trigger_event("<PRESS>")
+					self.trigger_event(epw_types.PRESS)
 					if is_inside:
 						self._pressed = True
 			elif event.type==pygame.MOUSEBUTTONUP:
 				if event.button==1 and self._pressed:
-					self.trigger_event("<RELEASE>")
+					self.trigger_event(epw_types.RELEASE)
 					self._pressed = False

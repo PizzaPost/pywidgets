@@ -3,14 +3,19 @@
 # https://github.com/PizzaPost/easypygamewidgets
 """An entry widget for pygame."""
 
+from __future__ import annotations
+
 import sys
-from typing import Any, Unpack
+from typing import Any, TYPE_CHECKING, Unpack
 
 import pygame
 
 from easypygamewidgets import font, misc
-from easypygamewidgets.assets import TypeHints
+from easypygamewidgets.assets import epw_types, TypeHints
 from easypygamewidgets.masterWidgets import Deletable, Screenable, Tooltipable, Widget
+
+if TYPE_CHECKING:
+	import easypygamewidgets
 
 pygame.init()
 
@@ -18,7 +23,7 @@ pygame.init()
 class Entry(Widget, Tooltipable, Screenable, Deletable):
 	"""Initializes an entry widget for pygame."""
 
-	def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
+	def __init__(self, screen: easypygamewidgets.Screen | None = None, auto_size: bool = True, width: int = 180,
 	             height: int = 80, placeholder_text: str = "",
 	             text: str = "", char_limit: int | None = None,
 	             show: str | None = None, state: str | None = None,
@@ -52,7 +57,7 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 	             alignment_spacing: int = 20, top_left_corner_radius: int = 25, top_right_corner_radius: int = 25,
 	             bottom_left_corner_radius: int = 25, bottom_right_corner_radius: int = 25, repeat_delay: int = 500,
 	             repeat_interval: int = 50, layer: int = 1000, line_spacing: int = 30,
-	             tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
+	             tooltip: easypygamewidgets.Tooltip | None = None, min_width: int | None = None,
 	             max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
 	             anchor_x: str = "left", anchor_y: str = "top", visible: bool | None = None,
 	             data: Any = None) -> None:
@@ -1421,15 +1426,15 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 
 		if is_hovering and not getattr(self, "is_hovered", False):
 			self._is_hovered = True
-			self.trigger_event("<MOUSE-IN>")
+			self.trigger_event(epw_types.MOUSE_IN)
 			if self._tooltip:
 				self._tooltip.show()
 		elif is_hovering and getattr(self, "is_hovered", False):
 			self._is_hovered = True
-			self.trigger_event("<HOVER>")
+			self.trigger_event(epw_types.HOVER)
 		elif not is_hovering and getattr(self, "is_hovered", False):
 			self._is_hovered = False
-			self.trigger_event("<MOUSE-OUT>")
+			self.trigger_event(epw_types.MOUSE_OUT)
 			if self._tooltip:
 				self._tooltip.hide()
 
@@ -1467,9 +1472,9 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 		if event:
 			if event.type==pygame.MOUSEBUTTONDOWN and event.button==1:
 				if is_inside:
-					self.trigger_event("<PRESS>")
+					self.trigger_event(epw_types.PRESS)
 				if not self._focused:
-					self.trigger_event("<FOCUS-IN>")
+					self.trigger_event(epw_types.FOCUS_IN)
 				if is_inside:
 					self._pressed = True
 					idx = get_idx_at_mouse(event.pos[0])
@@ -1482,11 +1487,11 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 					self.reset_cursor_blink()
 				else:
 					if self._focused:
-						self.trigger_event("<FOCUS-OUT>")
+						self.trigger_event(epw_types.FOCUS_OUT)
 					self._focused = False
 			elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
 				if self._pressed:
-					self.trigger_event("<RELEASE>")
+					self.trigger_event(epw_types.RELEASE)
 				self._pressed = False
 				self._selection_anchor = None
 			elif event.type==pygame.MOUSEMOTION and self._pressed:
@@ -1499,7 +1504,7 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 					_process_key_action(self, event.key, event.unicode)
 					self._held_key_info = (event.key, event.unicode)
 					self._next_repeat_time = pygame.time.get_ticks()+self._repeat_delay
-				self.trigger_event("<KEY>")
+				self.trigger_event(epw_types.KEY)
 				if event.unicode:
 					self.trigger_event(event.unicode)
 				keyname = pygame.key.name(event.key)
@@ -1545,16 +1550,18 @@ def _process_key_action(entry: Entry, key: int, unicode_char: str) -> None:
 		if not is_linux or shift:
 			if key==pygame.K_c:
 				entry.text_copy()
+				entry.trigger_event(epw_types.COPY)
 			elif key==pygame.K_v:
 				entry.text_paste()
-				entry.trigger_event("<PASTE>")
+				entry.trigger_event(epw_types.PASTE)
 			elif key==pygame.K_x:
 				entry.text_cut()
-				entry.trigger_event("<CUT>")
+				entry.trigger_event(epw_types.CUT)
 		if key==pygame.K_a:
 			entry.selection_anchor = 0
 			entry.cursor_position = len(entry.text)
 			entry.text_select(0, len(entry.text))
+			entry.trigger_event(epw_types.SELECT_ALL)
 		return
 	if key==pygame.K_BACKSPACE:
 		if entry.selected_text:
@@ -1562,7 +1569,7 @@ def _process_key_action(entry: Entry, key: int, unicode_char: str) -> None:
 			entry.selected_text = None
 		elif entry.cursor_position>0:
 			entry.text_delete(entry.cursor_position-1, entry.cursor_position)
-		entry.trigger_event("<BACKSPACE>")
+		entry.trigger_event(epw_types.BACKSPACE)
 		return
 	elif key==pygame.K_DELETE:
 		if entry.selected_text:
@@ -1570,14 +1577,14 @@ def _process_key_action(entry: Entry, key: int, unicode_char: str) -> None:
 			entry.selected_text = None
 		elif entry.cursor_position<len(entry.text):
 			entry.text_delete(entry.cursor_position, entry.cursor_position+1)
-		entry.trigger_event("<DELETE>")
+		entry.trigger_event(epw_types.DELETE)
 		return
 	elif unicode_char.isprintable() and unicode_char!="":
 		if entry.selected_text:
 			entry.text_delete(*entry.selected_text)
 			entry.selected_text = None
 		entry.text_insert(unicode_char, entry.cursor_position)
-		entry.trigger_event("<TYPING>")
+		entry.trigger_event(epw_types.TYPING)
 
 
 def _render_entry_surface(entry: Entry, is_hovering: bool) -> None:

@@ -3,14 +3,19 @@
 # https://github.com/PizzaPost/easypygamewidgets
 """A slider widget for pygame."""
 
+from __future__ import annotations
+
 import math
-from typing import Any, Unpack
+from typing import Any, TYPE_CHECKING, Unpack
 
 import pygame
 
 from easypygamewidgets import font, misc
-from easypygamewidgets.assets import TypeHints
+from easypygamewidgets.assets import epw_types, TypeHints
 from easypygamewidgets.masterWidgets import Deletable, Screenable, Tooltipable, Widget
+
+if TYPE_CHECKING:
+	import easypygamewidgets
 
 pygame.init()
 
@@ -21,7 +26,7 @@ pygame.init()
 class Slider(Widget, Tooltipable, Screenable, Deletable):
 	"""Initializes a slider widget for pygame."""
 
-	def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
+	def __init__(self, screen: easypygamewidgets.Screen | None = None, auto_size: bool = True, width: int = 180,
 	             height: int = 16,
 	             text: str = "easypygamewidgets Slider", start: int | float = 0,
 	             end: int | float = 100, initial_value: int | None = None, state: str | None = None,
@@ -77,7 +82,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 	             show_value_when_hovered: bool = True, show_value_when_unpressed: bool = False,
 	             show_value_when_disabled: bool = False, round_display_value: int = 0,
 	             show_full_rounding_of_whole_numbers: bool = False, trigger_hold_delay: int = 150, layer: int = 1000,
-	             line_spacing: int = 30, tooltip: "easypygamewidgets.Tooltip | None" = None,
+	             line_spacing: int = 30, tooltip: easypygamewidgets.Tooltip | None = None,
 	             min_width: int | None = None, max_width: int | None = None, min_height: int | None = None,
 	             max_height: int | None = None, anchor_x: str = "left", anchor_y: str = "top",
 	             visible: bool | None = None, data: Any = None) -> None:
@@ -1430,15 +1435,15 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 
 		if is_hovering and not self._is_hovered:
 			self._is_hovered = True
-			self.trigger_event("<MOUSE-IN>")
+			self.trigger_event(epw_types.MOUSE_IN)
 			if self._tooltip:
 				self._tooltip.show()
 		elif is_hovering and self._is_hovered:
 			self._is_hovered = True
-			self.trigger_event("<HOVER>")
+			self.trigger_event(epw_types.HOVER)
 		elif not is_hovering and self._is_hovered:
 			self._is_hovered = False
-			self.trigger_event("<MOUSE-OUT>")
+			self.trigger_event(epw_types.MOUSE_OUT)
 			if self._tooltip:
 				self._tooltip.hide()
 		if self._tooltip:
@@ -1500,15 +1505,15 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 			self._value = new_slider_value
 			current_time = pygame.time.get_ticks()
 			if not self._pressed_before:
-				self.trigger_event("<PRESS>")
+				self.trigger_event(epw_types.PRESS)
 				self._pressed_before = True
 			else:
 				if moved:
 					self._last_value_update_time = current_time
-					self.trigger_event("<DRAG>")
+					self.trigger_event(epw_types.DRAG)
 				else:
 					if current_time-self._last_value_update_time>self._trigger_hold_delay:
-						self.trigger_event("<HOLD>")
+						self.trigger_event(epw_types.HOLD)
 
 		if not event:
 			if self._pressed:
@@ -1517,10 +1522,10 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 				else:
 					self._pressed = False
 					self._pressed_before = False
-					self.trigger_event("<RELEASE>")
+					self.trigger_event(epw_types.RELEASE)
 		else:
 			if event.type==pygame.KEYDOWN:
-				self.trigger_event("<KEY>")
+				self.trigger_event(epw_types.KEY)
 				if event.unicode:
 					self.trigger_event(event.unicode)
 				keyname = pygame.key.name(event.key)
@@ -1533,7 +1538,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 				if event.button==1 and self._pressed:
 					self._pressed = False
 					self._pressed_before = False
-					self.trigger_event("<RELEASE>")
+					self.trigger_event(epw_types.RELEASE)
 			elif event.type==pygame.MOUSEMOTION:
 				if self._pressed:
 					update_value()

@@ -17,8 +17,8 @@ screen = epw.Screen(visible=True, x=76, y=100)
 
 
 def change_color():
-    global bg
-    bg = (120, 20, 20)
+	global bg
+	bg = (120, 20, 20)
 
 
 button = epw.Button(screen=screen, text="Click Me!", command=change_color, auto_size=False, width=300)
@@ -42,18 +42,18 @@ enable_button.place(200, 520)
 
 
 def draw():
-    window.fill(bg)
+	window.fill(bg)
 
 
 epw.create_pygame_layer(draw, 500)
 
 running = True
 while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        epw.handle_event(event)
-    epw.handle_special_events()
-    epw.flip()
-    clock.tick(60)
+	for event in pygame.event.get():
+		if event.type==pygame.QUIT:
+			running = False
+		epw.handle_event(event)
+	epw.handle_special_events()
+	epw.flip()
+	clock.tick(60)
 pygame.quit()

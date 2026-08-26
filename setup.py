@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 
 setup(
 	name="easypygamewidgets",
-	version="26.40",
+	version="26.41",
 	author="PizzaPost",
 	author_email="pizzapost.mail@gmail.com",
 	description="Create GUIs for pygame.",
@@ -45,7 +45,8 @@ setup(
 	install_requires=[
 		"pygame-ce",
 		"requests",
-		"opencv-python"
+		"opencv-python",
+		"pillow"
 	],
 	packages=find_packages(),
 	entry_points={

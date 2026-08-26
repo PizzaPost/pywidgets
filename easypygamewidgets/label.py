@@ -3,14 +3,19 @@
 # https://github.com/PizzaPost/easypygamewidgets
 """A label widget for pygame."""
 
+from __future__ import annotations
+
 import time
-from typing import Any, Unpack
+from typing import Any, TYPE_CHECKING, Unpack
 
 import pygame
 
 from easypygamewidgets import font, misc
-from easypygamewidgets.assets import TypeHints
+from easypygamewidgets.assets import epw_types, TypeHints
 from easypygamewidgets.masterWidgets import Deletable, Screenable, Tooltipable, Widget
+
+if TYPE_CHECKING:
+	import easypygamewidgets
 
 pygame.init()
 
@@ -28,7 +33,7 @@ pygame.init()
 class Label(Widget, Tooltipable, Screenable, Deletable):
 	"""Initializes a label widget for pygame."""
 
-	def __init__(self, screen: "easypygamewidgets.Screen | None" = None, auto_size: bool = True, width: int = 180,
+	def __init__(self, screen: easypygamewidgets.Screen | None = None, auto_size: bool = True, width: int = 180,
 	             height: int = 80,
 	             text: str = "easypygamewidgets Label", state: str = "enabled",
 	             active_hover_text_color: tuple | None = (255, 255, 255, 255),
@@ -75,7 +80,7 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 	             alignment_spacing: int = 40, dragable: bool = False, top_left_corner_radius: int = 25,
 	             top_right_corner_radius: int = 25, bottom_left_corner_radius: int = 25,
 	             bottom_right_corner_radius: int = 25, layer: int = 1000, line_spacing: int = 30,
-	             tooltip: "easypygamewidgets.Tooltip | None" = None, min_width: int | None = None,
+	             tooltip: easypygamewidgets.Tooltip | None = None, min_width: int | None = None,
 	             max_width: int | None = None, min_height: int | None = None, max_height: int | None = None,
 	             anchor_x: str = "left", anchor_y: str = "top", visible: bool | None = None,
 	             data: Any = None) -> None:
@@ -1199,7 +1204,7 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 		self._needs_redraw = True
 		return self
 
-	def set_underline(self, value: bool) -> "Label":
+	def set_underline(self, value: bool) -> Label:
 		"""
 		Enables or disables the underline.
 
@@ -1213,7 +1218,7 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 		self._needs_redraw = True
 		return self
 
-	def set_tooltip(self, tooltip: "easypygamewidgets.Tooltip") -> "Label":
+	def set_tooltip(self, tooltip: easypygamewidgets.Tooltip) -> Label:
 		"""
 		Bind a tooltip to a widget.
 
@@ -1402,15 +1407,15 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 				self._original_cursor = None
 		if is_hovering and not self._is_hovered:
 			self._is_hovered = True
-			self.trigger_event("<MOUSE-IN>")
+			self.trigger_event(epw_types.MOUSE_IN)
 			if self._tooltip:
 				self._tooltip.show()
 		elif is_hovering and self._is_hovered:
 			self._is_hovered = True
-			self.trigger_event("<HOVER>")
+			self.trigger_event(epw_types.HOVER)
 		elif not is_hovering and self._is_hovered:
 			self._is_hovered = False
-			self.trigger_event("<MOUSE-OUT>")
+			self.trigger_event(epw_types.MOUSE_OUT)
 			if self._tooltip:
 				self._tooltip.hide()
 
@@ -1432,7 +1437,7 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 		total_offset_y = screen_off_y+round(self._current_offset[1])
 		if event:
 			if event.type==pygame.KEYDOWN:
-				self.trigger_event("<KEY>")
+				self.trigger_event(epw_types.KEY)
 				if event.unicode:
 					self.trigger_event(event.unicode)
 				keyname = pygame.key.name(event.key)
@@ -1453,19 +1458,19 @@ class Label(Widget, Tooltipable, Screenable, Deletable):
 						mouse_pos[0]-(self._x+total_offset_x),
 						mouse_pos[1]-(self._y+total_offset_y)
 					)
-					self.trigger_event("<PRESS>")
+					self.trigger_event(epw_types.PRESS)
 			elif event.type==pygame.MOUSEBUTTONUP:
 				if event.button==1 and self._pressed:
 					self._pressed = False
 					self._is_dragging = False
-					self.trigger_event("<RELEASE>")
+					self.trigger_event(epw_types.RELEASE)
 		if self._last_checked_dragging:
 			if current_time-self._last_checked_dragging>0.2:
 				self._is_dragging = False
 		if self._pressed and not self._is_dragging:
-			self.trigger_event("<HOLD>")
+			self.trigger_event(epw_types.HOLD)
 		if self._pressed and self._is_dragging:
-			self.trigger_event("<DRAG>")
+			self.trigger_event(epw_types.DRAG)
 
 
 def _safe_set_linesize(font: pygame.font.Font | pygame.font.SysFont, line_spacing: int) -> None:

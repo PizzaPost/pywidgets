@@ -3,6 +3,8 @@
 # https://github.com/PizzaPost/easypygamewidgets
 """Miscellaneous functions and variables that are building the core structure of the library."""
 
+from __future__ import annotations
+
 import ctypes
 import os
 import queue
@@ -21,7 +23,7 @@ from PIL import Image
 _pg: pygame.Surface | None = None
 _check_disabled: bool = False
 _all_widgets = []
-_scheduled_functions: list[tuple[Callable, int]] = []
+_scheduled_functions: list[list[Callable, int]] = []
 _last_tick: int | float | None = None
 _dt: int | float = 0
 SYNC_FRAME_LOAD_LIMIT: int = 600
@@ -50,7 +52,7 @@ def _check_update() -> None:
 		response.raise_for_status()
 		data = response.json()
 		latest_version = data["version"]
-		current_version = "26.40"
+		current_version = "26.41"
 		if latest_version!=current_version:
 			print(
 				f"\033[31mAn update is available. Download it now with 'pip install --upgrade easypygamewidgets'\n"
@@ -70,8 +72,7 @@ def disable_update_check() -> None:
 def _check_linked() -> None:
 	"""Internally used to check if a pygame window is linked."""
 	if not isinstance(_pg, pygame.Surface):
-		print("Please link a pygame window first:\n    easypygamewidgets.link_pygame_window(window)")
-		exit(0)
+		raise RuntimeError("Please link a pygame window first: easypygamewidgets.link_pygame_window(window)")
 
 
 def _check_pygame_version() -> None:
@@ -171,7 +172,7 @@ def schedule(function: Callable, time_to_execute: int, unit: str = "seconds", fp
 		...
 	else:
 		print(f"Invalid time unit: {unit}\nFallback: seconds")
-	_scheduled_functions.append((function, int(time_to_execute)))
+	_scheduled_functions.append([function, int(time_to_execute)])
 
 
 def _get_offset(widget: "Widget") -> tuple[int, int]:
@@ -186,8 +187,9 @@ def _get_offset(widget: "Widget") -> tuple[int, int]:
 	"""
 	offset_x = offset_y = 0
 	if getattr(widget, "screen", None):
-		offset_x = widget.screen.current_offset[0]
-		offset_y = widget.screen.current_offset[1]
+		screen = widget.screen
+		offset_x = screen.current_offset[0]+screen.x
+		offset_y = screen.current_offset[1]+screen.y
 	if getattr(widget, "parent", None):
 		offset_x += widget.parent.x
 		offset_y += widget.parent.y

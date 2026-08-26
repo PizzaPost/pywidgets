@@ -6,11 +6,14 @@ easypygamewidgets is a widget library for pygame and based on pygame. It uses py
 better performance, more features and support for the newest python versions.
 """
 
+from __future__ import annotations
+
 from collections.abc import Callable
 
 import pygame
 
 from . import misc
+from .assets.epw_types import *
 from .button import Button
 from .checkbox import Checkbox
 from .dialog import Dialog

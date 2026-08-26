@@ -21,7 +21,7 @@ def uncheck():
 	print("unchecked")
 
 
-button = epw.Checkbox(text="Staff Only", check_command=check, uncheck_command=uncheck)
+button = epw.Checkbox(text="Accept terms and conditions", check_command=check, uncheck_command=uncheck)
 button.anchor(anchor_x="center", anchor_y="center")
 button.place(x=50, y=50, mode="%")
 

@@ -3,6 +3,8 @@
 # https://github.com/PizzaPost/easypygamewidgets
 """A module to create pygame fonts more easily."""
 
+from __future__ import annotations
+
 import os
 import pathlib
 from typing import Any

@@ -2,14 +2,19 @@
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
 
+from __future__ import annotations
+
 import os
 import pathlib
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 import pygame
 
 from easypygamewidgets import font, misc
 from easypygamewidgets.masterWidgets import Deletable, Widget
+
+if TYPE_CHECKING:
+	import easypygamewidgets
 
 pygame.init()
 
@@ -26,7 +31,9 @@ pygame.init()
 
 class Tooltip(Widget, Deletable):
 	def __init__(self,
-	             widget: "easypygamewidgets.Button | easypygamewidgets.Entry | easypygamewidgets.Label | easypygamewidgets.Slider | easypygamewidgets.Surface | easypygamewidgets.Timekeeper | None" = None,
+	             widget: easypygamewidgets.Button | easypygamewidgets.Checkbox | easypygamewidgets.Entry |
+	                     easypygamewidgets.Label | easypygamewidgets.Slider | easypygamewidgets.Surface |
+	                     easypygamewidgets.Timekeeper | None = None,
 	             auto_size: bool = True, width: int = 180,
 	             height: int = 80,
 	             text: str = "easypygamewidgets Tooltip",

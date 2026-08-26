@@ -15,7 +15,7 @@ yes_button = epw.Button(text='Yes')
 no_button = epw.Button(text='No')
 entry = epw.Entry()
 dialog = epw.Dialog(
-	title="Info ", description=".", widgets=[yes_button, no_button, entry],
+	title="Info", description="This is the description", widgets=[yes_button, no_button, entry],
 	widget_alignment="center", title_alignment="stretched", anchor_x="center", anchor_y="center"
 )
 dialog.place(50, 50, mode="%")

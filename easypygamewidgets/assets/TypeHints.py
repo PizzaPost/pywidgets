@@ -6,10 +6,15 @@ This file contains type hints for the easypygamewidgets library.
 They're used for the config and configure commands on widgets.
 """
 
+from __future__ import annotations
+
 from collections.abc import Callable
-from typing import Any, TypedDict
+from typing import Any, TYPE_CHECKING, TypedDict
 
 import pygame
+
+if TYPE_CHECKING:
+	import easypygamewidgets
 
 
 class BindingConfig(TypedDict):
@@ -23,7 +28,7 @@ class ButtonConfig(TypedDict, total=False):
 	bindings: dict[str, BindingConfig]
 	width: int
 	height: int
-	screen: "easypygamewidgets.Screen"
+	screen: easypygamewidgets.Screen
 	state: str
 	auto_size: bool
 	text: str
@@ -56,7 +61,7 @@ class ButtonConfig(TypedDict, total=False):
 	command: Callable | None
 	corner_radius: int
 	layer: int
-	tooltip: "easypygamewidgets.Tooltip"
+	tooltip: easypygamewidgets.Tooltip
 	line_spacing: int
 	min_width: int
 	max_width: int
@@ -88,7 +93,7 @@ class ButtonConfig(TypedDict, total=False):
 	current_offset: tuple[int, int]
 	offset_step: tuple[int, int]
 	use_rotozoom: bool
-	dialog: "easypygamewidgets.Dialog | None"
+	dialog: easypygamewidgets.Dialog | None
 
 
 class CheckboxConfig(TypedDict, total=False):
@@ -96,7 +101,7 @@ class CheckboxConfig(TypedDict, total=False):
 	bindings: dict[str, BindingConfig]
 	width: int
 	height: int
-	screen: "easypygamewidgets.Screen"
+	screen: easypygamewidgets.Screen
 	state: str
 	auto_size: bool
 	text: str
@@ -142,7 +147,7 @@ class CheckboxConfig(TypedDict, total=False):
 	uncheck_command: Callable | None
 	corner_radius: int
 	layer: int
-	tooltip: "easypygamewidgets.Tooltip"
+	tooltip: easypygamewidgets.Tooltip
 	line_spacing: int
 	min_width: int
 	max_width: int
@@ -174,12 +179,12 @@ class CheckboxConfig(TypedDict, total=False):
 	current_offset: tuple[int, int]
 	offset_step: tuple[int, int]
 	use_rotozoom: bool
-	dialog: "easypygamewidgets.Dialog | None"
+	dialog: easypygamewidgets.Dialog | None
 
 
 class DialogConfig(TypedDict, total=False):
 	"""TypeHints for Dialoges"""
-	screen: "easypygamewidgets.Screen"
+	screen: easypygamewidgets.Screen
 	state: str
 	auto_size: bool
 	width: int
@@ -187,7 +192,7 @@ class DialogConfig(TypedDict, total=False):
 	title: str
 	description: str
 	require_value: bool
-	widgets: "list[easypygamewidgets.Button]"
+	widgets: list[easypygamewidgets.Button]
 	widgets_spacing: int
 	widget_alignment: str
 	active_unpressed_title_color: tuple[int, int, int] | tuple[int, int, int, int] | None
@@ -264,7 +269,7 @@ class DialogConfig(TypedDict, total=False):
 
 class EntryConfig(TypedDict, total=False):
 	"""TypeHints for Entries"""
-	screen: "easypygamewidgets.Screen"
+	screen: easypygamewidgets.Screen
 	state: str
 	auto_size: bool
 	width: int
@@ -312,7 +317,7 @@ class EntryConfig(TypedDict, total=False):
 	repeat_interval: int
 	layer: int
 	line_spacing: int
-	tooltip: "easypygamewidgets.Tooltip"
+	tooltip: easypygamewidgets.Tooltip
 	min_width: int
 	max_width: int
 	min_height: int
@@ -360,7 +365,7 @@ class EntryConfig(TypedDict, total=False):
 
 class LabelConfig(TypedDict, total=False):
 	"""TypeHints for Labels"""
-	screen: "easypygamewidgets.Screen"
+	screen: easypygamewidgets.Screen
 	state: str
 	strikethrough: bool
 	underline: bool
@@ -418,7 +423,7 @@ class LabelConfig(TypedDict, total=False):
 	bottom_left_corner_radius: int
 	bottom_right_corner_radius: int
 	layer: int
-	tooltip: "easypygamewidgets.Tooltip"
+	tooltip: easypygamewidgets.Tooltip
 	line_spacing: int
 	min_width: int
 	max_width: int
@@ -474,7 +479,9 @@ class ScreenConfig(TypedDict, total=False):
 	disabled_hover_cursor: pygame.Cursor
 	active_pressed_cursor: pygame.Cursor
 	cursors: dict[str, pygame.Cursor]
-	widgets: "list[easypygamewidgets.Button | easypygamewidgets.Checkbox | easypygamewidgets.Dialog | easypygamewidgets.Entry | easypygamewidgets.Label | easypygamewidgets.Slider | easypygamewidgets.Surface | easypygamewidgets.Timekeeper | easypygamewidgets.Tooltip]"
+	widgets: list[easypygamewidgets.Button | easypygamewidgets.Checkbox | easypygamewidgets.Dialog |
+	              easypygamewidgets.Entry | easypygamewidgets.Label | easypygamewidgets.Slider |
+	              easypygamewidgets.Surface | easypygamewidgets.Timekeeper | easypygamewidgets.Tooltip]
 	darken_background_with_alpha: int
 	anchor_x: str
 	anchor_y: str
@@ -501,7 +508,7 @@ class SliderConfig(TypedDict, total=False):
 	bindings: dict[str, BindingConfig]
 	width: int
 	height: int
-	screen: "easypygamewidgets.Screen"
+	screen: easypygamewidgets.Screen
 	state: str
 	auto_size: bool
 	text: str
@@ -567,7 +574,7 @@ class SliderConfig(TypedDict, total=False):
 	show_full_rounding_of_whole_numbers: bool
 	trigger_hold_delay: int
 	layer: int
-	tooltip: "easypygamewidgets.Tooltip"
+	tooltip: easypygamewidgets.Tooltip
 	line_spacing: int
 	min_width: int
 	max_width: int
@@ -601,4 +608,4 @@ class SliderConfig(TypedDict, total=False):
 	current_offset: tuple[int, int]
 	offset_step: tuple[int, int]
 	use_rotozoom: bool
-	dialog: "easypygamewidgets.Dialog | None"
+	dialog: easypygamewidgets.Dialog | None

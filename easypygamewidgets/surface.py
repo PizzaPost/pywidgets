@@ -2,14 +2,20 @@
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
 
+from __future__ import annotations
+
 import time
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 import pygame
 
 from easypygamewidgets import misc
+from easypygamewidgets.assets import epw_types
 from easypygamewidgets.masterWidgets import Deletable, Screenable, Tooltipable, Widget
+
+if TYPE_CHECKING:
+	import easypygamewidgets
 
 pygame.init()
 
@@ -20,12 +26,12 @@ pygame.init()
 
 class Surface(Widget, Tooltipable, Screenable, Deletable):
 	def __init__(self, frames: pygame.Surface | Iterable[pygame.Surface],
-	             screen: "easypygamewidgets.Screen | None" = None,
+	             screen: easypygamewidgets.Screen | None = None,
 	             state: str | None = None, visible: bool | None = None,
 	             active_hover_cursor: pygame.Cursor | None = None,
 	             disabled_hover_cursor: pygame.Cursor | None = None,
 	             active_pressed_cursor: pygame.Cursor | None = None, dragable: bool = False, layer=1000,
-	             tooltip: "easypygamewidgets.Tooltip | None" = None, anchor_x: str = "left", anchor_y: str = "top",
+	             tooltip: easypygamewidgets.Tooltip | None = None, anchor_x: str = "left", anchor_y: str = "top",
 	             playing: bool = False, looping: bool = True, fps: int = 60, data: Any = None):
 		super().__init__()
 		if isinstance(frames, pygame.Surface):
@@ -650,15 +656,15 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
 
 		if is_hovering and not getattr(self, "is_hovered", False):
 			self._is_hovered = True
-			self.trigger_event("<MOUSE-IN>")
+			self.trigger_event(epw_types.MOUSE_IN)
 			if self._tooltip:
 				self._tooltip.show()
 		elif is_hovering and getattr(self, "is_hovered", False):
 			self._is_hovered = True
-			self.trigger_event("<HOVER>")
+			self.trigger_event(epw_types.HOVER)
 		elif not is_hovering and getattr(self, "is_hovered", False):
 			self._is_hovered = False
-			self.trigger_event("<MOUSE-OUT>")
+			self.trigger_event(epw_types.MOUSE_OUT)
 			if self._tooltip:
 				self._tooltip.hide()
 		if self._playing:
@@ -691,7 +697,7 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
 		current_time = time.time()
 		if not event:
 			if pygame.mouse.get_pressed()[0] and is_inside and self._pressed:
-				self.trigger_event("<HOLD>")
+				self.trigger_event(epw_types.HOLD)
 		else:
 			if event.type==pygame.MOUSEMOTION:
 				if self._pressed and self._dragable:
@@ -703,14 +709,14 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
 							new_y = mouse_pos[1]-self._drag_offset[1]-total_offset_y
 							self.place(new_x, new_y, suppress_anchor=True)
 			if event.type==pygame.KEYDOWN:
-				self.trigger_event("<KEY>")
+				self.trigger_event(epw_types.KEY)
 				if event.unicode:
 					self.trigger_event(event.unicode)
 				keyname = pygame.key.name(event.key)
 				self.trigger_event(f"<{keyname.upper()}>")
 			elif event.type==pygame.MOUSEBUTTONDOWN:
 				if event.button==1:
-					self.trigger_event("<PRESS>")
+					self.trigger_event(epw_types.PRESS)
 					if is_inside:
 						self._pressed = True
 						self._drag_offset = (
@@ -719,13 +725,13 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
 						)
 			elif event.type==pygame.MOUSEBUTTONUP:
 				if event.button==1 and self._pressed:
-					self.trigger_event("<RELEASE>")
+					self.trigger_event(epw_types.RELEASE)
 					self._pressed = False
 					self._is_dragging = False
 		if self._last_checked_dragging:
 			if current_time-self._last_checked_dragging>0.2:
 				self._is_dragging = False
 		if self._pressed and not self._is_dragging:
-			self.trigger_event("<HOLD>")
+			self.trigger_event(epw_types.HOLD)
 		if self._pressed and self._is_dragging:
-			self.trigger_event("<DRAG>")
+			self.trigger_event(epw_types.DRAG)

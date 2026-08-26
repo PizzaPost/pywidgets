@@ -1,15 +1,20 @@
 # masterWidgets.py
 # by PizzaPost
 # https://github.com/PizzaPost/easypygamewidgets
-""""Internally used to reduce duplicate code across different widgets."""
+"""Internally used to reduce duplicate code across different widgets."""
+
+from __future__ import annotations
 
 import copy
 from collections.abc import Callable
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 import pygame
 
 from easypygamewidgets import misc
+
+if TYPE_CHECKING:
+	import easypygamewidgets
 
 
 class Widget:
@@ -27,7 +32,7 @@ class Widget:
 		misc._resort_layers()
 		return copied_widget
 
-	def bind(self, event: str, command: Callable | None = None, require_hover: bool = True,
+	def bind(self, event: easypygamewidgets.binding, command: Callable | None = None, require_hover: bool = True,
 	         widget_boolean_value: Callable | None = None,
 	         required_value_for_widget_boolean_value: Any = True) -> "Widget":
 		"""
@@ -169,7 +174,7 @@ class Widget:
 		self.place(self._x, self._y)
 		return self
 
-	def grid(self, screen: "easypygamewidgets.Screen", row: int, column: int, rowspan: int = 1,
+	def grid(self, screen: easypygamewidgets.Screen, row: int, column: int, rowspan: int = 1,
 	         columnspan: int = 1) -> "Widget":
 		"""
 		Place a widget on the screen using a grid system. This function will ignore the anchor that was set with
@@ -242,7 +247,7 @@ class Widget:
 class Tooltipable:
 	"""A template to add tooltip functionality to a widget."""
 
-	def set_tooltip(self, tooltip: "easypygamewidgets.Tooltip") -> "Widget":
+	def set_tooltip(self, tooltip: easypygamewidgets.Tooltip) -> "Widget":
 		"""
 		Bind a tooltip to a widget.
 
@@ -278,7 +283,7 @@ class Tooltipable:
 class Screenable:
 	"""A template to add screen functionality to a widget."""
 
-	def set_screen(self, screen: "easypygamewidgets.Screen") -> "Widget":
+	def set_screen(self, screen: easypygamewidgets.Screen) -> "Widget":
 		"""
 		Bind a screen to a widget.
 
