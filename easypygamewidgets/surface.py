@@ -120,9 +120,13 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
 
 	@frames.setter
 	def frames(self, value):
-		self._frames = value
+		self._frames = value if isinstance(value, Iterable) else [value]
 		self._surface = self._frames[0]
+		self._original_surface = self._frames[0]
 		self._current_frame = 0
+		self._current_scale = 0
+		self._current_rotation = 0
+		self._update_animation()
 
 	@property
 	def surface(self):
@@ -709,11 +713,7 @@ class Surface(Widget, Tooltipable, Screenable, Deletable):
 							new_y = mouse_pos[1]-self._drag_offset[1]-total_offset_y
 							self.place(new_x, new_y, suppress_anchor=True)
 			if event.type==pygame.KEYDOWN:
-				self.trigger_event(epw_types.KEY)
-				if event.unicode:
-					self.trigger_event(event.unicode)
-				keyname = pygame.key.name(event.key)
-				self.trigger_event(f"<{keyname.upper()}>")
+				misc._trigger_key_bindings(self, event)
 			elif event.type==pygame.MOUSEBUTTONDOWN:
 				if event.button==1:
 					self.trigger_event(epw_types.PRESS)

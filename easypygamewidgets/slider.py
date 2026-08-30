@@ -1525,11 +1525,7 @@ class Slider(Widget, Tooltipable, Screenable, Deletable):
 					self.trigger_event(epw_types.RELEASE)
 		else:
 			if event.type==pygame.KEYDOWN:
-				self.trigger_event(epw_types.KEY)
-				if event.unicode:
-					self.trigger_event(event.unicode)
-				keyname = pygame.key.name(event.key)
-				self.trigger_event(f"<{keyname.upper()}>")
+				misc._trigger_key_bindings(self, event)
 			elif event.type==pygame.MOUSEBUTTONDOWN:
 				if event.button==1 and is_inside:
 					self._pressed = True

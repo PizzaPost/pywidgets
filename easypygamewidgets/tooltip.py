@@ -11,6 +11,7 @@ from typing import Any, TYPE_CHECKING
 import pygame
 
 from easypygamewidgets import font, misc
+from easypygamewidgets.assets import epw_types
 from easypygamewidgets.masterWidgets import Deletable, Widget
 
 if TYPE_CHECKING:
@@ -167,6 +168,8 @@ class Tooltip(Widget, Deletable):
 		safe_set_linesize(font, line_spacing)
 
 		misc._add_widget(self)
+
+		self.place(self._x, self._y)  # apply the anchors
 
 	@property
 	def bindings(self):
@@ -543,12 +546,15 @@ class Tooltip(Widget, Deletable):
 
 	def show(self):
 		self._visible = True
-		self.trigger_event("<SHOW>")
+		self.trigger_event(epw_types.SHOW_TOOLTIP)
 		return self
 
 	def hide(self):
 		self._visible = False
-		self.trigger_event("<HIDE>")
+		self.trigger_event(epw_types.HIDE_TOOLTIP)
+		if self._original_cursor:
+			pygame.mouse.set_cursor(self._original_cursor)
+			self._original_cursor = None
 		return self
 
 	def add_widget(self, widget):
@@ -581,15 +587,9 @@ class Tooltip(Widget, Deletable):
 				pygame.mouse.set_cursor(self._original_cursor)
 				self._original_cursor = None
 
-		if is_hovering and not getattr(self, "is_hovered", False):
+		if is_hovering:
 			self._is_hovered = True
-			self.trigger_event("<SHOW>")
-		elif is_hovering and getattr(self, "is_hovered", False):
-			self._is_hovered = True
-			self.trigger_event("<HOVER>")
-		elif not is_hovering and getattr(self, "is_hovered", False):
-			self._is_hovered = False
-			self.trigger_event("<HIDE>")
+			self.trigger_event(epw_types.HOVER)
 
 		draw_rect = self._rect.move(mouse_pos[0], mouse_pos[1])
 		if self._visible:

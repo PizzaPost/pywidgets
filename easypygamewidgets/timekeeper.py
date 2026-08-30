@@ -930,11 +930,7 @@ class Timekeeper(Widget, Tooltipable, Screenable, Deletable):
 				self._pressed = False
 				self.trigger_event(epw_types.RELEASE)
 			elif event.type==pygame.KEYDOWN:
-				self.trigger_event(epw_types.KEY)
-				if event.unicode:
-					self.trigger_event(event.unicode)
-				keyname = pygame.key.name(event.key)
-				self.trigger_event(f"<{keyname.upper()}>")
+				misc._trigger_key_bindings(self, event)
 		else:
 			if self._ticking:
 				now = time.time()

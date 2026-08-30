@@ -1504,11 +1504,7 @@ class Entry(Widget, Tooltipable, Screenable, Deletable):
 					_process_key_action(self, event.key, event.unicode)
 					self._held_key_info = (event.key, event.unicode)
 					self._next_repeat_time = pygame.time.get_ticks()+self._repeat_delay
-				self.trigger_event(epw_types.KEY)
-				if event.unicode:
-					self.trigger_event(event.unicode)
-				keyname = pygame.key.name(event.key)
-				self.trigger_event(f"<{keyname.upper()}>")
+				misc._trigger_key_bindings(self, event)
 			elif event.type==pygame.KEYUP:
 				if self._held_key_info and event.key==self._held_key_info[0]:
 					self._held_key_info = None

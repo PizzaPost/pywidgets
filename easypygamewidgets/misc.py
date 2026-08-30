@@ -20,6 +20,8 @@ import pygame
 import requests
 from PIL import Image
 
+from .assets import epw_types
+
 _pg: pygame.Surface | None = None
 _check_disabled: bool = False
 _all_widgets = []
@@ -52,7 +54,7 @@ def _check_update() -> None:
 		response.raise_for_status()
 		data = response.json()
 		latest_version = data["version"]
-		current_version = "26.41"
+		current_version = "26.42"
 		if latest_version!=current_version:
 			print(
 				f"\033[31mAn update is available. Download it now with 'pip install --upgrade easypygamewidgets'\n"
@@ -135,6 +137,36 @@ def create_pygame_layer(function: Callable, layer: int) -> None:
 def _resort_layers() -> None:
 	"""Internally used to sort the widgets/functions by their layer."""
 	_all_widgets.sort(key=lambda w: w[1] if isinstance(w, tuple) else w.layer)
+
+
+def _trigger_key_bindings(widget: "Widget", event: pygame.Event) -> None:
+	"""
+	Internally used to trigger the correct binding(s) for a KEYDOWN event.
+
+	Args:
+		widget (Widget): the widget that should execute the binding
+		event (pygame.Event): The event to react to.
+	"""
+	widget.trigger_event(epw_types.KEY)
+	mods = pygame.key.get_mods()
+	char_bindings = epw_types._CHAR_TO_BINDINGS.get(event.unicode)
+	if not char_bindings and mods & (pygame.KMOD_CTRL | pygame.KMOD_META):
+		physical_char = pygame.key.name(event.key)
+		if len(physical_char)==1:
+			if physical_char.isalpha():
+				shift_held = bool(mods & pygame.KMOD_SHIFT)
+				caps_held = bool(mods & pygame.KMOD_CAPS)
+				physical_char = physical_char.upper() if shift_held!=caps_held else physical_char.lower()
+			char_bindings = epw_types._CHAR_TO_BINDINGS.get(physical_char)
+	if char_bindings:
+		for char_binding in char_bindings:
+			widget.trigger_event(char_binding)
+		return
+	keyname = pygame.key.name(event.key).upper().replace(" ", "_")
+	widget.trigger_event(epw_types.binding(f"<{keyname}>"))
+	group_binding = epw_types._SPECIAL_KEYNAME_TO_GROUP_BINDINGS.get(keyname)
+	if group_binding:
+		widget.trigger_event(group_binding)
 
 
 def set_appearance_mode(mode: int) -> None:

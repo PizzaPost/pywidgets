@@ -21,7 +21,7 @@ def change_text(self):
 button = epw.Button(text="This is a button!", corner_radius=15)
 button.anchor(anchor_x="center", anchor_y="center")
 button.place(x=50, y=50, mode="%")
-button.bind("<RELEASE>", lambda self: change_text(self))
+button.bind(epw.RELEASE, lambda self: change_text(self))
 
 
 def draw():
