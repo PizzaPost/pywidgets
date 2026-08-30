@@ -302,6 +302,26 @@ class Screenable:
 		screen.add_widget(self)
 		return self
 
+	def hide(self) -> "Widget":
+		"""
+		Hide the widget this method is used one.
+
+		Return:
+			Widget (Widget): This widget instance to allow method chaining.
+		"""
+		self.visible = False
+		return self
+
+	def show(self) -> "Widget":
+		"""
+		Hide the widget this method is used one.
+
+		Return:
+			Widget (Widget): This widget instance to allow method chaining.
+		"""
+		self.visible = True
+		return self
+
 
 class Deletable:
 	"""A template to add deletion functionality to a widget."""
