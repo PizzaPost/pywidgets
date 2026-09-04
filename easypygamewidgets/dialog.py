@@ -48,7 +48,7 @@ class Dialog(Widget, Screenable, Deletable):
 	             active_hover_border_color: tuple | None = (130, 130, 130, 255),
 	             disabled_hover_border_color: tuple | None = (70, 70, 70, 255),
 	             active_pressed_border_color: tuple | None = (80, 80, 80, 255),
-	             border_thickness: int = 2,
+	             border_thickness: int = 2, darken_background_with_alpha: int = 100,
 	             hide_text: bool = False,
 	             hide_background: bool = False,
 	             hide_border: bool = False,
@@ -104,6 +104,7 @@ class Dialog(Widget, Screenable, Deletable):
 			disabled_hover_border_color: RGBA border color while disabled and hovered.
 			active_pressed_border_color: RGBA border color while enabled and pressed.
 			border_thickness: Border width in pixels.
+			darken_background_with_alpha: Alpha value (0-255) for a full-window black overlay drawn behind this
 			hide_text: If True, title and description are not rendered.
 			hide_background: If True, the background fill is not rendered.
 			hide_border: If True, the border is not rendered.
@@ -202,6 +203,7 @@ class Dialog(Widget, Screenable, Deletable):
 		self._disabled_hover_border_color = misc.normalize_color(disabled_hover_border_color)
 		self._active_pressed_border_color = misc.normalize_color(active_pressed_border_color)
 		self._border_thickness = border_thickness
+		self._darken_background_with_alpha = max(min(darken_background_with_alpha, 255), 0)
 		self._hide_text = hide_text
 		self._hide_background = hide_background
 		self._hide_border = hide_border
@@ -248,6 +250,7 @@ class Dialog(Widget, Screenable, Deletable):
 		self._current_offset = [0, 0]
 		self._offset_step = [0, 0]
 		self._use_rotozoom = False
+		self._cached_darken_surface = None
 		_safe_set_linesize(self)
 		misc._add_widget(self)
 
@@ -582,6 +585,15 @@ class Dialog(Widget, Screenable, Deletable):
 	@border_thickness.setter
 	def border_thickness(self, value):
 		self._border_thickness = value
+
+	@property
+	def darken_background_with_alpha(self):
+		return self._darken_background_with_alpha
+
+	@darken_background_with_alpha.setter
+	def darken_background_with_alpha(self, value):
+		self._darken_background_with_alpha = max(min(value, 255), 0)
+		self._needs_redraw = True
 
 	@property
 	def hide_text(self):
@@ -958,6 +970,14 @@ class Dialog(Widget, Screenable, Deletable):
 	def use_rotozoom(self, value):
 		self._use_rotozoom = value
 
+	@property
+	def cached_darken_surface(self):
+		return self._cached_darken_surface
+
+	@cached_darken_surface.setter
+	def cached_darken_surface(self, value):
+		self._cached_darken_surface = value
+
 	def clone(self) -> "Dialog":
 		"""
 		Creates a deep copy of this dialog.
@@ -1137,6 +1157,16 @@ class Dialog(Widget, Screenable, Deletable):
 		mouse_pos = pygame.mouse.get_pos()
 		is_hovering = misc._is_point_over_widget(self, mouse_pos)
 		current_visual_state = (self._pressed, is_hovering)
+
+		if (self._cached_darken_surface is None or self._cached_darken_surface.get_size()!=surface.get_size() or
+				self._needs_redraw):
+			self._cached_darken_surface = pygame.Surface(surface.get_size())
+			self._cached_darken_surface.fill((0, 0, 0))
+			self._cached_darken_surface.set_alpha(self.darken_background_with_alpha)
+
+		if self._visible and self._darken_background_with_alpha>0:
+			surface.blit(self._cached_darken_surface, (0, 0))
+
 		if self._needs_redraw or self._last_visual_state!=current_visual_state:
 			_render_dialog_surface(self, is_hovering)
 			self._last_visual_state = current_visual_state

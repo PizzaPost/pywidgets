@@ -216,6 +216,7 @@ class DialogConfig(TypedDict, total=False):
 	disabled_hover_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
 	active_pressed_border_color: tuple[int, int, int] | tuple[int, int, int, int] | None
 	border_thickness: int
+	darken_background_with_alpha: int
 	hide_text: bool
 	hide_background: bool
 	hide_border: bool

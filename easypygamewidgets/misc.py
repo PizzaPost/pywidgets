@@ -54,7 +54,7 @@ def _check_update() -> None:
 		response.raise_for_status()
 		data = response.json()
 		latest_version = data["version"]
-		current_version = "26.43"
+		current_version = "26.44"
 		if latest_version!=current_version:
 			print(
 				f"\033[31mAn update is available. Download it now with 'pip install --upgrade easypygamewidgets'\n"
@@ -190,7 +190,7 @@ def schedule(function: Callable, time_to_execute: int, unit: str = "seconds", fp
 		 time_to_execute (int): the time it should take to execute the function.
 		 unit (str): the unit of time.
 		             (frames: "f", "frames"; seconds: "s", "sec", "seconds"; minutes: "m", "min", "minutes")
-		 fps (float): the frames per second. (Only useful if you use frames as unit)
+		 fps (float): the frames per second. (Only useful if you use frames as a unit)
 	"""
 	if time_to_execute<1:
 		time_to_execute = 1
